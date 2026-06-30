@@ -113,23 +113,42 @@ Deno.test("walkSync() accepts includeFiles option set to false", () =>
     includeFiles: false,
   }));
 
+// `includeDirs` defaults to true, so the root directory entry is also
+// expected. `exts` no longer filters directories (see #6736).
 Deno.test("walk() accepts ext option as strings", async () =>
-  await assertWalkPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  await assertWalkPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));
 
 Deno.test("walk() accepts ext option as strings (excluding period prefix)", async () =>
-  await assertWalkPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  await assertWalkPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: ["rs", "ts"],
   }));
 
 Deno.test("walkSync() accepts ext option as strings", () =>
-  assertWalkSyncPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  assertWalkSyncPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));
 
 Deno.test("walkSync() accepts ext option as strings (excluding period prefix)", () =>
+  assertWalkSyncPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
+    exts: [".rs", ".ts"],
+  }));
+
+// https://github.com/denoland/std/issues/6736 — explicit includeDirs:false
+// still drops the directory when an `exts` filter is set. Before the fix,
+// includeDirs:true also dropped it (because the dir name had no extension);
+// after the fix, the dir is yielded as expected (verified by the strings
+// tests above).
+Deno.test("walk() with exts and includeDirs:false yields only files", async () =>
+  await assertWalkPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+    includeDirs: false,
+    exts: [".rs", ".ts"],
+  }));
+
+Deno.test("walkSync() with exts and includeDirs:false yields only files", () =>
   assertWalkSyncPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+    includeDirs: false,
     exts: [".rs", ".ts"],
   }));
 
