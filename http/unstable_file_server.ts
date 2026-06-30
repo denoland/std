@@ -6,6 +6,24 @@ import {
   serveFile as stableServeFile,
   type ServeFileOptions as StableServeFileOptions,
 } from "./file_server.ts";
+import { isRedirectStatus } from "./status.ts";
+
+function appendHeaders(
+  target: Headers,
+  headers: HeadersInit | string[],
+): void {
+  // Legacy form: a flat array of `"name: value"` strings.
+  if (Array.isArray(headers) && typeof headers[0] === "string") {
+    for (const header of headers as string[]) {
+      const i = header.indexOf(":");
+      target.append(header.slice(0, i), header.slice(i + 1).trimStart());
+    }
+    return;
+  }
+  for (const [name, value] of new Headers(headers as HeadersInit)) {
+    target.append(name, value);
+  }
+}
 
 /**
  * Serves the files under the given directory root (opts.fsRoot).
@@ -45,15 +63,21 @@ import {
  * @param opts Additional options.
  * @returns A response for the request.
  */
-export function serveDir(
+export async function serveDir(
   req: Request,
   opts: ServeDirOptions = {},
 ): Promise<Response> {
-  return stableServeDir(req, opts);
+  const { headers, ...rest } = opts;
+  const response = await stableServeDir(req, rest);
+  if (headers && !isRedirectStatus(response.status)) {
+    appendHeaders(response.headers, headers);
+  }
+  return response;
 }
 
 /** Interface for serveDir options. */
-export interface ServeDirOptions extends StableServeDirOptions {
+export interface ServeDirOptions
+  extends Omit<StableServeDirOptions, "headers"> {
   /**
    * Also serves `.html` files without the need for specifying the extension.
    * For example `foo.html` could be accessed through both `/foo` and `/foo.html`.
@@ -61,15 +85,36 @@ export interface ServeDirOptions extends StableServeDirOptions {
    * @default {false}
    */
   cleanUrls?: boolean;
+  /** Headers to add to each response.
+   *
+   * Accepts any {@linkcode HeadersInit}. The legacy flat array of
+   * `"name: value"` strings (e.g. `["X-Extra: extra header"]`) is also
+   * still accepted.
+   *
+   * Values are appended to the response, not replaced, so passing a header
+   * the file server already sets (e.g. `cache-control`) yields a
+   * comma-joined value rather than overriding it.
+   *
+   * @default {[]}
+   */
+  headers?: HeadersInit | string[];
 }
 
 /** Interface for serveFile options. */
 export interface ServeFileOptions extends StableServeFileOptions {
-  /** Headers to add to each response
+  /** Headers to add to each response.
+   *
+   * Accepts any {@linkcode HeadersInit}. The legacy flat array of
+   * `"name: value"` strings (e.g. `["X-Extra: extra header"]`) is also
+   * still accepted.
+   *
+   * Values are appended to the response, not replaced, so passing a header
+   * the file server already sets (e.g. `cache-control`) yields a
+   * comma-joined value rather than overriding it.
    *
    * @default {[]}
    */
-  headers?: string[];
+  headers?: HeadersInit | string[];
 }
 
 /**
@@ -96,15 +141,11 @@ export async function serveFile(
   filePath: string,
   options?: ServeFileOptions,
 ): Promise<Response> {
-  const response = await stableServeFile(req, filePath, options);
+  const { headers, ...rest } = options ?? {};
+  const response = await stableServeFile(req, filePath, rest);
 
-  if (options?.headers) {
-    for (const header of options.headers) {
-      const headerSplit = header.split(":");
-      const name = headerSplit[0]!;
-      const value = headerSplit.slice(1).join(":");
-      response.headers.append(name, value);
-    }
+  if (headers) {
+    appendHeaders(response.headers, headers);
   }
 
   return response;
