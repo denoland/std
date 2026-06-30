@@ -139,7 +139,7 @@ export class Spinner {
 
   #interval: number;
   #color: Color | undefined;
-  #intervalId: number | null = null;
+  #intervalId: ReturnType<typeof setInterval> | null = null;
   #output: typeof Deno.stdout | typeof Deno.stderr;
 
   /**

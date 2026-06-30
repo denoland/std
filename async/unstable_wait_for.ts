@@ -51,7 +51,7 @@ export function waitFor(
   const { step = 100 } = options;
 
   // Create a new promise that resolves when the predicate is true
-  let timer: number;
+  let timer: ReturnType<typeof setTimeout>;
   const p: Promise<void> = new Promise(function (resolve) {
     const setTimer = () => {
       timer = setTimeout(async () => {

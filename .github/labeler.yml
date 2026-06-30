@@ -88,6 +88,9 @@ path:
 random:
   - changed-files:
       - any-glob-to-any-file: random/**
+rate-limit:
+  - changed-files:
+      - any-glob-to-any-file: rate_limit/**
 regexp:
   - changed-files:
       - any-glob-to-any-file: regexp/**

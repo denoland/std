@@ -6,10 +6,11 @@ import { ProgressBarStream } from "./unstable_progress_bar_stream.ts";
 async function* getData(
   loops: number,
   bufferSize: number,
+  delay = 5,
 ): AsyncGenerator<Uint8Array> {
   for (let i = 0; i < loops; ++i) {
     yield new Uint8Array(bufferSize);
-    await new Promise((a) => setTimeout(a, Math.random() * 500 + 500));
+    await new Promise((a) => setTimeout(a, delay));
   }
 }
 
@@ -20,7 +21,12 @@ Deno.test("ProgressBarStream() flushes", async () => {
     const _ of ReadableStream
       .from(getData(10, 1000))
       .pipeThrough(
-        new ProgressBarStream({ writable, max: 10 * 1000, keepOpen: false }),
+        new ProgressBarStream({
+          writable,
+          max: 10 * 1000,
+          keepOpen: false,
+          interval: 1,
+        }),
       )
     // deno-lint-ignore no-empty
   ) {}
@@ -34,7 +40,12 @@ Deno.test("ProgressBarStream() cancels", async () => {
   await ReadableStream
     .from(getData(10, 1000))
     .pipeThrough(
-      new ProgressBarStream({ writable, max: 10 * 1000, keepOpen: false }),
+      new ProgressBarStream({
+        writable,
+        max: 10 * 1000,
+        keepOpen: false,
+        interval: 1,
+      }),
     )
     .cancel();
 

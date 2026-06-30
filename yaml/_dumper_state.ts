@@ -192,7 +192,7 @@ function chooseScalarStyle(
   let hasLineBreak = false;
   let hasFoldableLine = false; // only checked if shouldTrackWidth
   let previousLineBreak = -1; // count the first line correctly
-  let plain = isPlainSafeFirst(string.charCodeAt(0)) &&
+  let plain = isPlainSafeFirst(string.codePointAt(0)!) &&
     !isWhiteSpace(string.charCodeAt(string.length - 1));
 
   let char: number;
@@ -201,16 +201,19 @@ function chooseScalarStyle(
     // Case: no block styles.
     // Check for disallowed characters to rule out plain and single.
     for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
+      // iterate by code point so astral characters (e.g. emoji) are inspected
+      // as a whole rather than as their non-printable surrogate halves
+      char = string.codePointAt(i)!;
       if (!isPrintable(char)) {
         return STYLE_DOUBLE;
       }
       plain = plain && isPlainSafe(char);
+      if (char > 0xffff) i++;
     }
   } else {
     // Case: block styles permitted.
     for (i = 0; i < string.length; i++) {
-      char = string.charCodeAt(i);
+      char = string.codePointAt(i)!;
       if (char === LINE_FEED) {
         hasLineBreak = true;
         // Check if any line can be folded.
@@ -225,6 +228,7 @@ function chooseScalarStyle(
         return STYLE_DOUBLE;
       }
       plain = plain && isPlainSafe(char);
+      if (char > 0xffff) i++;
     }
     // in case the end is missing a \n
     hasFoldableLine = hasFoldableLine ||
@@ -341,26 +345,15 @@ function foldString(string: string, width: number): string {
 // Escapes a double-quoted string.
 function escapeString(string: string): string {
   let result = "";
-  let char;
-  let nextChar;
-  let escapeSeq;
-
   for (let i = 0; i < string.length; i++) {
-    char = string.charCodeAt(i);
-    // Check for surrogate pairs (reference Unicode 3.0 section "3.7 Surrogates").
-    if (char >= 0xd800 && char <= 0xdbff /* high surrogate */) {
-      nextChar = string.charCodeAt(i + 1);
-      if (nextChar >= 0xdc00 && nextChar <= 0xdfff /* low surrogate */) {
-        // Combine the surrogate pair and store it escaped.
-        result += charCodeToHexString(
-          (char - 0xd800) * 0x400 + nextChar - 0xdc00 + 0x10000,
-        );
-        // Advance index one extra since we already used that char here.
-        i++;
-        continue;
-      }
+    const char = string.codePointAt(i)!;
+    if (char > 0xffff) {
+      // an astral code point — store it escaped and skip its low surrogate
+      result += charCodeToHexString(char);
+      i++;
+      continue;
     }
-    escapeSeq = ESCAPE_SEQUENCES.get(char);
+    const escapeSeq = ESCAPE_SEQUENCES.get(char);
     result += !escapeSeq && isPrintable(char)
       ? string[i]
       : escapeSeq || charCodeToHexString(char);

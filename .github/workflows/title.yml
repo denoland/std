@@ -66,6 +66,7 @@ jobs:
             net(/unstable)?
             path(/unstable)?
             random(/unstable)?
+            rate-limit(/unstable)?
             regexp(/unstable)?
             semver(/unstable)?
             streams(/unstable)?

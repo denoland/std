@@ -381,3 +381,45 @@ Deno.test("formatCacheControl() accepts RequestCacheControl and ResponseCacheCon
     >
   >(true);
 });
+
+Deno.test("parseCacheControl() accepts quoted-string form for numeric arguments", () => {
+  assertEquals(parseCacheControl('max-age="60"'), { maxAge: 60 });
+  assertEquals(parseCacheControl('s-maxage="0"'), { sMaxage: 0 });
+  assertEquals(parseCacheControl('stale-while-revalidate="30"'), {
+    staleWhileRevalidate: 30,
+  });
+  assertEquals(parseCacheControl('max-stale="120"'), { maxStale: 120 });
+});
+
+Deno.test("parseCacheControl() rejects quoted-string with non-digit content", () => {
+  assertThrows(
+    () => parseCacheControl('max-age="abc"'),
+    SyntaxError,
+    "invalid value",
+  );
+});
+
+Deno.test("parseCacheControl() unescapes backslash quoted-pairs in field names", () => {
+  assertEquals(
+    parseCacheControl('no-cache="x-\\\\header"'),
+    { noCache: ["x-\\header"] },
+  );
+});
+
+Deno.test("formatCacheControl() throws on invalid field-name characters", () => {
+  assertThrows(
+    () => formatCacheControl({ noCache: ['has"quote'] }),
+    TypeError,
+    "invalid field name",
+  );
+  assertThrows(
+    () => formatCacheControl({ private: ["has space"] }),
+    TypeError,
+    "invalid field name",
+  );
+  assertThrows(
+    () => formatCacheControl({ noCache: [""] }),
+    TypeError,
+    "invalid field name",
+  );
+});
