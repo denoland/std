@@ -10,6 +10,7 @@
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The largest value of the given function or undefined if there are no
  * elements.
@@ -29,10 +30,21 @@
  *
  * assertEquals(maxCount, 32);
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { maxOf } from "@std/collections/max-of";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [4, 3, 2, 1];
+ * const result = maxOf(array, (_, index) => index);
+ *
+ * assertEquals(result, 3);
+ * ```
  */
 export function maxOf<T>(
   array: Iterable<T>,
-  selector: (el: T) => number,
+  selector: (el: T, index: number) => number,
 ): number | undefined;
 /**
  * Applies the given selector to all elements of the provided collection and
@@ -43,6 +55,7 @@ export function maxOf<T>(
  *
  * @param array The array to find the maximum element in.
  * @param selector The function to get the value to compare from each element.
+ * The function receives the element and its index.
  *
  * @returns The first element that is the largest value of the given function or
  * undefined if there are no elements.
@@ -65,9 +78,14 @@ export function maxOf<T>(
  */
 export function maxOf<T>(
   array: Iterable<T>,
-  selector: (el: T) => bigint,
+  selector: (el: T, index: number) => bigint,
 ): bigint | undefined;
-export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
+export function maxOf<
+  T,
+  S extends
+    | ((el: T, index: number) => number)
+    | ((el: T, index: number) => bigint),
+>(
   array: Iterable<T>,
   selector: S,
 ): ReturnType<S> | undefined {
@@ -75,11 +93,11 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
     const length = array.length;
     if (length === 0) return undefined;
 
-    let max = selector(array[0]!) as ReturnType<S>;
+    let max = selector(array[0]!, 0) as ReturnType<S>;
     if (Number.isNaN(max)) return max;
 
     for (let i = 1; i < length; i++) {
-      const currentValue = selector(array[i]!) as ReturnType<S>;
+      const currentValue = selector(array[i]!, i) as ReturnType<S>;
       if (currentValue > max) {
         max = currentValue;
       } else if (Number.isNaN(currentValue)) {
@@ -90,17 +108,18 @@ export function maxOf<T, S extends ((el: T) => number) | ((el: T) => bigint)>(
     return max;
   }
 
+  let index = 0;
   const iter = array[Symbol.iterator]();
   const first = iter.next();
 
   if (first.done) return undefined;
 
-  let max = selector(first.value) as ReturnType<S>;
+  let max = selector(first.value, index++) as ReturnType<S>;
   if (Number.isNaN(max)) return max;
 
   let next = iter.next();
   while (!next.done) {
-    const currentValue = selector(next.value) as ReturnType<S>;
+    const currentValue = selector(next.value, index++) as ReturnType<S>;
     if (currentValue > max) {
       max = currentValue;
     } else if (Number.isNaN(currentValue)) {

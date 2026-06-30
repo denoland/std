@@ -36,7 +36,10 @@ Deno.test(`assertEquals() truncates unchanged lines of large diffs when "${DIFF_
   }));
   stack.use(stub(Deno.env, "get", (key) => {
     if (key === DIFF_CONTEXT_LENGTH) return (10).toString();
-    throw new Error(`Unexpected env var key: ${key}`);
+    // Return undefined rather than throwing for other keys: formatting the diff
+    // can cause Deno to lazily initialize its `node:process` shim, which reads
+    // unrelated env vars (e.g. `NODE_OPTIONS`) through `Deno.env.get`.
+    return undefined;
   }));
 
   const a = Array.from({ length: 1000 }, (_, i) => i);
