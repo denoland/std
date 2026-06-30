@@ -177,7 +177,7 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
       () => algorithm.evict(clock(), evictionTtl),
       evictionInterval,
     );
-    if (typeof Deno !== "undefined") Deno.unrefTimer(evictionTimer as number);
+    if (typeof Deno !== "undefined") Deno.unrefTimer(Number(evictionTimer));
   }
 
   return {
