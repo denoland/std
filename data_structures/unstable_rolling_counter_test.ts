@@ -438,12 +438,13 @@ Deno.test("RollingCounter.from() throws on non-array segments", () => {
   );
 });
 
-Deno.test("RollingCounter.from() throws on null / undefined / non-object snapshot", () => {
+Deno.test("RollingCounter.from() throws on null / undefined / non-object source", () => {
   for (const bad of [null, undefined, 42, "snap", true]) {
     assertThrows(
       // deno-lint-ignore no-explicit-any
       () => RollingCounter.from(bad as any),
       TypeError,
+      "must be a RollingCounter or snapshot object",
     );
   }
 });

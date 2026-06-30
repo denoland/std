@@ -56,7 +56,7 @@ export type ReadonlyRollingCounter = Pick<
  * | toJSON()          | Linear in the number of segments       |
  * | [Symbol.iterator] | Linear in the number of segments       |
  * | RollingCounter()  | Linear in the number of segments       |
- * | RollingCounter.from(snapshot) | Linear in the number of segments |
+ * | RollingCounter.from(source) | Linear in the number of segments |
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -170,14 +170,8 @@ export class RollingCounter
     source: RollingCounter | RollingCounterSnapshot,
   ): RollingCounter {
     if (source instanceof RollingCounter) {
-      const src = source.#segments;
-      const len = src.length;
-      const counter = new RollingCounter(len);
-      let start = source.#cursor + 1;
-      if (start >= len) start = 0;
-      const firstLen = len - start;
-      for (let i = 0; i < firstLen; i++) counter.#segments[i] = src[start + i]!;
-      for (let i = 0; i < start; i++) counter.#segments[firstLen + i] = src[i]!;
+      const counter = new RollingCounter(source.segmentCount);
+      counter.#segments = source.toArray();
       counter.#total = source.#total;
       return counter;
     }
