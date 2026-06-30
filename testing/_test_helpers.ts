@@ -59,6 +59,16 @@ export class TestContext implements Deno.TestContext {
     }
     return !ignore;
   }
+
+  // `Deno.TestContext.assertSnapshot` was added in a newer Deno release. It is
+  // not used by these tests, but the method must exist for the class to satisfy
+  // the interface. `unknown` is used instead of `Deno.TestSnapshotOptions` so
+  // this stays valid on older Deno versions that lack that type.
+  assertSnapshot(_actual: unknown, _options?: unknown): Promise<void> {
+    throw new Error(
+      "Mock TestContext does not implement assertSnapshot",
+    );
+  }
 }
 
 async function assertDescribeOptions(
