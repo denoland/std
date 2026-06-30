@@ -30,11 +30,9 @@ interface ReceiverNode<T> {
  * {@linkcode Channel.send}, the `value` property carries the unsent value
  * for recovery.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { Channel, ChannelClosedError } from "@std/async/unstable-channel";
+ * import { Channel, ChannelClosedError } from "@std/async/channel";
  * import { assertInstanceOf } from "@std/assert";
  *
  * const ch = new Channel<number>();
@@ -53,7 +51,7 @@ export class ChannelClosedError extends Error {
    *
    * @example Usage
    * ```ts
-   * import { Channel, ChannelClosedError } from "@std/async/unstable-channel";
+   * import { Channel, ChannelClosedError } from "@std/async/channel";
    * import { assertEquals, assertInstanceOf } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -97,8 +95,6 @@ export class ChannelClosedError extends Error {
  * - `"empty"` — the channel is open but no value is immediately available.
  * - `"closed"` — the channel has been closed and no buffered values remain.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of the value received from the channel.
  */
 export type ChannelReceiveResult<T> =
@@ -108,8 +104,6 @@ export type ChannelReceiveResult<T> =
 
 /**
  * Options for the {@linkcode Channel} constructor.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface ChannelOptions {
   /**
@@ -125,8 +119,6 @@ export interface ChannelOptions {
 
 /**
  * Options for {@linkcode Channel.send}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface ChannelSendOptions {
   /**
@@ -140,8 +132,6 @@ export interface ChannelSendOptions {
 
 /**
  * Options for {@linkcode Channel.receive}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface ChannelReceiveOptions {
   /**
@@ -175,11 +165,9 @@ export interface ChannelReceiveOptions {
  *   and multiple {@linkcode Channel.toReadableStream} instances each
  *   consume values FIFO; every value is delivered to exactly one consumer.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Basic producer/consumer
  * ```ts
- * import { Channel } from "@std/async/unstable-channel";
+ * import { Channel } from "@std/async/channel";
  * import { assertEquals } from "@std/assert";
  *
  * const ch = new Channel<number>({ capacity: 4 });
@@ -197,7 +185,7 @@ export interface ChannelReceiveOptions {
  *
  * @example Using `await using` for automatic cleanup
  * ```ts
- * import { Channel } from "@std/async/unstable-channel";
+ * import { Channel } from "@std/async/channel";
  * import { assert } from "@std/assert";
  *
  * let ref: Channel<string>;
@@ -251,7 +239,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 1 });
@@ -262,7 +250,7 @@ export class Channel<T>
    *
    * @example Cancelling with an AbortSignal
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertRejects } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -329,7 +317,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 1 });
@@ -340,7 +328,7 @@ export class Channel<T>
    *
    * @example Cancelling with an AbortSignal
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertRejects } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -407,7 +395,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert, assertFalse } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 1 });
@@ -435,7 +423,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 1 });
@@ -467,7 +455,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -485,7 +473,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertRejects } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -525,7 +513,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert, assertFalse } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -546,7 +534,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 4 });
@@ -567,7 +555,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 8 });
@@ -586,7 +574,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 4 });
@@ -631,7 +619,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
    * const ch = new Channel<number>({ capacity: 4 });
@@ -670,7 +658,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -688,7 +676,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert } from "@std/assert";
    *
    * const ch = new Channel<number>();
