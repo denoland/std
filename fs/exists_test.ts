@@ -362,3 +362,64 @@ Deno.test("existsSync() returns false when both isDirectory and isFile sets true
     await Deno.remove(tempDirPath, { recursive: true });
   }
 });
+
+// https://github.com/denoland/std/issues/6528 — when --allow-read is granted
+// but the OS denies access (typically because the parent directory isn't
+// traversable), the previous behavior returned `true` and silently misled
+// callers. Now we rethrow Deno.errors.PermissionDenied so callers can decide
+// how to handle the indeterminate case. The `isReadable: true` branch is
+// unchanged: that question has a definitive answer (not readable → false).
+Deno.test(
+  {
+    name:
+      "exists() rethrows Deno.errors.PermissionDenied when the parent is inaccessible (#6528)",
+    ignore: Deno.build.os === "windows",
+  },
+  async function () {
+    const tempDirPath = await Deno.makeTempDir();
+    const innerPath = path.join(tempDirPath, "inner");
+    try {
+      await Deno.chmod(tempDirPath, 0o000);
+      let caught: unknown;
+      try {
+        await exists(innerPath);
+      } catch (e) {
+        caught = e;
+      }
+      assert(caught instanceof Deno.errors.PermissionDenied);
+
+      // isReadable:true still returns false — that question can be answered.
+      assertEquals(await exists(innerPath, { isReadable: true }), false);
+    } finally {
+      await Deno.chmod(tempDirPath, 0o755);
+      await Deno.remove(tempDirPath, { recursive: true });
+    }
+  },
+);
+
+Deno.test(
+  {
+    name:
+      "existsSync() rethrows Deno.errors.PermissionDenied when the parent is inaccessible (#6528)",
+    ignore: Deno.build.os === "windows",
+  },
+  function () {
+    const tempDirPath = Deno.makeTempDirSync();
+    const innerPath = path.join(tempDirPath, "inner");
+    try {
+      Deno.chmodSync(tempDirPath, 0o000);
+      let caught: unknown;
+      try {
+        existsSync(innerPath);
+      } catch (e) {
+        caught = e;
+      }
+      assert(caught instanceof Deno.errors.PermissionDenied);
+
+      assertEquals(existsSync(innerPath, { isReadable: true }), false);
+    } finally {
+      Deno.chmodSync(tempDirPath, 0o755);
+      Deno.removeSync(tempDirPath, { recursive: true });
+    }
+  },
+);
