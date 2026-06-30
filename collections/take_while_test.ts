@@ -2,7 +2,6 @@
 
 import { assertEquals } from "@std/assert";
 import { takeWhile } from "./take_while.ts";
-import * as unstable from "./unstable_take_while.ts";
 
 Deno.test("takeWhile() handles num array", () => {
   const arr = [1, 2, 3, 4, 5, 6];
@@ -92,10 +91,10 @@ Deno.test("takeWhile() handles a Map", () => {
   ]);
 });
 
-Deno.test("unstable.takeWhile() passes the index to the predicate", () => {
+Deno.test("takeWhile() passes the index to the predicate", () => {
   const arr = [1, 2, 3, 4];
 
-  const actual = unstable.takeWhile(arr, (_, index) => index < 1);
+  const actual = takeWhile(arr, (_, index) => index < 1);
 
   assertEquals(actual, [1]);
 });

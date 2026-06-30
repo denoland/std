@@ -10,7 +10,8 @@
  * @typeParam O The type of the value produced by the selector function.
  *
  * @param array The array to select a value from.
- * @param selector The function to extract a value from an element.
+ * @param selector The function to extract a value from an element. The
+ * function receives the element and its index.
  *
  * @returns The first non-`null` and non-`undefined` value produced by the
  * selector function, or `undefined` if no such value is produced.
@@ -30,13 +31,25 @@
  *
  * assertEquals(nextOrder, "Soup");
  * ```
+ *
+ * @example Using the index parameter
+ * ```ts
+ * import { firstNotNullishOf } from "@std/collections/first-not-nullish-of";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const array = [null, "a", "b"];
+ * const result = firstNotNullishOf(array, (value, index) => index === 2 ? value : null);
+ *
+ * assertEquals(result, "b");
+ * ```
  */
 export function firstNotNullishOf<T, O>(
   array: Iterable<T>,
-  selector: (item: T) => O | undefined | null,
+  selector: (item: T, index: number) => O | undefined | null,
 ): NonNullable<O> | undefined {
+  let index = 0;
   for (const current of array) {
-    const selected = selector(current);
+    const selected = selector(current, index++);
 
     if (selected !== null && selected !== undefined) {
       return selected as NonNullable<O>;
