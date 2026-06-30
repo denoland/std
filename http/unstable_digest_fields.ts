@@ -12,6 +12,7 @@
  * @example Creating a Content-Digest header
  * ```ts
  * import { createContentDigest } from "@std/http/unstable-digest-fields";
+ * import { assert } from "@std/assert";
  *
  * const body = JSON.stringify({ amount: 100 });
  * const digest = await createContentDigest(body);
@@ -20,6 +21,8 @@
  *   headers: { "Content-Digest": digest },
  *   body,
  * });
+ *
+ * assert(request.headers.get("Content-Digest")?.startsWith("sha-256=:"));
  * ```
  *
  * @example Verifying a Content-Digest
@@ -256,10 +259,77 @@ function parseDigestHeaderValue(
   return result;
 }
 
+/** Options for {@linkcode verifyContentDigest} and {@linkcode verifyReprDigest}. */
+export interface VerifyDigestOptions {
+  /**
+   * Maximum number of body bytes to read while verifying.
+   *
+   * Verification recomputes the digest over the message body. By default the
+   * entire body is buffered in memory, so verifying an untrusted
+   * {@linkcode Request} lets a peer pair a well-formed digest header with an
+   * arbitrarily large body to exhaust memory (a denial-of-service vector). When
+   * set, the body is read incrementally and verification rejects with a
+   * {@linkcode TypeError} as soon as the body exceeds this many bytes, before
+   * the whole payload is buffered. When omitted, the entire body is read.
+   *
+   * Must be a non-negative integer.
+   */
+  maxBodySize?: number;
+}
+
+async function readBodyForVerification(
+  message: Request | Response,
+  maxBodySize: number | undefined,
+): Promise<Uint8Array> {
+  if (message.body === null) {
+    return new Uint8Array(0);
+  }
+  // Read from a clone so the caller can still consume the original body.
+  const clone = message.clone();
+  if (maxBodySize === undefined) {
+    return await clone.bytes();
+  }
+  // Read incrementally and stop as soon as the running total exceeds the cap, so
+  // a hostile body cannot force the whole payload to be buffered in memory.
+  // `clone.body` is non-null here because the original body is non-null and
+  // `clone()` preserves it; that narrowing just does not carry across `clone()`.
+  const reader = (clone.body as ReadableStream<Uint8Array>).getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > maxBodySize) {
+      await reader.cancel();
+      throw new TypeError(
+        `Message body exceeds the "maxBodySize" limit of ${maxBodySize} bytes`,
+      );
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return body;
+}
+
 async function verifyDigestHeader<T extends Request | Response>(
   message: T,
   headerName: string,
+  options?: VerifyDigestOptions,
 ): Promise<T> {
+  const maxBodySize = options?.maxBodySize;
+  if (
+    maxBodySize !== undefined &&
+    (!Number.isInteger(maxBodySize) || maxBodySize < 0)
+  ) {
+    throw new TypeError(`"maxBodySize" must be a non-negative integer`);
+  }
+
   const headerValue = message.headers.get(headerName);
   if (headerValue === null || headerValue === "") {
     throw new TypeError(`Missing "${headerName}" header`);
@@ -272,12 +342,7 @@ async function verifyDigestHeader<T extends Request | Response>(
     );
   }
 
-  let bodyBytes: Uint8Array;
-  if (message.body === null) {
-    bodyBytes = new Uint8Array(0);
-  } else {
-    bodyBytes = await message.clone().bytes();
-  }
+  const bodyBytes = await readBodyForVerification(message, maxBodySize);
 
   for (const [alg, statedDigest] of stated) {
     const computed = await computeDigest(bodyBytes, alg);
@@ -306,6 +371,16 @@ async function verifyDigestHeader<T extends Request | Response>(
  * {@linkcode verifyReprDigest} for that case, or call this helper only on
  * messages whose body is in its on-the-wire form.
  *
+ * > [!WARNING]
+ * > Header parsing and digest-length validation run before any body access, so
+ * > a malformed header fails fast without reading the body. A *well-formed*
+ * > header, however, makes this helper read the entire body to recompute the
+ * > digest. When verifying an untrusted {@linkcode Request}, a peer can pair a
+ * > valid digest header with an arbitrarily large body to exhaust memory. Pass
+ * > {@linkcode VerifyDigestOptions.maxBodySize} to cap the read, and/or bound
+ * > the body size upstream (for example by enforcing a `Content-Length` limit)
+ * > before calling this helper.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
@@ -324,16 +399,39 @@ async function verifyDigestHeader<T extends Request | Response>(
  * assertEquals(await verified.text(), body);
  * ```
  *
+ * @example Bounding body size when verifying an untrusted request
+ * ```ts
+ * import { createContentDigest, verifyContentDigest } from "@std/http/unstable-digest-fields";
+ * import { assertRejects } from "@std/assert";
+ *
+ * const body = "x".repeat(1024);
+ * const digest = await createContentDigest(body);
+ * const request = new Request("https://example.com/", {
+ *   method: "POST",
+ *   body,
+ *   headers: { "Content-Digest": digest },
+ * });
+ *
+ * await assertRejects(
+ *   () => verifyContentDigest(request, { maxBodySize: 512 }),
+ *   TypeError,
+ * );
+ * ```
+ *
  * @typeParam T The type of the message (if provided).
  * @param message The HTTP request or response to verify.
+ * @param options Verification options, such as a body size cap.
  * @returns The same message (body still consumable).
- * @throws {TypeError} If the header is missing, malformed, or contains no supported algorithms.
+ * @throws {TypeError} If the header is missing, malformed, or contains no
+ * supported algorithms, if `maxBodySize` is not a non-negative integer, or if
+ * the body exceeds `maxBodySize`.
  * @throws {Error} If the digest does not match.
  */
 export function verifyContentDigest<T extends Request | Response>(
   message: T,
+  options?: VerifyDigestOptions,
 ): Promise<T> {
-  return verifyDigestHeader(message, CONTENT_DIGEST_HEADER);
+  return verifyDigestHeader(message, CONTENT_DIGEST_HEADER, options);
 }
 
 /**
@@ -348,6 +446,16 @@ export function verifyContentDigest<T extends Request | Response>(
  * or range requests) cover only part of the representation and require
  * verification against the full representation out-of-band; this helper does
  * not support that.
+ *
+ * > [!WARNING]
+ * > Header parsing and digest-length validation run before any body access, so
+ * > a malformed header fails fast without reading the body. A *well-formed*
+ * > header, however, makes this helper read the entire body to recompute the
+ * > digest. When verifying an untrusted {@linkcode Request}, a peer can pair a
+ * > valid digest header with an arbitrarily large body to exhaust memory. Pass
+ * > {@linkcode VerifyDigestOptions.maxBodySize} to cap the read, and/or bound
+ * > the body size upstream (for example by enforcing a `Content-Length` limit)
+ * > before calling this helper.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -369,12 +477,16 @@ export function verifyContentDigest<T extends Request | Response>(
  *
  * @typeParam T The type of the message (if provided).
  * @param message The HTTP request or response to verify.
+ * @param options Verification options, such as a body size cap.
  * @returns The same message (body still consumable).
- * @throws {TypeError} If the header is missing, malformed, or contains no supported algorithms.
+ * @throws {TypeError} If the header is missing, malformed, or contains no
+ * supported algorithms, if `maxBodySize` is not a non-negative integer, or if
+ * the body exceeds `maxBodySize`.
  * @throws {Error} If the digest does not match.
  */
 export function verifyReprDigest<T extends Request | Response>(
   message: T,
+  options?: VerifyDigestOptions,
 ): Promise<T> {
-  return verifyDigestHeader(message, REPR_DIGEST_HEADER);
+  return verifyDigestHeader(message, REPR_DIGEST_HEADER, options);
 }

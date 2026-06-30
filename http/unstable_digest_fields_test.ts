@@ -412,3 +412,132 @@ Deno.test("verifyContentDigest() rejects invalid digest length before reading bo
     "invalid length",
   );
 });
+
+Deno.test("verifyContentDigest() rejects body exceeding maxBodySize", async () => {
+  const body = "x".repeat(1024);
+  const digest = await createContentDigest(body);
+  const request = new Request("https://example.com/", {
+    method: "POST",
+    body,
+    headers: { "Content-Digest": digest },
+  });
+  await assertRejects(
+    () => verifyContentDigest(request, { maxBodySize: 512 }),
+    TypeError,
+    'exceeds the "maxBodySize" limit of 512 bytes',
+  );
+});
+
+Deno.test("verifyContentDigest() accepts body within maxBodySize and leaves body consumable", async () => {
+  const body = JSON.stringify({ amount: 100 });
+  const digest = await createContentDigest(body);
+  const response = new Response(body, {
+    headers: { "Content-Digest": digest },
+  });
+  const verified = await verifyContentDigest(response, { maxBodySize: 1024 });
+  assertEquals(await verified.text(), body);
+});
+
+Deno.test("verifyContentDigest() accepts body exactly at maxBodySize", async () => {
+  const body = "x".repeat(64);
+  const digest = await createContentDigest(body);
+  const response = new Response(body, {
+    headers: { "Content-Digest": digest },
+  });
+  const verified = await verifyContentDigest(response, { maxBodySize: 64 });
+  assertEquals(await verified.text(), body);
+});
+
+Deno.test("verifyContentDigest() stops reading the body once maxBodySize is exceeded", async () => {
+  const digest = await createContentDigest("placeholder");
+  let pulls = 0;
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      pulls++;
+      if (pulls > 3) {
+        throw new Error("body must not be read past the size limit");
+      }
+      controller.enqueue(new Uint8Array(10));
+    },
+  });
+  const request = new Request("https://example.com/", {
+    method: "POST",
+    body,
+    headers: { "Content-Digest": digest },
+  });
+  await assertRejects(
+    () => verifyContentDigest(request, { maxBodySize: 15 }),
+    TypeError,
+    "maxBodySize",
+  );
+});
+
+Deno.test("verifyContentDigest() accepts empty body with maxBodySize of 0", async () => {
+  const digest = await createContentDigest("");
+  const response = new Response(null, {
+    status: 204,
+    headers: { "Content-Digest": digest },
+  });
+  const verified = await verifyContentDigest(response, { maxBodySize: 0 });
+  assertEquals(verified.body, null);
+});
+
+Deno.test("verifyContentDigest() throws on negative maxBodySize", async () => {
+  const body = "hello";
+  const digest = await createContentDigest(body);
+  const response = new Response(body, {
+    headers: { "Content-Digest": digest },
+  });
+  await assertRejects(
+    () => verifyContentDigest(response, { maxBodySize: -1 }),
+    TypeError,
+    '"maxBodySize" must be a non-negative integer',
+  );
+});
+
+Deno.test("verifyContentDigest() throws on non-integer (NaN) maxBodySize", async () => {
+  const body = "hello";
+  const digest = await createContentDigest(body);
+  const response = new Response(body, {
+    headers: { "Content-Digest": digest },
+  });
+  await assertRejects(
+    () => verifyContentDigest(response, { maxBodySize: NaN }),
+    TypeError,
+    '"maxBodySize" must be a non-negative integer',
+  );
+});
+
+Deno.test("verifyContentDigest() validates maxBodySize before reading body", async () => {
+  const digest = await createContentDigest("placeholder");
+  const body = new ReadableStream<Uint8Array>({
+    pull() {
+      throw new Error("body must not be read on invalid maxBodySize");
+    },
+  });
+  const request = new Request("https://example.com/", {
+    method: "POST",
+    body,
+    headers: { "Content-Digest": digest },
+  });
+  await assertRejects(
+    () => verifyContentDigest(request, { maxBodySize: -5 }),
+    TypeError,
+    '"maxBodySize" must be a non-negative integer',
+  );
+});
+
+Deno.test("verifyReprDigest() rejects body exceeding maxBodySize", async () => {
+  const body = "x".repeat(2048);
+  const digest = await createReprDigest(body);
+  const request = new Request("https://example.com/", {
+    method: "POST",
+    body,
+    headers: { "Repr-Digest": digest },
+  });
+  await assertRejects(
+    () => verifyReprDigest(request, { maxBodySize: 256 }),
+    TypeError,
+    "maxBodySize",
+  );
+});
