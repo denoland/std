@@ -350,11 +350,13 @@ Deno.test("digest() throws on invalid input", async () => {
     "Cannot digest the data: A chunk is not ArrayBuffer nor ArrayBufferView",
   );
 
+  // Only the error class is asserted: the message is produced by the Deno
+  // runtime and its wording differs across versions (e.g. "Unrecognized
+  // algorithm name" vs. "Algorithm 'BLAK' is not supported").
   await assertRejects(
     async () =>
       await stdCrypto.subtle.digest("BLAK" as DigestAlgorithmName, inputBytes),
     DOMException,
-    "Unrecognized algorithm name",
   );
 });
 
@@ -1763,11 +1765,13 @@ for (const algorithm of DIGEST_ALGORITHM_NAMES) {
 }
 
 Deno.test("digest() throws on invalid algorithm", async () => {
+  // Only the error class is asserted: the message is produced by the Deno
+  // runtime and its wording differs across versions (e.g. "Unrecognized
+  // algorithm name" vs. "Algorithm 'invalid' is not supported").
   await assertRejects(
     // @ts-ignore Algorithm name is invalid on purpose
     async () => await stdCrypto.subtle.digest("invalid", new Uint8Array(0)),
     DOMException,
-    "Unrecognized algorithm name",
   );
 });
 

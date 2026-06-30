@@ -30,11 +30,9 @@ interface ReceiverNode<T> {
  * {@linkcode Channel.send}, the `value` property carries the unsent value
  * for recovery.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { Channel, ChannelClosedError } from "@std/async/unstable-channel";
+ * import { Channel, ChannelClosedError } from "@std/async/channel";
  * import { assertInstanceOf } from "@std/assert";
  *
  * const ch = new Channel<number>();
@@ -53,7 +51,7 @@ export class ChannelClosedError extends Error {
    *
    * @example Usage
    * ```ts
-   * import { Channel, ChannelClosedError } from "@std/async/unstable-channel";
+   * import { Channel, ChannelClosedError } from "@std/async/channel";
    * import { assertEquals, assertInstanceOf } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -97,8 +95,6 @@ export class ChannelClosedError extends Error {
  * - `"empty"` — the channel is open but no value is immediately available.
  * - `"closed"` — the channel has been closed and no buffered values remain.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of the value received from the channel.
  */
 export type ChannelReceiveResult<T> =
@@ -107,15 +103,42 @@ export type ChannelReceiveResult<T> =
   | { state: "closed" };
 
 /**
- * Options for blocking {@linkcode Channel} operations.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * Options for the {@linkcode Channel} constructor.
  */
 export interface ChannelOptions {
   /**
-   * An {@linkcode AbortSignal} to cancel a pending `send` or `receive`.
-   * When the signal is aborted, the operation rejects with the signal's
-   * {@linkcode AbortSignal.reason}.
+   * Buffer size. `0` creates an unbuffered (rendezvous) channel where
+   * {@linkcode Channel.send} blocks until a receiver is waiting.
+   *
+   * Must be a non-negative integer.
+   *
+   * @default {0}
+   */
+  capacity?: number;
+}
+
+/**
+ * Options for {@linkcode Channel.send}.
+ */
+export interface ChannelSendOptions {
+  /**
+   * An {@linkcode AbortSignal} to cancel a pending `send`. When the signal
+   * is aborted, the operation rejects with the signal's
+   * {@linkcode AbortSignal.reason}. If the value is delivered synchronously
+   * (buffered or handed to a waiting receiver), the signal is ignored.
+   */
+  signal?: AbortSignal;
+}
+
+/**
+ * Options for {@linkcode Channel.receive}.
+ */
+export interface ChannelReceiveOptions {
+  /**
+   * An {@linkcode AbortSignal} to cancel a pending `receive`. When the
+   * signal is aborted, the operation rejects with the signal's
+   * {@linkcode AbortSignal.reason}. If a value is available synchronously,
+   * the signal is ignored.
    */
   signal?: AbortSignal;
 }
@@ -124,14 +147,30 @@ export interface ChannelOptions {
  * An async channel for communicating between concurrent tasks with optional
  * bounded buffering and backpressure.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
+ * - **FIFO order:** values are received in the order they were sent. When
+ *   multiple senders or receivers are suspended, they are served in the order
+ *   they arrived.
+ * - **Backpressure:** {@linkcode Channel.send} suspends when the buffer is
+ *   full (or always, when unbuffered) until a receiver consumes a value.
+ * - **Close asymmetry:** {@linkcode Channel.close} accepts an optional
+ *   reason. Pending and future {@linkcode Channel.receive} calls reject
+ *   with that reason (or a fresh {@linkcode ChannelClosedError} when no
+ *   reason was supplied). Pending {@linkcode Channel.send} calls **always**
+ *   reject with a {@linkcode ChannelClosedError} carrying the unsent value,
+ *   regardless of the close reason.
+ * - **`undefined` values:** `undefined` is a valid channel value, so
+ *   non-blocking receives use the {@linkcode ChannelReceiveResult}
+ *   discriminated union rather than `T | undefined`.
+ * - **Multiple consumers:** concurrent {@linkcode Channel.receive} calls
+ *   and multiple {@linkcode Channel.toReadableStream} instances each
+ *   consume values FIFO; every value is delivered to exactly one consumer.
  *
  * @example Basic producer/consumer
  * ```ts
- * import { Channel } from "@std/async/unstable-channel";
+ * import { Channel } from "@std/async/channel";
  * import { assertEquals } from "@std/assert";
  *
- * const ch = new Channel<number>(4);
+ * const ch = new Channel<number>({ capacity: 4 });
  *
  * await ch.send(1);
  * await ch.send(2);
@@ -146,12 +185,12 @@ export interface ChannelOptions {
  *
  * @example Using `await using` for automatic cleanup
  * ```ts
- * import { Channel } from "@std/async/unstable-channel";
+ * import { Channel } from "@std/async/channel";
  * import { assert } from "@std/assert";
  *
  * let ref: Channel<string>;
  * {
- *   await using ch = new Channel<string>(8);
+ *   await using ch = new Channel<string>({ capacity: 8 });
  *   ref = ch;
  *   await ch.send("hello");
  * }
@@ -175,10 +214,12 @@ export class Channel<T>
   /**
    * Creates a new channel.
    *
-   * @param capacity Buffer size. `0` creates an unbuffered (rendezvous)
-   *   channel where `send` blocks until a receiver is waiting. Defaults to `0`.
+   * @param options Channel options. Defaults to an unbuffered (rendezvous)
+   *   channel with capacity `0`.
+   * @throws {RangeError} If `options.capacity` is not a non-negative integer.
    */
-  constructor(capacity: number = 0) {
+  constructor(options: ChannelOptions = {}) {
+    const { capacity = 0 } = options;
     if (!Number.isInteger(capacity) || capacity < 0) {
       throw new RangeError(
         `Cannot create channel: capacity must be a non-negative integer, received ${capacity}`,
@@ -198,10 +239,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(1);
+   * const ch = new Channel<number>({ capacity: 1 });
    * await ch.send(42);
    * assertEquals(ch.size, 1);
    * ch.close();
@@ -209,7 +250,7 @@ export class Channel<T>
    *
    * @example Cancelling with an AbortSignal
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertRejects } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -221,10 +262,11 @@ export class Channel<T>
    *
    * @param value The value to send into the channel.
    * @param options Optional settings for the send operation.
+   * @returns A promise that resolves when the value has been accepted.
    * @throws {ChannelClosedError} If the channel is closed. The error's
    *   `value` property carries the unsent value for recovery.
    */
-  send(value: T, options?: ChannelOptions): Promise<void> {
+  send(value: T, options?: ChannelSendOptions): Promise<void> {
     if (this.#closed) {
       return Promise.reject(
         new ChannelClosedError("Cannot send to a closed channel", value),
@@ -275,10 +317,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(1);
+   * const ch = new Channel<number>({ capacity: 1 });
    * await ch.send(42);
    * assertEquals(await ch.receive(), 42);
    * ch.close();
@@ -286,7 +328,7 @@ export class Channel<T>
    *
    * @example Cancelling with an AbortSignal
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertRejects } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -302,7 +344,7 @@ export class Channel<T>
    *   `value` property). If `close(reason)` was called, rejects with
    *   `reason` instead.
    */
-  receive(options?: ChannelOptions): Promise<T> {
+  receive(options?: ChannelReceiveOptions): Promise<T> {
     if (this.#buffer.length > 0) return Promise.resolve(this.#dequeue());
 
     const sender = this.#nextSender();
@@ -353,10 +395,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert, assertFalse } from "@std/assert";
    *
-   * const ch = new Channel<number>(1);
+   * const ch = new Channel<number>({ capacity: 1 });
    * assert(ch.trySend(1));
    * assertFalse(ch.trySend(2));
    * ```
@@ -381,10 +423,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(1);
+   * const ch = new Channel<number>({ capacity: 1 });
    * await ch.send(42);
    * assertEquals(ch.tryReceive(), { state: "ok", value: 42 });
    * assertEquals(ch.tryReceive(), { state: "empty" });
@@ -413,7 +455,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -425,11 +467,13 @@ export class Channel<T>
   /**
    * Closes the channel with a reason. All pending and future `receive()`
    * calls reject with `reason` after draining buffered values. Pending
-   * `send()` calls reject with {@linkcode ChannelClosedError}. Idempotent.
+   * `send()` calls reject with {@linkcode ChannelClosedError} (the reason is
+   * intentionally not propagated to senders, so they can recover the unsent
+   * value via {@linkcode ChannelClosedError.value}). Idempotent.
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertRejects } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -469,7 +513,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert, assertFalse } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -490,10 +534,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(4);
+   * const ch = new Channel<number>({ capacity: 4 });
    * await ch.send(1);
    * await ch.send(2);
    * assertEquals(ch.size, 2);
@@ -511,10 +555,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(8);
+   * const ch = new Channel<number>({ capacity: 8 });
    * assertEquals(ch.capacity, 8);
    * ch.close();
    * ```
@@ -530,10 +574,10 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(4);
+   * const ch = new Channel<number>({ capacity: 4 });
    * await ch.send(1);
    * await ch.send(2);
    * ch.close();
@@ -568,12 +612,17 @@ export class Channel<T>
    * non-`undefined` cancel reason is forwarded to {@linkcode Channel.close}
    * so other consumers observe it.
    *
+   * Each call returns an **independent consumer**. If multiple streams (or
+   * streams alongside direct {@linkcode Channel.receive} calls or async
+   * iteration) consume from the same channel concurrently, values are
+   * distributed FIFO and each value is delivered to exactly one consumer.
+   *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assertEquals } from "@std/assert";
    *
-   * const ch = new Channel<number>(4);
+   * const ch = new Channel<number>({ capacity: 4 });
    * await ch.send(1);
    * await ch.send(2);
    * ch.close();
@@ -609,7 +658,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -627,7 +676,7 @@ export class Channel<T>
    *
    * @example Usage
    * ```ts
-   * import { Channel } from "@std/async/unstable-channel";
+   * import { Channel } from "@std/async/channel";
    * import { assert } from "@std/assert";
    *
    * const ch = new Channel<number>();
@@ -645,14 +694,9 @@ export class Channel<T>
     return this.#senders.popFront();
   }
 
-  /** Pops the next receiver from the queue. */
-  #nextReceiver(): ReceiverNode<T> | undefined {
-    return this.#receivers.popFront();
-  }
-
   /** Hands `value` to the next waiting receiver, if any. */
   #deliverToReceiver(value: T): boolean {
-    const receiver = this.#nextReceiver();
+    const receiver = this.#receivers.popFront();
     if (!receiver) return false;
     receiver.res(value);
     return true;

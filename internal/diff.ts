@@ -130,25 +130,26 @@ export function backTrace<T>(
     if (!j && !type) break;
     const prev = j!;
     if (type === REMOVED) {
-      result.unshift({
+      result.push({
         type: swapped ? "removed" : "added",
         value: B[b]!,
       });
       b -= 1;
     } else if (type === ADDED) {
-      result.unshift({
+      result.push({
         type: swapped ? "added" : "removed",
         value: A[a]!,
       });
       a -= 1;
     } else {
-      result.unshift({ type: "common", value: A[a]! });
+      result.push({ type: "common", value: A[a]! });
       a -= 1;
       b -= 1;
     }
     j = routes[prev];
     type = routes[prev + diffTypesPtrOffset];
   }
+  result.reverse();
   return result;
 }
 

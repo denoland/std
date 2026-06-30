@@ -163,7 +163,7 @@ Deno.test("FakeTime controls timeouts", () => {
 
   setTimeout(cb, 1000, "a");
   setTimeout(cb, 1500, "b");
-  const timeout: number = setTimeout(cb, 1750, "c");
+  const timeout = setTimeout(cb, 1750, "c");
   setTimeout(cb, 2000, "d");
   time.tick(1250);
   expected.push({ args: ["a"], returned: 7000 });
@@ -199,7 +199,7 @@ Deno.test("FakeTime controls intervals", () => {
   const cb = spy(fromNow());
   const expected: SpyCall[] = [];
 
-  const interval: number = setInterval(cb, 1000);
+  const interval = setInterval(cb, 1000);
   time.tick(250);
   assertEquals(cb.calls, expected);
   time.tick(250);
@@ -226,7 +226,7 @@ Deno.test("FakeTime calls timeout and interval callbacks in correct order", () =
   const timeoutExpected: SpyCall[] = [];
   const intervalExpected: SpyCall[] = [];
 
-  const interval: number = setInterval(intervalCb, 1000);
+  const interval = setInterval(intervalCb, 1000);
   setTimeout(timeoutCb, 500);
   time.tick(250);
   assertEquals(intervalCb.calls, intervalExpected);
