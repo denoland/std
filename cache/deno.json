@@ -3,8 +3,7 @@
   "version": "0.2.3",
   "exports": {
     ".": "./mod.ts",
-    "./lru-cache": "./lru_cache.ts",
-    "./memoize": "./memoize.ts",
-    "./ttl-cache": "./ttl_cache.ts"
+    "./cache": "./cache.ts",
+    "./memoize": "./memoize.ts"
   }
 }
