@@ -348,7 +348,8 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * default {@linkcode ascend} comparator orders correctly and the
    * `options` bag is optional. For any other `P` (tuples, objects), the
    * `compare` option is required at the type level so the heap has a
-   * valid comparator — otherwise `ascend` would silently mis-order.
+   * valid comparator — otherwise `ascend` would silently produce
+   * incorrect ordering.
    *
    * Use the {@linkcode IndexedHeap.from} overload that takes an existing
    * {@linkcode IndexedHeap} to copy from another heap instead.
