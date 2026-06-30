@@ -145,7 +145,7 @@ export interface TarStreamEntry {
    *     .pipeThrough(new UntarStream())
    * ) {
    *   if (entry.path.endsWith(".log")) continue;
-   *   // …consume entry.readable as usual…
+   *   // ...consume entry.readable as usual...
    * }
    * ```
    */
