@@ -384,6 +384,48 @@ Deno.test("RollingCounter.from() with single-segment counter", () => {
   assertEquals(restored.rotate(), 42);
 });
 
+Deno.test("RollingCounter.from() with a RollingCounter instance produces an independent clone", () => {
+  const original = new RollingCounter(3);
+  original.increment(5);
+  original.rotate();
+  original.increment(3);
+
+  const clone = RollingCounter.from(original);
+  assertEquals([...clone], [...original]);
+  assertEquals(clone.total, original.total);
+  assertEquals(clone.segmentCount, original.segmentCount);
+
+  clone.rotate();
+  clone.increment(7);
+  assertEquals([...original], [0, 5, 3]);
+  assertEquals(original.total, 8);
+  assertEquals([...clone], [5, 3, 7]);
+  assertEquals(clone.total, 15);
+});
+
+Deno.test("RollingCounter.from() with a RollingCounter instance matches from(c.toJSON())", () => {
+  const original = new RollingCounter(4);
+  original.increment(10);
+  original.rotate();
+  original.increment(20);
+  original.rotate();
+  original.increment(30);
+
+  const viaInstance = RollingCounter.from(original);
+  const viaSnapshot = RollingCounter.from(original.toJSON());
+
+  assertEquals([...viaInstance], [...viaSnapshot]);
+  assertEquals(viaInstance.total, viaSnapshot.total);
+  assertEquals(viaInstance.segmentCount, viaSnapshot.segmentCount);
+
+  viaInstance.rotate(2);
+  viaSnapshot.rotate(2);
+  viaInstance.increment(99);
+  viaSnapshot.increment(99);
+  assertEquals([...viaInstance], [...viaSnapshot]);
+  assertEquals(viaInstance.total, viaSnapshot.total);
+});
+
 Deno.test("RollingCounter.from() throws on empty segments", () => {
   assertThrows(() => RollingCounter.from({ segments: [] }), RangeError);
 });
@@ -396,12 +438,13 @@ Deno.test("RollingCounter.from() throws on non-array segments", () => {
   );
 });
 
-Deno.test("RollingCounter.from() throws on null / undefined / non-object snapshot", () => {
+Deno.test("RollingCounter.from() throws on null / undefined / non-object source", () => {
   for (const bad of [null, undefined, 42, "snap", true]) {
     assertThrows(
       // deno-lint-ignore no-explicit-any
       () => RollingCounter.from(bad as any),
       TypeError,
+      "must be a RollingCounter or snapshot object",
     );
   }
 });
