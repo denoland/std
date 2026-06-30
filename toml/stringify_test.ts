@@ -237,10 +237,12 @@ Deno.test({
         },
       },
     };
+    // TOML datetime literals are unquoted (see #7162). The previous
+    // `"2022-05-13T00:00:00.000"` form round-tripped as a string.
     const expected = `emptyArray = []
 mixedArray1 = [1,{b = 2}]
 mixedArray2 = [{b = 2},1]
-nestedArray1 = [[{b = 1,date = "2022-05-13T00:00:00.000"}]]
+nestedArray1 = [[{b = 1,date = 2022-05-13T00:00:00.000}]]
 nestedArray2 = [[[{b = 1}]]]
 nestedArray3 = [[],[{b = 1}]]
 
@@ -273,5 +275,48 @@ Deno.test({
 `.trim();
     const actual = stringify(src).trim();
     assertEquals(actual, expected);
+  },
+});
+
+// https://github.com/denoland/std/issues/7162 — inline array stringification
+// used JSON.stringify, which turns Infinity/-Infinity/NaN into null and
+// wraps Date values in quotes. Both forms broke round-trip through parse().
+Deno.test({
+  name: "stringify() emits inf/-inf/nan in primitive arrays (#7162)",
+  fn() {
+    assertEquals(
+      stringify({ x: [Infinity, -Infinity, NaN] }),
+      "x = [inf,-inf,nan]\n",
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() emits inf/-inf/nan in mixed arrays (#7162)",
+  fn() {
+    assertEquals(
+      stringify({ x: [Infinity, -Infinity, NaN, {}] }),
+      "x = [inf,-inf,nan,{}]\n",
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() does not quote Date values in primitive arrays (#7162)",
+  fn() {
+    assertEquals(
+      stringify({ x: [new Date(0)] }),
+      "x = [1970-01-01T00:00:00.000]\n",
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() does not quote Date values in mixed arrays (#7162)",
+  fn() {
+    assertEquals(
+      stringify({ x: [new Date(0), {}] }),
+      "x = [1970-01-01T00:00:00.000,{}]\n",
+    );
   },
 });
