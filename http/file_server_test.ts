@@ -1272,6 +1272,29 @@ Deno.test("(unstable) serveDir() sets headers from a Headers instance", async ()
   assertEquals(res.headers.get("x-custom-header"), "hi");
 });
 
+Deno.test("(unstable) serveFile() sends custom headers from a legacy string array", async () => {
+  const req = new Request("http://localhost/testdata/test_file.txt");
+  const res = await unstableServeFile(req, TEST_FILE_PATH, {
+    headers: ["X-Extra: extra header"],
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("x-extra"), "extra header");
+  assertEquals(await res.text(), TEST_FILE_TEXT);
+});
+
+Deno.test("(unstable) serveDir() sets headers from a legacy string array", async () => {
+  const req = new Request("http://localhost/test_file.txt");
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions,
+    headers: ["cache-control: max-age=100", "x-custom-header: hi"],
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.headers.get("cache-control"), "max-age=100");
+  assertEquals(res.headers.get("x-custom-header"), "hi");
+});
+
 Deno.test("(unstable) serveDir() does not set headers on redirect responses", async () => {
   const req = new Request(
     "http://localhost/%2F..%2F..%2F..%2F..%2F..%2F..%2F..%2F..",

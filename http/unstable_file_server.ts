@@ -8,9 +8,19 @@ import {
 } from "./file_server.ts";
 import { isRedirectStatus } from "./status.ts";
 
-function appendHeaders(target: Headers, headers: HeadersInit): void {
-  const normalized = new Headers(headers);
-  for (const [name, value] of normalized) {
+function appendHeaders(
+  target: Headers,
+  headers: HeadersInit | string[],
+): void {
+  // Legacy form: a flat array of `"name: value"` strings.
+  if (Array.isArray(headers) && typeof headers[0] === "string") {
+    for (const header of headers as string[]) {
+      const i = header.indexOf(":");
+      target.append(header.slice(0, i), header.slice(i + 1).trimStart());
+    }
+    return;
+  }
+  for (const [name, value] of new Headers(headers as HeadersInit)) {
     target.append(name, value);
   }
 }
@@ -77,26 +87,34 @@ export interface ServeDirOptions
   cleanUrls?: boolean;
   /** Headers to add to each response.
    *
+   * Accepts any {@linkcode HeadersInit}. The legacy flat array of
+   * `"name: value"` strings (e.g. `["X-Extra: extra header"]`) is also
+   * still accepted.
+   *
    * Values are appended to the response, not replaced, so passing a header
    * the file server already sets (e.g. `cache-control`) yields a
    * comma-joined value rather than overriding it.
    *
    * @default {[]}
    */
-  headers?: HeadersInit;
+  headers?: HeadersInit | string[];
 }
 
 /** Interface for serveFile options. */
 export interface ServeFileOptions extends StableServeFileOptions {
   /** Headers to add to each response.
    *
+   * Accepts any {@linkcode HeadersInit}. The legacy flat array of
+   * `"name: value"` strings (e.g. `["X-Extra: extra header"]`) is also
+   * still accepted.
+   *
    * Values are appended to the response, not replaced, so passing a header
    * the file server already sets (e.g. `cache-control`) yields a
    * comma-joined value rather than overriding it.
    *
    * @default {[]}
    */
-  headers?: HeadersInit;
+  headers?: HeadersInit | string[];
 }
 
 /**
