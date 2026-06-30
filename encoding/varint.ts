@@ -227,9 +227,14 @@ export function encodeVarint(
       `Cannot encode the input into varint as it should be non-negative integer: received ${num}`,
     );
   }
+  if (num > MaxUint64) {
+    throw new RangeError(
+      `Cannot encode the input ${num} into varint as it overflows uint64`,
+    );
+  }
   for (
     let i = offset;
-    i <= Math.min(buf.length, MaxVarintLen64);
+    i < buf.length;
     i += 1
   ) {
     if (num < MSBN) {
@@ -241,6 +246,6 @@ export function encodeVarint(
     num >>= SHIFTN;
   }
   throw new RangeError(
-    `Cannot encode the input ${num} into varint as it overflows uint64`,
+    "Cannot encode the input into varint: the provided buffer is too small",
   );
 }

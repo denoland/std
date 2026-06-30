@@ -342,7 +342,9 @@ Deno.test({
     assertEquals(stringify("\x03"), `"\\x03"\n`);
     assertEquals(stringify("\x08"), `"\\b"\n`);
     assertEquals(stringify("\uffff"), `"\\uFFFF"\n`);
-    assertEquals(stringify("🐱"), `"\\U0001F431"\n`);
+    // printable astral characters (e.g. emoji) are emitted literally
+    assertEquals(stringify("🐱"), `🐱\n`);
+    assertEquals(stringify("🎨 Check Format"), `🎨 Check Format\n`);
   },
 });
 
