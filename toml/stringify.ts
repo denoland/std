@@ -153,7 +153,10 @@ class Dumper {
     ) {
       const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
       return `[${str}]`;
-    } else if (value && typeof value === "object" && !(value instanceof Date)) {
+    } else if (
+      value && typeof value === "object" &&
+      !(value instanceof Date) && !(value instanceof RegExp)
+    ) {
       const str = Object.keys(value).map((key) => {
         return `${joinKeys([key])} = ${
           // deno-lint-ignore no-explicit-any

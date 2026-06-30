@@ -314,6 +314,17 @@ Deno.test({
   },
 });
 
+// https://github.com/denoland/std/issues/7162 - regression: a RegExp in a mixed
+// array must serialize through the primitive path, not be swallowed by the
+// inline-table branch (which would emit an empty `{}` and drop the value).
+Deno.test({
+  name: "stringify() keeps a RegExp value in mixed arrays",
+  fn() {
+    const actual = stringify({ x: [/foo/, {}] });
+    assertEquals(actual, `x = ["/foo/",{}]\n`);
+  },
+});
+
 // https://github.com/denoland/std/issues/7162 - regression check for the new
 // #printPrimitive path that replaced JSON.stringify: finite numbers in
 // primitive arrays must keep their JSON representation.
