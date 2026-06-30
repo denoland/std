@@ -1,5 +1,10 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { assertEquals, AssertionError, assertThrows } from "./mod.ts";
+import {
+  assertEquals,
+  AssertionError,
+  assertStringIncludes,
+  assertThrows,
+} from "./mod.ts";
 import {
   bold,
   gray,
@@ -203,6 +208,48 @@ Deno.test({
 -     ccccccccccccccccccccccc: 0,
 +     ccccccccccccccccccccccc: 1,
     }`,
+    );
+  },
+});
+
+Deno.test({
+  name:
+    "assertEquals() hints at reference-equality when objects with function props stringify identically (#6878)",
+  fn() {
+    let caught: AssertionError | undefined;
+    try {
+      assertEquals(
+        { x: 1, y: () => 2 },
+        { x: 1, y: () => 2 },
+      );
+    } catch (e) {
+      caught = e as AssertionError;
+    }
+    if (!caught) throw new Error("Expected assertEquals to throw");
+    assertStringIncludes(caught.message, "Values are not equal");
+    assertStringIncludes(
+      caught.message,
+      "stringify identically but are not structurally equal",
+    );
+    assertStringIncludes(caught.message, "compared by reference");
+  },
+});
+
+Deno.test({
+  name:
+    "assertEquals() does not append reference-equality hint when there is a real textual diff",
+  fn() {
+    let caught: AssertionError | undefined;
+    try {
+      assertEquals({ x: 1 }, { x: 2 });
+    } catch (e) {
+      caught = e as AssertionError;
+    }
+    if (!caught) throw new Error("Expected assertEquals to throw");
+    assertEquals(
+      caught.message.includes("stringify identically"),
+      false,
+      "Hint should only fire when the diff is empty",
     );
   },
 });
