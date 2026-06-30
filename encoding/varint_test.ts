@@ -113,6 +113,23 @@ Deno.test("encodeVarint() handles manual", () => {
 Deno.test("encodeVarint() throws on overflow uint64", () => {
   assertThrows(() => encodeVarint(1e+30), RangeError, "overflows uint64");
 });
+Deno.test("encodeVarint() throws on overflow uint64 with default buffer", () => {
+  // 0x1234567891234567891n is 73 bits, exceeds MaxUint64 (2^64 - 1).
+  // The default 10-byte buffer must not silently truncate the encoding.
+  assertThrows(
+    () => encodeVarint(0x1234567891234567891n),
+    RangeError,
+    "overflows uint64",
+  );
+});
+Deno.test("encodeVarint() throws when the buffer is too small", () => {
+  // MaxUint64 needs 10 bytes to encode; a 5-byte buffer is too small.
+  assertThrows(
+    () => encodeVarint(MaxUint64, new Uint8Array(5)),
+    RangeError,
+    "the provided buffer is too small",
+  );
+});
 Deno.test("encodeVarint() throws on overflow with negative", () => {
   assertThrows(
     () => encodeVarint(-1),

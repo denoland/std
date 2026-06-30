@@ -299,3 +299,19 @@ Deno.test("expect().toMatchObject() displays a diff", async (t) => {
     assertMatch(e.message, /999/);
   });
 });
+
+Deno.test(
+  "expect().toMatchObject() failure headline describes a subset match, not equality (#6999)",
+  () => {
+    const e = assertThrows(
+      () =>
+        expect({ position: { x: 0, y: "string" } })
+          .toMatchObject({ position: { x: 0, y: 0 } }),
+      AssertionError,
+    );
+    // The headline must not claim equality, because toMatchObject is a
+    // subset check. The diff body is still produced by the same helper.
+    assertMatch(e.message, /Object does not match the expected pattern\./);
+    assertNotMatch(e.message, /Values are not equal\./);
+  },
+);
