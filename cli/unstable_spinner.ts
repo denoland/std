@@ -4,6 +4,15 @@ const encoder = new TextEncoder();
 
 const LINE_CLEAR = encoder.encode("\r\u001b[K"); // From cli/prompt_secret.ts
 const COLOR_RESET = "\u001b[0m";
+// DECAWM (Auto-Wrap Mode) toggles. With DECAWM off, the terminal silently
+// truncates anything past the right edge instead of wrapping to the next
+// line. We disable it before each frame and re-enable it after, so the
+// spinner never overflows and "\r\u001b[K" keeps clearing the same row
+// even when the message is longer than the terminal width (#6975).
+// Letting the terminal truncate avoids guessing display widths for emoji,
+// ZWJ sequences, combining marks, etc.
+const DECAWM_OFF = encoder.encode("\u001b[?7l");
+const DECAWM_ON = encoder.encode("\u001b[?7h");
 const DEFAULT_INTERVAL = 75;
 const DEFAULT_SPINNER = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
@@ -222,24 +231,54 @@ export class Spinner {
     let i = 0;
     const noColor = Deno.noColor;
 
+    // Cache the TTY check so we don't probe the stream every frame.
+    const isTty = this.#isTerminal();
+
     // Updates the spinner after the given interval.
     const updateFrame = () => {
       const color = this.#color ?? "";
+      const spinnerChar = this.#spinner[i] ?? "";
       const frame = encoder.encode(
         noColor
-          ? this.#spinner[i] + " " + this.message
-          : color + this.#spinner[i] + COLOR_RESET + " " + this.message,
+          ? spinnerChar + " " + this.message
+          : color + spinnerChar + COLOR_RESET + " " + this.message,
       );
-      // call writeSync once to reduce flickering
-      const writeData = new Uint8Array(LINE_CLEAR.length + frame.length);
-      writeData.set(LINE_CLEAR);
-      writeData.set(frame, LINE_CLEAR.length);
+      // On a TTY, bracket the frame with DECAWM off/on so any overflow is
+      // truncated by the terminal instead of wrapping to the next line
+      // (#6975). On non-TTY streams the literal escape bytes would just
+      // clutter the output, so skip them.
+      const parts: Uint8Array[] = isTty
+        ? [LINE_CLEAR, DECAWM_OFF, frame, DECAWM_ON]
+        : [LINE_CLEAR, frame];
+      let total = 0;
+      for (const part of parts) total += part.length;
+      const writeData = new Uint8Array(total);
+      let off = 0;
+      for (const part of parts) {
+        writeData.set(part, off);
+        off += part.length;
+      }
+      // single writeSync to reduce flickering
       this.#output.writeSync(writeData);
       i = (i + 1) % this.#spinner.length;
     };
 
     this.#intervalId = setInterval(updateFrame, this.#interval);
     updateFrame();
+  }
+
+  /**
+   * Returns whether the spinner is writing to an interactive terminal.
+   * Decides whether to emit DECAWM toggles around each frame.
+   */
+  #isTerminal(): boolean {
+    try {
+      return this.#output.isTerminal();
+    } catch {
+      // `isTerminal()` can throw if the stream is closed or unsupported;
+      // treat as "not a TTY" and skip the wrap toggles.
+      return false;
+    }
   }
 
   /**
