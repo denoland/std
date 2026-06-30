@@ -641,7 +641,7 @@ export class Cache<K, V> implements CacheLike<K, V> {
   #setHeapDeadline(key: K, deadline: number): void {
     const heap = this.#heap ?? (this.#heap = new IndexedHeap<K>());
     const wasRoot = heap.isEmpty() || heap.peekKey() === key;
-    heap.pushOrUpdate(key, deadline);
+    heap.set(key, deadline);
     const isRoot = heap.peekKey() === key;
     if (wasRoot || isRoot) {
       this.#scheduleTimer();
