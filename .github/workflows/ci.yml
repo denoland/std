@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -92,7 +92,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -120,7 +120,7 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set up Deno
         uses: denoland/setup-deno@v2
@@ -146,7 +146,7 @@ jobs:
           - windows-latest
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -176,7 +176,7 @@ jobs:
         module: [crypto/_wasm]
     steps:
       - name: Clone repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           # required to check for changes
           fetch-depth: 2
