@@ -15,7 +15,8 @@
 
 #### @std/data-structures 1.1.1 (patch)
 
-- feat(data-structures/unstable): rework IndexedHeap with set() upsert and generic priorities (#7124)
+- feat(data-structures/unstable): rework IndexedHeap with set() upsert and
+  generic priorities (#7124)
 
 #### @std/encoding 1.0.11 (patch)
 
@@ -27,7 +28,8 @@
 
 #### @std/http 1.1.2 (patch)
 
-- feat(http/unstable): split parseProblemDetails, validate status, add statusText option (#7117)
+- feat(http/unstable): split parseProblemDetails, validate status, add
+  statusText option (#7117)
 - fix(http/unstable): use relative import for unstable_structured_fields (#7155)
 
 #### @std/path 1.1.6 (patch)
@@ -41,6 +43,7 @@
 #### @std/yaml 1.1.2 (patch)
 
 - fix(yaml): stringify astral characters (emoji) without escaping (#7197)
+
 ### 2026.05.26
 
 #### @std/async 1.4.0 (minor)
