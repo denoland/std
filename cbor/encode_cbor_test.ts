@@ -498,3 +498,53 @@ Deno.test("encodeCbor() rejecting CborTag()", () => {
     `Cannot encode Tag Item: Tag Number (${num}) exceeds 2 ** 64 - 1`,
   );
 });
+
+Deno.test("encodeCbor() accepting `as const` (deeply readonly) input", () => {
+  const data = {
+    a: 1,
+    b: { c: 2n },
+    d: [3, { e: 4 }],
+  } as const;
+
+  assertEquals(encodeCbor(data), encodeCbor(structuredClone(data)));
+});
+
+Deno.test("encodeCbor() accepting readonly array literals", () => {
+  const tuple = ["hello", 42, { nested: "value" }] as const;
+  assertEquals(
+    encodeCbor(tuple),
+    encodeCbor(["hello", 42, { nested: "value" }]),
+  );
+});
+
+Deno.test("encodeCbor() accepting ReadonlyMap input", () => {
+  const map: ReadonlyMap<CborType, CborType> = new Map<CborType, CborType>([
+    [1, 2],
+    ["3", 4],
+    [[5], { a: 6 }],
+  ]);
+
+  assertEquals(
+    encodeCbor(map),
+    encodeCbor(
+      new Map<CborType, CborType>([
+        [1, 2],
+        ["3", 4],
+        [[5], { a: 6 }],
+      ]),
+    ),
+  );
+});
+
+Deno.test("encodeCbor() accepting readonly index signature", () => {
+  const obj: { readonly [k: string]: number } = { x: 1, y: 2, z: 3 };
+  assertEquals(encodeCbor(obj), encodeCbor({ x: 1, y: 2, z: 3 }));
+});
+
+Deno.test("encodeCbor() accepting CborTag with readonly content", () => {
+  const data = [1, { inner: 2 }] as const;
+  assertEquals(
+    encodeCbor(new CborTag(1, data)),
+    encodeCbor(new CborTag(1, structuredClone(data))),
+  );
+});

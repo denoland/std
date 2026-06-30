@@ -28,6 +28,9 @@ export type CborPrimitiveType =
  * This type specifies the encodable and decodable values for
  * {@link encodeCbor}, {@link decodeCbor}, {@link encodeCborSequence}, and
  * {@link decodeCborSequence}.
+ *
+ * The encoder functions also accept {@link ReadonlyCborType}, which permits
+ * `readonly` arrays, `ReadonlyMap`, and `readonly` index signatures.
  */
 export type CborType =
   | CborPrimitiveType
@@ -39,14 +42,51 @@ export type CborType =
   };
 
 /**
+ * Readonly variant of {@link CborType} accepted by {@link encodeCbor} and
+ * {@link encodeCborSequence}. Lets you pass `as const` literals,
+ * `ReadonlyMap`s, and frozen arrays without casting.
+ *
+ * @example Usage
+ * ```ts
+ * import { encodeCbor } from "@std/cbor";
+ *
+ * const data = {
+ *   a: 1,
+ *   b: { c: 2n },
+ *   d: [3, { e: 4 }],
+ * } as const;
+ *
+ * encodeCbor(data);
+ * ```
+ */
+// Note: encoder signatures take `CborType | ReadonlyCborType` rather than
+// just `ReadonlyCborType`. Mutable `Map`/array/index-signature are all
+// assignable to their readonly counterparts, so the union looks redundant,
+// but `CborTag<T>` has a writable `tagContent: T` field, which makes it
+// invariant in `T`. That means `CborTag<CborType>` is NOT assignable to
+// `CborTag<ReadonlyCborType>`, and existing callers passing
+// `CborTag<CborType>` instances would break if the union were collapsed.
+export type ReadonlyCborType =
+  | CborPrimitiveType
+  | CborTag<ReadonlyCborType>
+  | ReadonlyMap<ReadonlyCborType, ReadonlyCborType>
+  | readonly ReadonlyCborType[]
+  | {
+    readonly [k: string]: ReadonlyCborType;
+  };
+
+/**
  * Specifies the encodable value types for the {@link CborSequenceEncoderStream}
  * and {@link CborArrayEncoderStream}.
+ *
+ * Arrays and index signatures are `readonly` so `as const` literals work
+ * without casting.
  */
 export type CborStreamInput =
   | CborPrimitiveType
   | CborTag<CborStreamInput>
-  | CborStreamInput[]
-  | { [k: string]: CborStreamInput }
+  | readonly CborStreamInput[]
+  | { readonly [k: string]: CborStreamInput }
   | CborByteEncoderStream
   | CborTextEncoderStream
   | CborArrayEncoderStream
