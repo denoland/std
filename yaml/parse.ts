@@ -7,6 +7,7 @@
 import { isEOL } from "./_chars.ts";
 import { LoaderState } from "./_loader_state.ts";
 import { SCHEMA_MAP, type SchemaType } from "./_schema.ts";
+import type { YamlSyntaxError } from "./types.ts";
 
 export type { SchemaType };
 
@@ -20,16 +21,16 @@ export interface ParseOptions {
   schema?: SchemaType;
   /**
    * If `true`, duplicate keys will overwrite previous values. Otherwise,
-   * duplicate keys will throw a {@linkcode SyntaxError}.
+   * duplicate keys will throw a {@linkcode YamlSyntaxError}.
    *
    * @default {false}
    */
   allowDuplicateKeys?: boolean;
   /**
    * If defined, a function to call on warning messages taking a
-   * {@linkcode SyntaxError} as its only argument.
+   * {@linkcode YamlSyntaxError} as its only argument.
    */
-  onWarning?(error: SyntaxError): void;
+  onWarning?(error: YamlSyntaxError): void;
 }
 
 function sanitizeInput(input: string) {
@@ -64,8 +65,8 @@ function sanitizeInput(input: string) {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {SyntaxError} Throws if the YAML is invalid or contains more than
- * one document.
+ * @throws {YamlSyntaxError} Throws if the YAML is invalid or contains more
+ * than one document.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
@@ -79,13 +80,9 @@ export function parse(
     ...options,
     schema: SCHEMA_MAP.get(options.schema!)!,
   });
-  const documentGenerator = state.readDocuments();
-  const document = documentGenerator.next().value;
-  if (!documentGenerator.next().done) {
-    throw new SyntaxError(
-      "Found more than 1 document in the stream: expected a single document",
-    );
-  }
+  const documents = state.readDocuments({ singleDocument: true });
+  const document = documents.next().value;
+  documents.next();
   return document ?? null;
 }
 
@@ -112,7 +109,7 @@ export function parse(
  * assertEquals(data, [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" }]);
  * ```
  *
- * @throws {SyntaxError} Throws if the YAML is invalid.
+ * @throws {YamlSyntaxError} Throws if the YAML is invalid.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Array of parsed documents.

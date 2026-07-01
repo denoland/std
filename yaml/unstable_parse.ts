@@ -52,8 +52,8 @@ function sanitizeInput(input: string) {
  * assertEquals(data, { id: 1, name: "Alice" });
  * ```
  *
- * @throws {SyntaxError} Throws if the YAML is invalid or contains more than
- * one document.
+ * @throws {YamlSyntaxError} Throws if the YAML is invalid or contains more
+ * than one document.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Parsed document.
@@ -67,13 +67,9 @@ export function parse(
     ...options,
     schema: getSchema(options.schema, options.extraTypes),
   });
-  const documentGenerator = state.readDocuments();
-  const document = documentGenerator.next().value;
-  if (!documentGenerator.next().done) {
-    throw new SyntaxError(
-      "Found more than 1 document in the stream: expected a single document",
-    );
-  }
+  const documents = state.readDocuments({ singleDocument: true });
+  const document = documents.next().value;
+  documents.next();
   return document ?? null;
 }
 
@@ -100,7 +96,7 @@ export function parse(
  * assertEquals(data, [ { id: 1, name: "Alice" }, { id: 2, name: "Bob" }, { id: 3, name: "Eve" }]);
  * ```
  *
- * @throws {SyntaxError} Throws if the YAML is invalid.
+ * @throws {YamlSyntaxError} Throws if the YAML is invalid.
  * @param content YAML string to parse.
  * @param options Parsing options.
  * @returns Array of parsed documents.
