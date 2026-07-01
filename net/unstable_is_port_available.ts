@@ -63,10 +63,11 @@ export function isPortAvailable(
   options?: IsPortAvailableOptions,
 ): boolean {
   try {
-    using _listener = Deno.listen({
-      port,
-      hostname: options?.hostname ?? "0.0.0.0",
-    });
+    using _listener = Deno.listen(
+      options?.hostname !== undefined
+        ? { port, hostname: options.hostname }
+        : { port },
+    );
     return true;
   } catch (e) {
     if (e instanceof Deno.errors.AddrInUse) {
