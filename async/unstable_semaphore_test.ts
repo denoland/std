@@ -5,6 +5,7 @@ import {
   assertEquals,
   assertExists,
   assertFalse,
+  assertRejects,
   assertThrows,
 } from "@std/assert";
 import { Semaphore } from "./unstable_semaphore.ts";
@@ -97,3 +98,40 @@ Deno.test("Semaphore.release() ignores extra releases beyond max", async () => {
   // Third acquire should block
   await assertBlocks(sem.acquire(), () => sem.release());
 });
+
+Deno.test(
+  "Semaphore.withPermit() executes the function and returns its result",
+  async () => {
+    const sem = new Semaphore(1);
+
+    // Test async return
+    const asyncResult = await sem.withPermit(() =>
+      Promise.resolve("async_result")
+    );
+    assertEquals(asyncResult, "async_result");
+
+    // Test sync return
+    const syncResult = await sem.withPermit(() => "sync_result");
+    assertEquals(syncResult, "sync_result");
+  },
+);
+
+Deno.test(
+  "Semaphore.withPermit() safely releases the permit if the function throws",
+  async () => {
+    const sem = new Semaphore(1);
+
+    await assertRejects(
+      () =>
+        sem.withPermit(() => {
+          throw new Error("task failed");
+        }),
+      Error,
+      "task failed",
+    );
+
+    // The permit is still released after an exception, preventing deadlocks
+    const result = await sem.withPermit(() => "recovered");
+    assertEquals(result, "recovered");
+  },
+);
