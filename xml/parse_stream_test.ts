@@ -168,6 +168,53 @@ Deno.test("parseXmlStream() handles declaration", async () => {
   assertEquals(encoding, "UTF-8");
 });
 
+Deno.test("parseXmlStream() invokes onDoctype when disallowDoctype is false", async () => {
+  const xml = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0//EN" ' +
+    '"http://www.w3.org/TR/xhtml1/DTD/xhtml1.dtd"><html/>';
+  const stream = ReadableStream.from([xml]);
+
+  const doctypes: Array<{
+    name: string;
+    publicId: string | undefined;
+    systemId: string | undefined;
+  }> = [];
+
+  await parseXmlStream(
+    stream,
+    {
+      onDoctype(name, publicId, systemId) {
+        doctypes.push({ name, publicId, systemId });
+      },
+    },
+    { disallowDoctype: false },
+  );
+
+  assertEquals(doctypes, [{
+    name: "html",
+    publicId: "-//W3C//DTD XHTML 1.0//EN",
+    systemId: "http://www.w3.org/TR/xhtml1/DTD/xhtml1.dtd",
+  }]);
+});
+
+Deno.test("parseXmlStream() rejects DOCTYPE by default without invoking onDoctype", async () => {
+  const xml = "<!DOCTYPE root><root/>";
+  const stream = ReadableStream.from([xml]);
+
+  let called = false;
+
+  await assertRejects(
+    () =>
+      parseXmlStream(stream, {
+        onDoctype() {
+          called = true;
+        },
+      }),
+    XmlSyntaxError,
+    "DOCTYPE",
+  );
+  assertEquals(called, false);
+});
+
 Deno.test("parseXmlStream() ignores whitespace when configured", async () => {
   const xml = "<root>\n  <item/>\n</root>";
   const stream = ReadableStream.from([xml]);

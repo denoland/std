@@ -33,7 +33,8 @@ export interface XmlPosition {
  */
 export class XmlSyntaxError extends SyntaxError {
   /**
-   * The line number where the error occurred (1-indexed).
+   * The line number where the error occurred (1-indexed), or `0` when
+   * position tracking is disabled.
    *
    * @example Usage
    * ```ts
@@ -46,7 +47,8 @@ export class XmlSyntaxError extends SyntaxError {
    */
   readonly line: number;
   /**
-   * The column number where the error occurred (1-indexed).
+   * The column number where the error occurred (1-indexed), or `0` when
+   * position tracking is disabled.
    *
    * @example Usage
    * ```ts
@@ -76,11 +78,18 @@ export class XmlSyntaxError extends SyntaxError {
   /**
    * Constructs a new XmlSyntaxError.
    *
+   * The position is appended to the message, unless `position.line` is `0`
+   * (the sentinel used when position tracking is disabled).
+   *
    * @param message The error message describing the syntax issue.
    * @param position The position in the XML source where the error occurred.
    */
   constructor(message: string, position: XmlPosition) {
-    super(`${message} at line ${position.line}, column ${position.column}`);
+    super(
+      position.line === 0
+        ? message
+        : `${message} at line ${position.line}, column ${position.column}`,
+    );
     this.name = "XmlSyntaxError";
     this.line = position.line;
     this.column = position.column;
@@ -116,8 +125,8 @@ export interface XmlName {
  *
  * @see {@link https://www.w3.org/TR/xml/#sec-prolog-dtd | XML 1.0 §2.8 Prolog}
  */
-export interface XmlDeclarationEvent extends XmlPosition {
-  /** The event type discriminant. */
+export interface XmlDeclaration extends XmlPosition {
+  /** The type discriminant. */
   readonly type: "declaration";
   /** The XML version as declared in the document (e.g. `"1.0"` or `"1.1"`). */
   readonly version: string;
@@ -312,7 +321,7 @@ export type XmlNode =
  */
 export interface XmlDocument {
   /** The XML declaration, if present. */
-  readonly declaration?: XmlDeclarationEvent;
+  readonly declaration?: XmlDeclaration;
   /** The root element of the document. */
   readonly root: XmlElement;
 }
@@ -399,7 +408,13 @@ export interface XmlEventCallbacks {
   /** Called for XML declarations. */
   onDeclaration?: XmlDeclarationCallback;
 
-  /** Called for DOCTYPE declarations. */
+  /**
+   * Called for DOCTYPE declarations.
+   *
+   * Only invoked when the {@linkcode BaseParseOptions.disallowDoctype}
+   * option is set to `false`; with the default (`true`), a DOCTYPE
+   * declaration throws an {@linkcode XmlSyntaxError} instead.
+   */
   onDoctype?: XmlDoctypeCallback;
 
   /**
