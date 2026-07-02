@@ -11,9 +11,12 @@
  */
 
 import {
+  type XmlContentCallback,
+  type XmlDeclarationCallback,
+  type XmlDoctypeCallback,
   type XmlPosition,
+  type XmlProcessingInstructionCallback,
   XmlSyntaxError,
-  type XmlTokenCallbacks,
 } from "./types.ts";
 import {
   isIllegalXmlLiteralChar,
@@ -23,6 +26,52 @@ import {
   validateXmlDeclaration,
 } from "./_common.ts";
 import { isNameChar, isNameStartChar } from "./_name_chars.ts";
+
+/**
+ * Callbacks for tokenizer output - enables zero-allocation token emission.
+ *
+ * Instead of creating token objects, the tokenizer invokes these callbacks
+ * directly with primitive values.
+ */
+export interface XmlTokenCallbacks {
+  /** Called when a start tag opens (e.g., `<element`). */
+  onStartTagOpen?(
+    name: string,
+    line: number,
+    column: number,
+    offset: number,
+  ): void;
+
+  /** Called for each attribute in a start tag. */
+  onAttribute?(name: string, value: string): void;
+
+  /** Called when a start tag closes (e.g., `>` or `/>`). */
+  onStartTagClose?(selfClosing: boolean): void;
+
+  /** Called when an end tag is encountered (e.g., `</element>`). */
+  onEndTag?(name: string, line: number, column: number, offset: number): void;
+
+  /** Called for text content between tags. */
+  onText?: XmlContentCallback;
+
+  /** Called for CDATA sections. */
+  onCData?: XmlContentCallback;
+
+  /** Called for XML comments. */
+  onComment?: XmlContentCallback;
+
+  /** Called for processing instructions. */
+  onProcessingInstruction?: XmlProcessingInstructionCallback;
+
+  /** Called for XML declarations. */
+  onDeclaration?: XmlDeclarationCallback;
+
+  /** Called for DOCTYPE declarations. */
+  onDoctype?: XmlDoctypeCallback;
+
+  /** Called for internal entity declarations in the DTD. */
+  onEntityDeclaration?(name: string, value: string): void;
+}
 
 /** Options for the XML tokenizer. */
 interface XmlTokenizerOptions {
