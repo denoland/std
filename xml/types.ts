@@ -15,7 +15,7 @@ export interface XmlPosition {
   readonly line: number;
   /** Column number (1-indexed). */
   readonly column: number;
-  /** Byte offset in the input. */
+  /** Character offset in the input string (in UTF-16 code units, 0-indexed). */
   readonly offset: number;
 }
 
@@ -59,7 +59,8 @@ export class XmlSyntaxError extends SyntaxError {
    */
   readonly column: number;
   /**
-   * The byte offset where the error occurred.
+   * The character offset in the input string where the error occurred
+   * (in UTF-16 code units, 0-indexed).
    *
    * @example Usage
    * ```ts
@@ -287,7 +288,11 @@ export interface XmlElement {
   readonly type: "element";
   /** The qualified name of the element. */
   readonly name: XmlName;
-  /** Attribute lookup by local name. */
+  /**
+   * Attribute values keyed by the raw qualified attribute name as written in
+   * the document, including any namespace prefix (e.g. `"id"`, `"xlink:href"`,
+   * `"xmlns"`, `"xmlns:ns"`).
+   */
   readonly attributes: Readonly<Record<string, string>>;
   /** The child nodes of this element. */
   readonly children: ReadonlyArray<XmlNode>;
