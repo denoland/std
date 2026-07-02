@@ -112,6 +112,19 @@ Deno.test("XmlSyntaxError contains position information", () => {
   assertEquals(error.message, "Test error at line 5, column 10");
 });
 
+Deno.test("XmlSyntaxError omits position from message when line is 0", () => {
+  const error = new XmlSyntaxError("Test error", {
+    line: 0,
+    column: 0,
+    offset: 0,
+  });
+
+  assertEquals(error.message, "Test error");
+  assertEquals(error.line, 0);
+  assertEquals(error.column, 0);
+  assertEquals(error.offset, 0);
+});
+
 Deno.test("XmlSyntaxError is instanceof SyntaxError", () => {
   const error = new XmlSyntaxError("Test", { line: 1, column: 1, offset: 0 });
   assertEquals(error instanceof SyntaxError, true);
