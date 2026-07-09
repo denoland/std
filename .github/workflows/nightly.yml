@@ -15,6 +15,8 @@ on:
 
 jobs:
   test:
+    # Only run on the upstream repository, not on forks.
+    if: github.repository == 'denoland/std'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     strategy:
