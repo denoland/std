@@ -4,8 +4,8 @@ name: tsgo_typecheck
 # compiler (tsgo, from @typescript/native-preview) run entirely through Deno,
 # after `deno sync-types` materializes a stock-TypeScript-compatible project
 # (tsconfig.json + .deno/). This validates that stock tsgo passes on real std
-# and records tsgo-vs-`deno check` timings, as a stepping stone toward Deno
-# type-checking with tsgo by default. It never fails the build on tsgo errors.
+# and records its timing, as a stepping stone toward Deno type-checking with
+# tsgo by default. It never fails the build on tsgo errors.
 #
 # Requires `deno sync-types` (denoland/deno#35894), which is not yet in canary.
 # Until it lands the workflow is workflow_dispatch-only; once canary ships
@@ -43,7 +43,7 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: deno install --allow-import
+        run: deno install
 
       - name: Sync types for stock TypeScript
         # Generates tsconfig.json, .deno/, and materialized jsr/http/npm types.
@@ -51,13 +51,14 @@ jobs:
         run: deno sync-types
 
       - name: Type-check with tsgo (advisory)
-        # Run tsgo through Deno's npm compat — no Node. The launcher spawns the
+        # Run tsgo through Deno's npm compat — no Node. tsgo is the package's
+        # default bin, so no subpath is needed; the launcher spawns the
         # platform-native binary, so grant full permissions. Never fail here:
         # capture the error count and timing and always exit 0.
         run: |
           set +e
           start=$(date +%s%N)
-          deno run -A "npm:@typescript/native-preview@${TSGO_VERSION}/tsgo" \
+          deno run -A "npm:@typescript/native-preview@${TSGO_VERSION}" \
             -p tsconfig.json > tsgo.log 2>&1
           end=$(date +%s%N)
           tsgo_ms=$(( (end - start) / 1000000 ))
@@ -67,40 +68,4 @@ jobs:
           echo "-----------------------"
           echo "tsgo errors: ${errors}"
           echo "tsgo time: ${tsgo_ms} ms"
-          {
-            echo "TSGO_ERRORS=${errors}"
-            echo "TSGO_MS=${tsgo_ms}"
-          } >> "$GITHUB_ENV"
           exit 0
-
-      - name: Benchmark deno check (for comparison)
-        # Same scope as tsgo (whole project, excluding generated dirs and
-        # testdata) so the two wall-clock numbers are comparable. Advisory only.
-        run: |
-          set +e
-          start=$(date +%s%N)
-          find . -name '*.ts' \
-            -not -path './.deno/*' \
-            -not -path './node_modules/*' \
-            -not -path '*/testdata/*' \
-            -print0 | xargs -0 deno check --allow-import > denocheck.log 2>&1
-          end=$(date +%s%N)
-          dc_ms=$(( (end - start) / 1000000 ))
-          echo "deno check time: ${dc_ms} ms"
-          echo "DENO_CHECK_MS=${dc_ms}" >> "$GITHUB_ENV"
-          exit 0
-
-      - name: Job summary
-        run: |
-          {
-            echo "## Advisory tsgo type-check (experiment)"
-            echo ""
-            echo "Non-blocking: tsgo errors do not fail the build."
-            echo ""
-            echo "| metric | value |"
-            echo "| --- | --- |"
-            echo "| tsgo version | \`${TSGO_VERSION}\` |"
-            echo "| tsgo errors | ${TSGO_ERRORS} |"
-            echo "| tsgo time | ${TSGO_MS} ms |"
-            echo "| deno check time | ${DENO_CHECK_MS} ms |"
-          } >> "$GITHUB_STEP_SUMMARY"
