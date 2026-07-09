@@ -309,6 +309,29 @@ Deno.test({
         );
       },
     });
+
+    await t.step({
+      name: "Allow less row fields than columns",
+      fn() {
+        const input = "a,b,c\nd,e";
+        const output = [{
+          foo: "a",
+          bar: "b",
+          baz: "c",
+        }, {
+          foo: "d",
+          bar: "e",
+        }];
+        assertEquals(
+          parse(input, {
+            skipFirstRow: false,
+            columns: ["foo", "bar", "baz"],
+            fieldsPerRecord: -1,
+          }),
+          output,
+        );
+      },
+    });
     await t.step({
       name: "NegativeFieldsPerRecord",
       fn() {
@@ -318,6 +341,19 @@ Deno.test({
           ["d", "e"],
         ];
         assertEquals(parse(input, { fieldsPerRecord: -1 }), output);
+      },
+    });
+    await t.step({
+      name: "LessFieldsPerRecordThanFirstLine",
+      fn() {
+        const input = `a,b,c\nd,e`;
+        const output = [
+          { a: "d", "b": "e" },
+        ];
+        assertEquals(
+          parse(input, { skipFirstRow: true, fieldsPerRecord: -1 }),
+          output,
+        );
       },
     });
     await t.step({
@@ -857,6 +893,22 @@ c"d,e`;
             }),
           Error,
           "Syntax error on line 2: The record has 4 fields, but the header has 3 fields",
+        );
+      },
+    });
+    await t.step({
+      name: "mismatching number of headers and fields 3",
+      fn() {
+        const input = "a,b,c\nd,e,,g";
+        assertThrows(
+          () =>
+            parse(input, {
+              skipFirstRow: true,
+              columns: ["foo", "bar", "baz"],
+              fieldsPerRecord: -1,
+            }),
+          Error,
+          "Syntax error on line 2: The record has 4 fields, but the header allows maximum 3 fields",
         );
       },
     });
