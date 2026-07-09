@@ -11,7 +11,7 @@
  *
  * @example Parsing a Dictionary (e.g., UCP-Agent header)
  * ```ts
- * import { isItem, parseDictionary } from "@std/http/unstable-structured-fields";
+ * import { isItem, parseDictionary } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const header = 'profile="https://example.com/profile.json"';
@@ -28,7 +28,7 @@
  *
  * @example Serializing a Dictionary
  * ```ts
- * import { item, serializeDictionary, string } from "@std/http/unstable-structured-fields";
+ * import { item, serializeDictionary, string } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = new Map([
@@ -40,8 +40,6 @@
  *   'profile="https://example.com/profile.json"'
  * );
  * ```
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @module
  */
@@ -57,8 +55,6 @@ const UTF8_ENCODER = new TextEncoder();
 
 /**
  * A Bare Item value in a Structured Field.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.3}
  */
@@ -78,16 +74,12 @@ export type BareItem =
  * Returned parameters are immutable. When building parameters for serialization,
  * you can pass a mutable `Map` as it is assignable to `ReadonlyMap`.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1.2}
  */
-export type Parameters = ReadonlyMap<string, BareItem>;
+export type ParameterMap = ReadonlyMap<string, BareItem>;
 
 /**
  * An Item in a Structured Field, consisting of a Bare Item and Parameters.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.3}
  */
@@ -95,13 +87,11 @@ export interface Item {
   /** The bare item value. */
   value: BareItem;
   /** Parameters associated with this item. */
-  parameters: Parameters;
+  parameters: ParameterMap;
 }
 
 /**
  * An Inner List in a Structured Field.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1.1}
  */
@@ -109,13 +99,11 @@ export interface InnerList {
   /** The items in the inner list. */
   items: Item[];
   /** Parameters associated with the inner list. */
-  parameters: Parameters;
+  parameters: ParameterMap;
 }
 
 /**
  * A List Structured Field value.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1}
  */
@@ -126,8 +114,6 @@ export type List = Array<Item | InnerList>;
  *
  * Returned dictionaries are immutable. When building dictionaries for serialization,
  * you can pass a mutable `Map` as it is assignable to `ReadonlyMap`.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.2}
  */
@@ -140,15 +126,13 @@ export type Dictionary = ReadonlyMap<string, Item | InnerList>;
 /**
  * Creates an integer Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The integer value. Must be in the range -999999999999999 to
  * 999999999999999; validated during serialization.
  * @returns A Bare Item of type integer.
  *
  * @example Usage
  * ```ts
- * import { integer } from "@std/http/unstable-structured-fields";
+ * import { integer } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(integer(42), { type: "integer", value: 42 });
@@ -161,15 +145,13 @@ export function integer(value: number): Extract<BareItem, { type: "integer" }> {
 /**
  * Creates a decimal Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The decimal value. Must be finite with an integer part of at
  * most 12 digits; validated during serialization.
  * @returns A Bare Item of type decimal.
  *
  * @example Usage
  * ```ts
- * import { decimal } from "@std/http/unstable-structured-fields";
+ * import { decimal } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(decimal(3.14), { type: "decimal", value: 3.14 });
@@ -182,15 +164,13 @@ export function decimal(value: number): Extract<BareItem, { type: "decimal" }> {
 /**
  * Creates a string Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The string value. Must contain only ASCII printable characters
  * (0x20-0x7E); validated during serialization.
  * @returns A Bare Item of type string.
  *
  * @example Usage
  * ```ts
- * import { string } from "@std/http/unstable-structured-fields";
+ * import { string } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(string("hello"), { type: "string", value: "hello" });
@@ -203,15 +183,13 @@ export function string(value: string): Extract<BareItem, { type: "string" }> {
 /**
  * Creates a token Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The token value. Must start with ALPHA or '*' and contain only
  * token characters; validated during serialization.
  * @returns A Bare Item of type token.
  *
  * @example Usage
  * ```ts
- * import { token } from "@std/http/unstable-structured-fields";
+ * import { token } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(token("foo"), { type: "token", value: "foo" });
@@ -224,14 +202,12 @@ export function token(value: string): Extract<BareItem, { type: "token" }> {
 /**
  * Creates a binary Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The binary value as a Uint8Array.
  * @returns A Bare Item of type binary.
  *
  * @example Usage
  * ```ts
- * import { binary } from "@std/http/unstable-structured-fields";
+ * import { binary } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const result = binary(new Uint8Array([1, 2, 3]));
@@ -247,14 +223,12 @@ export function binary(
 /**
  * Creates a boolean Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The boolean value.
  * @returns A Bare Item of type boolean.
  *
  * @example Usage
  * ```ts
- * import { boolean } from "@std/http/unstable-structured-fields";
+ * import { boolean } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(boolean(true), { type: "boolean", value: true });
@@ -269,15 +243,13 @@ export function boolean(
 /**
  * Creates a date Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The date value. Must represent a valid date whose Unix timestamp
  * is in the integer range; validated during serialization.
  * @returns A Bare Item of type date.
  *
  * @example Usage
  * ```ts
- * import { date } from "@std/http/unstable-structured-fields";
+ * import { date } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const d = new Date("2022-08-04T00:00:00Z");
@@ -291,14 +263,12 @@ export function date(value: Date): Extract<BareItem, { type: "date" }> {
 /**
  * Creates a display string Bare Item.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The display string value (can contain Unicode).
  * @returns A Bare Item of type displaystring.
  *
  * @example Usage
  * ```ts
- * import { displayString } from "@std/http/unstable-structured-fields";
+ * import { displayString } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(displayString("héllo"), { type: "displaystring", value: "héllo" });
@@ -313,15 +283,13 @@ export function displayString(
 /**
  * Creates an Item from a Bare Item and optional Parameters.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The Bare Item value.
  * @param parameters Optional parameters as a `Map` or iterable of key-value pairs.
  * @returns An Item with the given value and parameters.
  *
  * @example Usage
  * ```ts
- * import { item, integer, token } from "@std/http/unstable-structured-fields";
+ * import { item, integer, token } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(item(integer(42)), {
@@ -345,15 +313,13 @@ export function item(
 /**
  * Creates an Inner List from Items and optional Parameters.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param items The items in the inner list.
  * @param parameters Optional parameters as a `Map` or iterable of key-value pairs.
  * @returns An InnerList with the given items and parameters.
  *
  * @example Usage
  * ```ts
- * import { innerList, item, integer } from "@std/http/unstable-structured-fields";
+ * import { innerList, item, integer } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const list = innerList([item(integer(1)), item(integer(2))]);
@@ -376,14 +342,12 @@ export function innerList(
 /**
  * Checks if a list member is an Item (not an Inner List).
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param member The list member to check.
  * @returns `true` if the member is an Item, `false` if it's an Inner List.
  *
  * @example Usage
  * ```ts
- * import { parseList, isItem } from "@std/http/unstable-structured-fields";
+ * import { parseList, isItem } from "@std/http/structured-fields";
  * import { assert } from "@std/assert";
  *
  * const list = parseList("1, (2 3)");
@@ -398,14 +362,12 @@ export function isItem(member: Item | InnerList): member is Item {
 /**
  * Checks if a list member is an Inner List.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param member The list member to check.
  * @returns `true` if the member is an Inner List, `false` if it's an Item.
  *
  * @example Usage
  * ```ts
- * import { parseList, isInnerList } from "@std/http/unstable-structured-fields";
+ * import { parseList, isInnerList } from "@std/http/structured-fields";
  * import { assert } from "@std/assert";
  *
  * const list = parseList("1, (2 3)");
@@ -550,8 +512,6 @@ function skipSP(state: ParserState): void {
 /**
  * Parses a List Structured Field value.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param input The string to parse.
  * @returns The parsed List.
  * @throws {SyntaxError} If the input is invalid.
@@ -560,7 +520,7 @@ function skipSP(state: ParserState): void {
  *
  * @example Usage
  * ```ts
- * import { parseList } from "@std/http/unstable-structured-fields";
+ * import { parseList } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const list = parseList("1, 42");
@@ -610,8 +570,6 @@ function parseListInternal(state: ParserState): List {
 /**
  * Parses a Dictionary Structured Field value.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param input The string to parse.
  * @returns The parsed Dictionary.
  * @throws {SyntaxError} If the input is invalid.
@@ -620,7 +578,7 @@ function parseListInternal(state: ParserState): List {
  *
  * @example Usage
  * ```ts
- * import { parseDictionary } from "@std/http/unstable-structured-fields";
+ * import { parseDictionary } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = parseDictionary('profile="https://example.com"');
@@ -684,8 +642,6 @@ function parseDictionaryInternal(state: ParserState): Dictionary {
 /**
  * Parses an Item Structured Field value.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param input The string to parse.
  * @returns The parsed Item.
  * @throws {SyntaxError} If the input is invalid.
@@ -694,7 +650,7 @@ function parseDictionaryInternal(state: ParserState): Dictionary {
  *
  * @example Usage
  * ```ts
- * import { parseItem } from "@std/http/unstable-structured-fields";
+ * import { parseItem } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const item = parseItem("42");
@@ -1110,7 +1066,7 @@ function parseKey(state: ParserState): string {
   return state.input.slice(startPos, state.pos);
 }
 
-function parseParameters(state: ParserState): Parameters {
+function parseParameters(state: ParserState): ParameterMap {
   const parameters: Map<string, BareItem> = new Map();
 
   while (peek(state) === ";") {
@@ -1139,8 +1095,6 @@ function parseParameters(state: ParserState): Parameters {
 /**
  * Serializes a List to a string.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param list The List to serialize.
  * @returns The serialized string.
  * @throws {TypeError} If the list contains invalid values.
@@ -1149,7 +1103,7 @@ function parseParameters(state: ParserState): Parameters {
  *
  * @example Usage
  * ```ts
- * import { item, serializeList, integer } from "@std/http/unstable-structured-fields";
+ * import { item, serializeList, integer } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const list = [item(integer(1)), item(integer(42))];
@@ -1174,8 +1128,6 @@ export function serializeList(list: List): string {
 /**
  * Serializes a Dictionary to a string.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param dict The Dictionary to serialize.
  * @returns The serialized string.
  * @throws {TypeError} If the dictionary contains invalid values.
@@ -1184,7 +1136,7 @@ export function serializeList(list: List): string {
  *
  * @example Usage
  * ```ts
- * import { item, serializeDictionary, string } from "@std/http/unstable-structured-fields";
+ * import { item, serializeDictionary, string } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * const dict = new Map([
@@ -1220,8 +1172,6 @@ export function serializeDictionary(dict: Dictionary): string {
 /**
  * Serializes an Item to a string.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @param value The Item to serialize.
  * @returns The serialized string.
  * @throws {TypeError} If the item contains invalid values.
@@ -1230,7 +1180,7 @@ export function serializeDictionary(dict: Dictionary): string {
  *
  * @example Usage
  * ```ts
- * import { item, serializeItem, integer } from "@std/http/unstable-structured-fields";
+ * import { item, serializeItem, integer } from "@std/http/structured-fields";
  * import { assertEquals } from "@std/assert";
  *
  * assertEquals(serializeItem(item(integer(42))), "42");
@@ -1398,7 +1348,7 @@ function serializeDisplayString(value: string): string {
   return result;
 }
 
-function serializeParameters(parameters: Parameters): string {
+function serializeParameters(parameters: ParameterMap): string {
   let result = "";
 
   for (const [key, value] of parameters) {

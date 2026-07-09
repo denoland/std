@@ -25,7 +25,7 @@ import {
   serializeList,
   string,
   token,
-} from "./unstable_structured_fields.ts";
+} from "./structured_fields.ts";
 
 // =============================================================================
 // Parsing Tests (edge cases NOT covered by conformance tests)
