@@ -1,16 +1,5 @@
 name: tsgo_typecheck
 
-# Advisory (non-blocking) experiment: type-check std with the native TypeScript
-# compiler (tsgo, from @typescript/native-preview) run entirely through Deno,
-# after `deno sync-types` materializes a stock-TypeScript-compatible project
-# (tsconfig.json + .deno/). This validates that stock tsgo passes on real std
-# and records its timing, as a stepping stone toward Deno type-checking with
-# tsgo by default. It never fails the build on tsgo errors.
-#
-# Requires `deno sync-types` (denoland/deno#35894), which is not yet in canary.
-# Until it lands the workflow is workflow_dispatch-only; once canary ships
-# sync-types, enable the `schedule:` trigger below.
-
 permissions:
   contents: read
 
@@ -27,9 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      # Pinned @typescript/native-preview (tsgo) version. This is a moving
-      # 7.0.0-dev.* preview; bump deliberately.
-      TSGO_VERSION: 7.0.0-dev.20260707.2
+      TSGO_VERSION: 7.0.2
     steps:
       - name: Clone repository
         uses: actions/checkout@v7
@@ -46,26 +33,7 @@ jobs:
         run: deno install
 
       - name: Sync types for stock TypeScript
-        # Generates tsconfig.json, .deno/, and materialized jsr/http/npm types.
-        # Non-allowlisted import hosts are skipped with a warning; that's fine.
         run: deno sync-types
 
       - name: Type-check with tsgo (advisory)
-        # Run tsgo through Deno's npm compat — no Node. tsgo is the package's
-        # default bin, so no subpath is needed; the launcher spawns the
-        # platform-native binary, so grant full permissions. Never fail here:
-        # capture the error count and timing and always exit 0.
-        run: |
-          set +e
-          start=$(date +%s%N)
-          deno run -A "npm:@typescript/native-preview@${TSGO_VERSION}" \
-            -p tsconfig.json > tsgo.log 2>&1
-          end=$(date +%s%N)
-          tsgo_ms=$(( (end - start) / 1000000 ))
-          errors=$(grep -c "error TS" tsgo.log || true)
-          echo "----- tsgo output -----"
-          cat tsgo.log
-          echo "-----------------------"
-          echo "tsgo errors: ${errors}"
-          echo "tsgo time: ${tsgo_ms} ms"
-          exit 0
+        run: deno run -A npm:@typescript@${TSGO_VERSION}/tsc
