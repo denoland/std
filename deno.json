@@ -11,6 +11,7 @@
     "@deno/doc": "jsr:@deno/doc@^0.169.1",
     "npm:/typescript": "npm:typescript@5.8.2",
     "automation/": "https://raw.githubusercontent.com/denoland/automation/0.10.0/",
+    "fast-check": "npm:fast-check@3.8.0",
     "graphviz": "npm:node-graphviz@^0.1.1"
   },
   "unstable": ["webgpu", "fs"],
