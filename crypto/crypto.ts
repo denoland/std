@@ -251,7 +251,7 @@ const stdCrypto: StdCrypto = ((x) => x)({
       }
       // (TypeScript type definitions prohibit this case.) If they're trying
       // to call an algorithm we don't recognize, pass it along to WebCrypto
-      // in case it's a non-standard algorithm supported by the the runtime
+      // in case it's a non-standard algorithm supported by the runtime
       // they're using.
       return await webCrypto.subtle.digest(algorithm, data as BufferSource);
     },
