@@ -4,7 +4,22 @@
   "exports": {
     ".": "./mod.ts",
     "./clamp": "./clamp.ts",
+    "./deg-to-rad": "./deg_to_rad.ts",
+    "./factorial": "./factorial.ts",
+    "./gcd": "./gcd.ts",
+    "./is-even": "./is_even.ts",
+    "./is-odd": "./is_odd.ts",
+    "./lcm": "./lcm.ts",
+    "./lerp": "./lerp.ts",
+    "./mean": "./mean.ts",
+    "./median": "./median.ts",
+    "./mode": "./mode.ts",
     "./modulo": "./modulo.ts",
-    "./round-to": "./round_to.ts"
+    "./rad-to-deg": "./rad_to_deg.ts",
+    "./random-int": "./random_int.ts",
+    "./round-to": "./round_to.ts",
+    "./std-dev": "./std_dev.ts",
+    "./sum": "./sum.ts",
+    "./variance": "./variance.ts"
   }
 }

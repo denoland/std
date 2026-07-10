@@ -20,5 +20,20 @@
  */
 
 export * from "./clamp.ts";
+export * from "./deg_to_rad.ts";
+export * from "./factorial.ts";
+export * from "./gcd.ts";
+export * from "./is_even.ts";
+export * from "./is_odd.ts";
+export * from "./lcm.ts";
+export * from "./lerp.ts";
+export * from "./mean.ts";
+export * from "./median.ts";
+export * from "./mode.ts";
 export * from "./modulo.ts";
+export * from "./rad_to_deg.ts";
+export * from "./random_int.ts";
 export * from "./round_to.ts";
+export * from "./std_dev.ts";
+export * from "./sum.ts";
+export * from "./variance.ts";
