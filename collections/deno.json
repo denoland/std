@@ -4,6 +4,7 @@
   "exports": {
     ".": "./mod.ts",
     "./aggregate-groups": "./aggregate_groups.ts",
+    "./average-of": "./average_of.ts",
     "./associate-by": "./associate_by.ts",
     "./associate-with": "./associate_with.ts",
     "./chunk": "./chunk.ts",

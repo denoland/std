@@ -29,6 +29,7 @@
  */
 
 export * from "./aggregate_groups.ts";
+export * from "./average_of.ts";
 export * from "./associate_by.ts";
 export * from "./associate_with.ts";
 export * from "./chunk.ts";
