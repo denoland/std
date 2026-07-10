@@ -31,7 +31,10 @@ Deno.test({
 Deno.test({
   name: "groupBy() groups numbers by parity",
   fn() {
-    const result = groupBy([1, 2, 3, 4, 5, 6], (n) => n % 2 === 0 ? "even" : "odd");
+    const result = groupBy(
+      [1, 2, 3, 4, 5, 6],
+      (n) => n % 2 === 0 ? "even" : "odd",
+    );
     assertEquals(result, { odd: [1, 3, 5], even: [2, 4, 6] });
   },
 });
