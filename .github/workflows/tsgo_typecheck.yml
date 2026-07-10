@@ -4,8 +4,9 @@ permissions:
   contents: read
 
 on:
+  pull_request:
   workflow_dispatch:
-  # Enable once deno#35894 (sync-types) is available in canary:
+  # sync-types (deno#35894) is now in canary; nightly can be enabled too:
   # schedule:
   #   - cron: "0 7 * * *"
 
