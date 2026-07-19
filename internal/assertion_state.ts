@@ -5,7 +5,7 @@
  * Check the test suite internal state
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
  * import { AssertionState } from "@std/internal";
  *
  * const assertionState = new AssertionState();
@@ -65,7 +65,7 @@ export class AssertionState {
    * @returns the number that through `expect.assertions` api set.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -82,7 +82,7 @@ export class AssertionState {
    * @returns return a certain number that assertions were called before.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -116,7 +116,7 @@ export class AssertionState {
    * @param val Set #state.assertionTriggered's value
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -149,7 +149,7 @@ export class AssertionState {
    * If any matchers was called, `#state.assertionTriggeredCount` value will plus one internally.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -170,7 +170,7 @@ export class AssertionState {
    * it should throw an AssertionError.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -187,7 +187,7 @@ export class AssertionState {
    * Reset all assertion state when every test suite function ran completely.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -211,7 +211,7 @@ export class AssertionState {
    * it should throw an AssertionError.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { AssertionState } from "@std/internal";
    *
    * const assertionState = new AssertionState();
@@ -234,7 +234,7 @@ const assertionState = new AssertionState();
  * @returns AssertionState
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
  * import { getAssertionState } from "@std/internal";
  *
  * const assertionState = getAssertionState();

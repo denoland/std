@@ -701,7 +701,7 @@ export class MultiMap<K, V> implements Iterable<[K, V]> {
    * @returns The string representation of the multimap.
    *
    * @example Usage
-   * ```ts ignore
+   * ```ts
    * import { MultiMap } from "@std/data-structures/unstable-multimap";
    *
    * const map = new MultiMap([["a", 1], ["a", 2], ["b", 3]]);

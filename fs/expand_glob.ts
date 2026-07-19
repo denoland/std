@@ -116,7 +116,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts ignore
+ * ```ts
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -153,7 +153,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts ignore
+ * ```ts
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -181,7 +181,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts ignore
+ * ```ts
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -211,7 +211,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── foo.ts
  * ```
  *
- * ```ts ignore
+ * ```ts
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
@@ -245,7 +245,7 @@ function comparePath(a: WalkEntry, b: WalkEntry): number {
  * └── link.ts -> script.ts (symbolic link)
  * ```
  *
- * ```ts ignore
+ * ```ts
  * // script.ts
  * import { expandGlob } from "@std/fs/expand-glob";
  *
