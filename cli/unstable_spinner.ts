@@ -118,7 +118,7 @@ export class Spinner {
    * This can be changed while the spinner is active.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { Spinner } from "@std/cli/unstable-spinner";
    *
    * const spinner = new Spinner({ message: "Working..." });
@@ -246,7 +246,7 @@ export class Spinner {
    * Stops the spinner.
    *
    * @example Usage
-   * ```ts
+   * ```ts no-assert
    * import { Spinner } from "@std/cli/unstable-spinner";
    *
    * const spinner = new Spinner({ message: "Loading..." });

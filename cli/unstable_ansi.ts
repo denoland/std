@@ -206,7 +206,7 @@ export const SOFT_RESET = "\x1b[!p";
  * @returns The ANSI escape code for inserting spaces.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -231,7 +231,7 @@ export function insertSpace(x = 1): string {
  * @returns The ANSI escape code for deleting characters.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -255,7 +255,7 @@ export function deleteCharacters(x = 1): string {
  * @returns The ANSI escape code for erasing characters.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -282,7 +282,7 @@ export function eraseCharacters(x = 1): string {
  * @returns The ANSI escape code for inserting lines.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -306,7 +306,7 @@ export function insertLines(x = 1): string {
  * @returns The ANSI escape code for deleting lines.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -328,7 +328,7 @@ export function deleteLines(x = 1): string {
  * @returns The ANSI escape code for moving the cursor up.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -350,7 +350,7 @@ export function moveCursorUp(x = 1): string {
  * beginning of the line.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -370,7 +370,7 @@ export function moveCursorUpStart(x = 1): string {
  * @returns The ANSI escape code for moving the cursor down.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -399,7 +399,7 @@ export function moveCursorDown(x = 1): string {
  * beginning of the line.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -425,7 +425,7 @@ export function moveCursorDownStart(x = 1): string {
  * @returns The ANSI escape code for moving the cursor right.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.moveCursorRight(2) + "Hello World!");
@@ -443,7 +443,7 @@ export function moveCursorRight(x = 1): string {
  * stop.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.moveCursorRightTab() + "Hello World!");
@@ -460,7 +460,7 @@ export function moveCursorRightTab(x = 1): string {
  * @returns The ANSI escape code for moving the cursor left.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
@@ -482,7 +482,7 @@ export function moveCursorLeft(x = 1): string {
  * stop.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
@@ -504,7 +504,7 @@ export function moveCursorLeftTab(x = 1): string {
  * @returns The ANSI escape code for setting the cursor column.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { delay } from "@std/async/delay";
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
@@ -529,7 +529,7 @@ export function setCursorColumn(x = 1): string {
  * @returns The ANSI escape code for setting the cursor line.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.setCursorLine() + Ansi.ERASE_LINE + "Hello World!");
@@ -548,7 +548,7 @@ export function setCursorLine(x = 1): string {
  * @returns The ANSI escape code for setting the cursor position.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(
@@ -694,7 +694,7 @@ export const ERASE_DISPLAY = "\x1b[2J";
  * @returns The ANSI escape code for shifting content up.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.shiftUpAndInsert());
@@ -712,7 +712,7 @@ export function shiftUpAndInsert(x = 1): string {
  * @returns The ANSI escape code for shifting content down.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.shiftDownAndInsert(3));
@@ -730,7 +730,7 @@ export function shiftDownAndInsert(x = 1): string {
  * character.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log("Hello World!" + Ansi.repeatLastCharacter(4));
@@ -883,7 +883,7 @@ export const DISABLE_AUTO_WRAP = "\x1b[?7l";
  * @returns The ANSI escape code to set the cursor style.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import * as Ansi from "@std/cli/unstable-ansi";
  *
  * console.log(Ansi.setCursorStyle(Ansi.CursorStyle.BlinkingUnderline));

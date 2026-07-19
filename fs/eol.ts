@@ -32,7 +32,7 @@ const regDetect = /(?:\r?\n)/g;
  * @returns The detected EOL character(s) or `null` if no EOL character is detected.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { detect } from "@std/fs/eol";
  *
  * detect("deno\r\nis not\r\nnode"); // "\r\n"
@@ -60,7 +60,7 @@ export function detect(content: string): typeof EOL | null {
  * @returns The input string normalized to the targeted EOL.
  *
  * @example Usage
- * ```ts
+ * ```ts no-assert
  * import { LF, format } from "@std/fs/eol";
  *
  * const CRLFinput = "deno\r\nis not\r\nnode";

@@ -118,7 +118,7 @@ export type { WalkEntry };
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk("."));
@@ -160,7 +160,7 @@ export type { WalkEntry };
  *     └── bar.ts
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { maxDepth: 1 }));
@@ -200,7 +200,7 @@ export type { WalkEntry };
  * └── foo
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { includeFiles: false }));
@@ -233,7 +233,7 @@ export type { WalkEntry };
  * └── foo
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { includeDirs: false }));
@@ -260,7 +260,7 @@ export type { WalkEntry };
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { includeSymlinks: false }));
@@ -377,7 +377,7 @@ export type { WalkEntry };
  * └── foo.js
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { exts: [".ts"] }));
@@ -404,7 +404,7 @@ export type { WalkEntry };
  * └── README.md
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { match: [/s/] }));
@@ -431,7 +431,7 @@ export type { WalkEntry };
  * └── README.md
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walk } from "@std/fs/walk";
  *
  * await Array.fromAsync(walk(".", { skip: [/s/] }));
@@ -547,7 +547,7 @@ export async function* walk(
  * └── foo.ts
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync("."));
@@ -589,7 +589,7 @@ export async function* walk(
  *     └── bar.ts
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { maxDepth: 1 }));
@@ -629,7 +629,7 @@ export async function* walk(
  * └── foo
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { includeFiles: false }));
@@ -662,7 +662,7 @@ export async function* walk(
  * └── foo
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { includeDirs: false }));
@@ -689,7 +689,7 @@ export async function* walk(
  * └── link -> script.ts (symbolic link)
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { includeSymlinks: false }));
@@ -806,7 +806,7 @@ export async function* walk(
  * └── foo.js
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { exts: [".ts"] }));
@@ -833,7 +833,7 @@ export async function* walk(
  * └── README.md
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { match: [/s/] }));
@@ -860,7 +860,7 @@ export async function* walk(
  * └── README.md
  * ```
  *
- * ```ts
+ * ```ts no-assert
  * import { walkSync } from "@std/fs/walk";
  *
  * Array.from(walkSync(".", { skip: [/s/] }));

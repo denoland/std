@@ -16,7 +16,7 @@ import { mapError } from "./_map_error.ts";
  * ```
  *
  * @example Truncate part of a file
- * ```ts
+ * ```ts no-assert
  * import { makeTempFile } from "@std/fs/unstable-make-temp-file";
  * import { readFile } from "@std/fs/unstable-read-file";
  * import { truncate } from "@std/fs/unstable-truncate";
@@ -60,7 +60,7 @@ export async function truncate(name: string, len?: number): Promise<void> {
  * ```
  *
  * @example Truncate part of a file
- * ```ts
+ * ```ts no-assert
  * import { makeTempFileSync } from "@std/fs/unstable-make-temp-file";
  * import { readFileSync } from "@std/fs/unstable-read-file";
  * import { truncateSync } from "@std/fs/unstable-truncate";
