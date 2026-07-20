@@ -400,3 +400,15 @@ Deno.test("Buffer.bytes() with copy set to false after Buffer.grow()", () => {
   assertEquals(actualBytes.byteLength, bufSize);
   assertEquals(actualBytes.buffer.byteLength, actualBytes.byteLength);
 });
+
+Deno.test("Buffer.readDiscard()", () => {
+  const bytes = Uint8Array.of(10, 11, 12, 13);
+  const reader = new Buffer();
+  writeAllSync(reader, bytes);
+
+  assertEquals(reader.bytes(), bytes.subarray(0, 4));
+  reader.readDiscard(1);
+  assertEquals(reader.bytes(), bytes.subarray(1, 4));
+  reader.readDiscard(2);
+  assertEquals(reader.bytes(), bytes.subarray(3, 4));
+});
