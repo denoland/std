@@ -21,7 +21,6 @@ jobs:
         deno:
           - v1.x
           - v2.x
-          - canary
         os:
           - ubuntu-latest
           - windows-latest
@@ -44,7 +43,7 @@ jobs:
 
       - name: Run tools tests
         run: deno task test:tools
-        if: matrix.deno == 'canary'
+        if: matrix.deno == 'v2.x'
 
       - name: Run timezone-dependent tests
         run: |
@@ -59,7 +58,7 @@ jobs:
 
       - name: Publish dry run
         run: deno publish --dry-run
-        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest'
+        if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest'
 
       - name: Upload coverage
         uses: codecov/codecov-action@v7
@@ -75,7 +74,7 @@ jobs:
           project: std-coverage
           root: coverage/html
           entrypoint: jsr:@std/http@1/file-server
-        if: matrix.deno == 'canary' && matrix.os == 'ubuntu-latest' && github.event_name == 'push'
+        if: matrix.deno == 'v2.x' && matrix.os == 'ubuntu-latest' && github.event_name == 'push'
 
   test-node:
     runs-on: ${{ matrix.os }}
@@ -153,7 +152,7 @@ jobs:
       - name: Set up Deno
         uses: denoland/setup-deno@v2
         with:
-          deno-version: canary
+          deno-version: v2.x
           cache: true
 
       - name: Format

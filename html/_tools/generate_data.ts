@@ -3,6 +3,9 @@
 
 // JSON version of the full canonical list of named HTML entities
 // https://html.spec.whatwg.org/multipage/named-characters.html
+// This is a one-off codegen fetch of a spec data file, not a project
+// dependency, so it is imported directly rather than via the import map.
+// deno-lint-ignore no-import-prefix
 import entityList from "https://html.spec.whatwg.org/entities.json" with {
   type: "json",
 };

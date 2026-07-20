@@ -1,3 +1,10 @@
+### 2026.07.03
+
+#### @std/cli 1.0.32 (patch)
+
+- fix(cli): render content in promptSelect when terminal height is too small
+  (#7209)
+
 ### 2026.06.30
 
 #### @std/async 1.5.0 (minor)
