@@ -27,7 +27,7 @@ jobs:
       - name: Run version bump
         run: |
           git fetch --unshallow origin
-          deno bump-version --import-map import_map.json
+          deno bump-version
           # `deno bump-version` writes release notes as single long lines;
           # format them so the release PR passes `deno fmt --check`.
           deno fmt Releases.md
