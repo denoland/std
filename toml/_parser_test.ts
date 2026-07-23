@@ -60,8 +60,8 @@ Deno.test({
   fn() {
     const parse = parserFactory(basicString);
     assertEquals(
-      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
-      'a"\n\t\b\\\あ🦕',
+      parse('"a\\"\\n\\t\\b\\e\\\\\\xAE\\u3042\\U0001F995"'),
+      'a"\n\t\b\x1B\\\®あ🦕',
     );
     assertEquals(parse('""'), "");
     assertEquals(parse('"a\\n"'), "a\n");
@@ -367,6 +367,10 @@ Deno.test({
   fn() {
     const parse = parserFactory(dateTime);
     assertEquals(
+      parse("1979-05-27T07:32Z"),
+      new Date("1979-05-27T07:32:00Z"),
+    );
+    assertEquals(
       parse("1979-05-27T07:32:00Z"),
       new Date("1979-05-27T07:32:00Z"),
     );
@@ -383,10 +387,21 @@ Deno.test({
       new Date("1979-05-27T07:32:00.999Z"),
     );
     assertEquals(
+      parse("1979-05-27 07:32Z"),
+      new Date("1979-05-27T07:32:00Z"),
+    );
+    assertEquals(
       parse("1979-05-27 07:32:00Z"),
       new Date("1979-05-27T07:32:00Z"),
     );
-    assertEquals(parse("1979-05-27T07:32:00"), new Date("1979-05-27T07:32:00"));
+    assertEquals(
+      parse("1979-05-27T07:32"),
+      new Date("1979-05-27T07:32:00"),
+    );
+    assertEquals(
+      parse("1979-05-27T07:32:00"),
+      new Date("1979-05-27T07:32:00"),
+    );
     assertEquals(
       parse("1979-05-27T00:32:00.999999"),
       new Date("1979-05-27T00:32:00.999999"),
@@ -406,6 +421,7 @@ Deno.test({
   name: "parse() handles local time",
   fn() {
     const parse = parserFactory(localTime);
+    assertEquals(parse("07:32"), "07:32:00");
     assertEquals(parse("07:32:00"), "07:32:00");
     assertEquals(parse("07:32:00.999"), "07:32:00.999");
     assertThrows(() => parse(""));
@@ -419,6 +435,7 @@ Deno.test({
     assertEquals(parse("1"), 1);
     assertEquals(parse("1.2"), 1.2);
     assertEquals(parse("1979-05-27"), new Date("1979-05-27"));
+    assertEquals(parse("07:32"), "07:32:00");
     assertEquals(parse("07:32:00"), "07:32:00");
     assertEquals(parse(`"foo.com"`), "foo.com");
     assertEquals(parse(`'foo.com'`), "foo.com");
@@ -480,9 +497,9 @@ Deno.test({
       last: "Preston-Werner",
     });
     assertEquals(parse(`{ type.name = "pug" }`), { type: { name: "pug" } });
+    assertEquals(parse(`{ x = 1,\n y = 2 }`), { x: 1, y: 2 });
+    assertEquals(parse(`{ x = 1, }`), { x: 1 });
     assertThrows(() => parse(`{ x = 1`));
-    assertThrows(() => parse(`{ x = 1,\n y = 2 }`));
-    assertThrows(() => parse(`{ x = 1, }`));
   },
 });
 
