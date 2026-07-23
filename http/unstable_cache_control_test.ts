@@ -71,35 +71,27 @@ Deno.test("parseCacheControl() ignores unknown directives", () => {
   });
 });
 
-Deno.test("parseCacheControl() throws on malformed numeric value", () => {
-  assertThrows(
-    () => parseCacheControl("max-age=abc"),
-    SyntaxError,
-    "invalid value",
-  );
-  assertThrows(
-    () => parseCacheControl("max-age=-1"),
-    SyntaxError,
-    "invalid value",
-  );
-  assertThrows(
-    () => parseCacheControl("s-maxage=1.5"),
-    SyntaxError,
-    "invalid value",
+Deno.test("parseCacheControl() ignores malformed numeric values", () => {
+  assertEquals(parseCacheControl("max-age=abc"), {});
+  assertEquals(parseCacheControl("max-age=-1"), {});
+  assertEquals(parseCacheControl("s-maxage=1.5"), {});
+  assertEquals(parseCacheControl("max-stale=abc"), {});
+});
+
+Deno.test("parseCacheControl() ignores valued directives without a value", () => {
+  assertEquals(parseCacheControl("max-age"), {});
+  assertEquals(parseCacheControl("stale-while-revalidate"), {});
+});
+
+Deno.test("parseCacheControl() keeps well-formed directives when others are malformed", () => {
+  assertEquals(
+    parseCacheControl("max-age=abc, no-store, s-maxage=600"),
+    { noStore: true, sMaxage: 600 },
   );
 });
 
-Deno.test("parseCacheControl() throws when valued directive has no value", () => {
-  assertThrows(
-    () => parseCacheControl("max-age"),
-    SyntaxError,
-    "requires an integer value",
-  );
-  assertThrows(
-    () => parseCacheControl("stale-while-revalidate"),
-    SyntaxError,
-    "requires an integer value",
-  );
+Deno.test("parseCacheControl() ignores duplicates after a malformed first occurrence", () => {
+  assertEquals(parseCacheControl("max-age=abc, max-age=100"), {});
 });
 
 Deno.test("formatCacheControl() returns empty string for empty object", () => {
@@ -166,12 +158,8 @@ Deno.test("parseCacheControl() parses min-fresh", () => {
   assertEquals(parseCacheControl("min-fresh=30"), { minFresh: 30 });
 });
 
-Deno.test("parseCacheControl() throws when min-fresh has no value", () => {
-  assertThrows(
-    () => parseCacheControl("min-fresh"),
-    SyntaxError,
-    "requires an integer value",
-  );
+Deno.test("parseCacheControl() ignores min-fresh without a value", () => {
+  assertEquals(parseCacheControl("min-fresh"), {});
 });
 
 Deno.test("parseCacheControl() parses stale-if-error", () => {
@@ -180,20 +168,12 @@ Deno.test("parseCacheControl() parses stale-if-error", () => {
   });
 });
 
-Deno.test("parseCacheControl() throws when stale-if-error has no value", () => {
-  assertThrows(
-    () => parseCacheControl("stale-if-error"),
-    SyntaxError,
-    "requires an integer value",
-  );
+Deno.test("parseCacheControl() ignores stale-if-error without a value", () => {
+  assertEquals(parseCacheControl("stale-if-error"), {});
 });
 
-Deno.test("parseCacheControl() throws when s-maxage has no value", () => {
-  assertThrows(
-    () => parseCacheControl("s-maxage"),
-    SyntaxError,
-    "requires an integer value",
-  );
+Deno.test("parseCacheControl() ignores s-maxage without a value", () => {
+  assertEquals(parseCacheControl("s-maxage"), {});
 });
 
 Deno.test("parseCacheControl() parses no-transform", () => {
@@ -391,12 +371,8 @@ Deno.test("parseCacheControl() accepts quoted-string form for numeric arguments"
   assertEquals(parseCacheControl('max-stale="120"'), { maxStale: 120 });
 });
 
-Deno.test("parseCacheControl() rejects quoted-string with non-digit content", () => {
-  assertThrows(
-    () => parseCacheControl('max-age="abc"'),
-    SyntaxError,
-    "invalid value",
-  );
+Deno.test("parseCacheControl() ignores quoted-string with non-digit content", () => {
+  assertEquals(parseCacheControl('max-age="abc"'), {});
 });
 
 Deno.test("parseCacheControl() unescapes backslash quoted-pairs in field names", () => {
