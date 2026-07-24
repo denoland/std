@@ -51,7 +51,7 @@ export function calcEncodingSize(x: CborType): number {
     for (const y of x) size += calcEncodingSize(y[0]) + calcEncodingSize(y[1]);
     return size;
   }
-  // Iterate own keys only, matching encodeObject's pair count.
+  // Must iterate the same keys as encodeObject().
   const keys = Object.keys(x);
   let size = 0;
   for (const y of keys) {
@@ -217,8 +217,7 @@ function encodeObject(
   offset: number,
 ): number {
   output[offset] = 0b101_00000;
-  // Iterate the same own keys the header counts; for-in would also visit
-  // inherited enumerable keys and desync the pair count.
+  // Must iterate the same keys as calcObjectEncodingSize().
   const keys = Object.keys(input);
   offset = encodeHeader(0b101_00000, keys.length, output, offset);
   for (const key of keys) {
