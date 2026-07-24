@@ -51,13 +51,13 @@ export function calcEncodingSize(x: CborType): number {
     for (const y of x) size += calcEncodingSize(y[0]) + calcEncodingSize(y[1]);
     return size;
   }
-  let pairs = 0;
+  // Iterate own keys only, matching encodeObject's pair count.
+  const keys = Object.keys(x);
   let size = 0;
-  for (const y in x) {
-    ++pairs;
+  for (const y of keys) {
     size += calcHeaderSize(y.length) + y.length + calcEncodingSize(x[y]);
   }
-  return size + calcHeaderSize(pairs);
+  return size + calcHeaderSize(keys.length);
 }
 
 export function encode(
@@ -217,8 +217,11 @@ function encodeObject(
   offset: number,
 ): number {
   output[offset] = 0b101_00000;
-  offset = encodeHeader(0b101_00000, Object.keys(input).length, output, offset);
-  for (const key in input) {
+  // Iterate the same own keys the header counts; for-in would also visit
+  // inherited enumerable keys and desync the pair count.
+  const keys = Object.keys(input);
+  offset = encodeHeader(0b101_00000, keys.length, output, offset);
+  for (const key of keys) {
     offset = encodeString(key, output, offset);
     offset = encode(input[key], output, offset);
   }
