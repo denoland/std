@@ -15,7 +15,7 @@ export interface XmlPosition {
   readonly line: number;
   /** Column number (1-indexed). */
   readonly column: number;
-  /** Byte offset in the input. */
+  /** Character offset in the input string (in UTF-16 code units, 0-indexed). */
   readonly offset: number;
 }
 
@@ -33,7 +33,8 @@ export interface XmlPosition {
  */
 export class XmlSyntaxError extends SyntaxError {
   /**
-   * The line number where the error occurred (1-indexed).
+   * The line number where the error occurred (1-indexed), or `0` when
+   * position tracking is disabled.
    *
    * @example Usage
    * ```ts
@@ -46,7 +47,8 @@ export class XmlSyntaxError extends SyntaxError {
    */
   readonly line: number;
   /**
-   * The column number where the error occurred (1-indexed).
+   * The column number where the error occurred (1-indexed), or `0` when
+   * position tracking is disabled.
    *
    * @example Usage
    * ```ts
@@ -59,7 +61,8 @@ export class XmlSyntaxError extends SyntaxError {
    */
   readonly column: number;
   /**
-   * The byte offset where the error occurred.
+   * The character offset in the input string where the error occurred
+   * (in UTF-16 code units, 0-indexed).
    *
    * @example Usage
    * ```ts
@@ -75,11 +78,18 @@ export class XmlSyntaxError extends SyntaxError {
   /**
    * Constructs a new XmlSyntaxError.
    *
+   * The position is appended to the message, unless `position.line` is `0`
+   * (the sentinel used when position tracking is disabled).
+   *
    * @param message The error message describing the syntax issue.
    * @param position The position in the XML source where the error occurred.
    */
   constructor(message: string, position: XmlPosition) {
-    super(`${message} at line ${position.line}, column ${position.column}`);
+    super(
+      position.line === 0
+        ? message
+        : `${message} at line ${position.line}, column ${position.column}`,
+    );
     this.name = "XmlSyntaxError";
     this.line = position.line;
     this.column = position.column;
@@ -110,98 +120,13 @@ export interface XmlName {
 }
 
 /**
- * An XML attribute with its qualified name and value.
- */
-export interface XmlAttribute {
-  /** The qualified name of the attribute. */
-  readonly name: XmlName;
-  /** The decoded attribute value. */
-  readonly value: string;
-}
-
-// ============================================================================
-// Event Types (for streaming parser)
-// ============================================================================
-
-/**
- * Event emitted when an element start tag is encountered.
- */
-export interface XmlStartElementEvent extends XmlPosition {
-  /** The event type discriminant. */
-  readonly type: "start_element";
-  /** The qualified name of the element. */
-  readonly name: XmlName;
-  /** The attributes on the element. */
-  readonly attributes: ReadonlyArray<XmlAttribute>;
-  /** Whether this is a self-closing tag (`<foo/>`). */
-  readonly selfClosing: boolean;
-}
-
-/**
- * Event emitted when an element end tag is encountered.
- */
-export interface XmlEndElementEvent extends XmlPosition {
-  /** The event type discriminant. */
-  readonly type: "end_element";
-  /** The qualified name of the element. */
-  readonly name: XmlName;
-}
-
-/**
- * Event emitted for text content.
- */
-export interface XmlTextEvent extends XmlPosition {
-  /** The event type discriminant. */
-  readonly type: "text";
-  /** The decoded text content. */
-  readonly text: string;
-}
-
-/**
- * Event emitted for CDATA sections.
- *
- * @see {@link https://www.w3.org/TR/xml/#sec-cdata-sect | XML 1.0 §2.7 CDATA Sections}
- */
-export interface XmlCDataEvent extends XmlPosition {
-  /** The event type discriminant. */
-  readonly type: "cdata";
-  /** The raw CDATA content (not entity-decoded). */
-  readonly text: string;
-}
-
-/**
- * Event emitted for comments.
- *
- * @see {@link https://www.w3.org/TR/xml/#sec-comments | XML 1.0 §2.5 Comments}
- */
-export interface XmlCommentEvent extends XmlPosition {
-  /** The event type discriminant. */
-  readonly type: "comment";
-  /** The comment text (excluding `<!--` and `-->`). */
-  readonly text: string;
-}
-
-/**
- * Event emitted for processing instructions.
- *
- * @see {@link https://www.w3.org/TR/xml/#sec-pi | XML 1.0 §2.6 Processing Instructions}
- */
-export interface XmlProcessingInstructionEvent extends XmlPosition {
-  /** The event type discriminant. */
-  readonly type: "processing_instruction";
-  /** The PI target (e.g., "xml-stylesheet"). */
-  readonly target: string;
-  /** The PI content after the target. */
-  readonly content: string;
-}
-
-/**
- * Event emitted for the XML declaration.
+ * The XML declaration of a document, exposed as
+ * {@linkcode XmlDocument.declaration}.
  *
  * @see {@link https://www.w3.org/TR/xml/#sec-prolog-dtd | XML 1.0 §2.8 Prolog}
  */
-export interface XmlDeclarationEvent extends XmlPosition {
-  /** The event type discriminant. */
+export interface XmlDeclaration extends XmlPosition {
+  /** The type discriminant. */
   readonly type: "declaration";
   /** The XML version as declared in the document (e.g. `"1.0"` or `"1.1"`). */
   readonly version: string;
@@ -210,18 +135,6 @@ export interface XmlDeclarationEvent extends XmlPosition {
   /** Whether the document is standalone (§2.9). */
   readonly standalone?: "yes" | "no";
 }
-
-/**
- * Discriminated union of all XML events emitted by the streaming parser.
- */
-export type XmlEvent =
-  | XmlStartElementEvent
-  | XmlEndElementEvent
-  | XmlTextEvent
-  | XmlCDataEvent
-  | XmlCommentEvent
-  | XmlProcessingInstructionEvent
-  | XmlDeclarationEvent;
 
 /**
  * Base options shared by parsing functions.
@@ -384,7 +297,11 @@ export interface XmlElement {
   readonly type: "element";
   /** The qualified name of the element. */
   readonly name: XmlName;
-  /** Attribute lookup by local name. */
+  /**
+   * Attribute values keyed by the raw qualified attribute name as written in
+   * the document, including any namespace prefix (e.g. `"id"`, `"xlink:href"`,
+   * `"xmlns"`, `"xmlns:ns"`).
+   */
   readonly attributes: Readonly<Record<string, string>>;
   /** The child nodes of this element. */
   readonly children: ReadonlyArray<XmlNode>;
@@ -404,7 +321,7 @@ export type XmlNode =
  */
 export interface XmlDocument {
   /** The XML declaration, if present. */
-  readonly declaration?: XmlDeclarationEvent;
+  readonly declaration?: XmlDeclaration;
   /** The root element of the document. */
   readonly root: XmlElement;
 }
@@ -451,53 +368,7 @@ export type XmlProcessingInstructionCallback = (
 ) => void;
 
 /**
- * Callbacks for tokenizer output - enables zero-allocation token emission.
- *
- * Instead of creating token objects, the tokenizer invokes these callbacks
- * directly with primitive values.
- */
-export interface XmlTokenCallbacks {
-  /** Called when a start tag opens (e.g., `<element`). */
-  onStartTagOpen?(
-    name: string,
-    line: number,
-    column: number,
-    offset: number,
-  ): void;
-
-  /** Called for each attribute in a start tag. */
-  onAttribute?(name: string, value: string): void;
-
-  /** Called when a start tag closes (e.g., `>` or `/>`). */
-  onStartTagClose?(selfClosing: boolean): void;
-
-  /** Called when an end tag is encountered (e.g., `</element>`). */
-  onEndTag?(name: string, line: number, column: number, offset: number): void;
-
-  /** Called for text content between tags. */
-  onText?: XmlContentCallback;
-
-  /** Called for CDATA sections. */
-  onCData?: XmlContentCallback;
-
-  /** Called for XML comments. */
-  onComment?: XmlContentCallback;
-
-  /** Called for processing instructions. */
-  onProcessingInstruction?: XmlProcessingInstructionCallback;
-
-  /** Called for XML declarations. */
-  onDeclaration?: XmlDeclarationCallback;
-
-  /** Called for DOCTYPE declarations. */
-  onDoctype?: XmlDoctypeCallback;
-
-  /** Called for internal entity declarations in the DTD. */
-  onEntityDeclaration?(name: string, value: string): void;
-}
-
-/**
- * Reusable attribute accessor that avoids allocating XmlAttribute arrays.
+ * Reusable attribute accessor that avoids allocating attribute object arrays.
  *
  * Instead of creating an array of attribute objects, attributes are accessed
  * by index through this interface. The implementation reuses internal arrays
@@ -531,13 +402,19 @@ export interface XmlAttributeIterator {
 /**
  * Callbacks for event-level output - enables zero-allocation event emission.
  *
- * The parser invokes these callbacks instead of creating XmlEvent objects.
+ * The parser invokes these callbacks instead of creating event objects.
  */
 export interface XmlEventCallbacks {
   /** Called for XML declarations. */
   onDeclaration?: XmlDeclarationCallback;
 
-  /** Called for DOCTYPE declarations. */
+  /**
+   * Called for DOCTYPE declarations.
+   *
+   * Only invoked when the {@linkcode BaseParseOptions.disallowDoctype}
+   * option is set to `false`; with the default (`true`), a DOCTYPE
+   * declaration throws an {@linkcode XmlSyntaxError} instead.
+   */
   onDoctype?: XmlDoctypeCallback;
 
   /**
