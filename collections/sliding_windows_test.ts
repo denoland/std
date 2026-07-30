@@ -152,13 +152,13 @@ Deno.test({
       "Cannot create sliding windows: step must be a positive integer, current value is NaN",
     );
     slidingWindowsThrowsTest(
-      // @ts-ignore: for test
+      // @ts-expect-error: for test
       [[1, 2, 3, 4, 5], "invalid"],
       RangeError,
       "Cannot create sliding windows: size must be a positive integer, current value is invalid",
     );
     slidingWindowsThrowsTest(
-      // @ts-ignore: for test
+      // @ts-expect-error: for test
       [[1, 2, 3, 4, 5], 3, { step: "invalid" }],
       RangeError,
       "Cannot create sliding windows: step must be a positive integer, current value is invalid",
