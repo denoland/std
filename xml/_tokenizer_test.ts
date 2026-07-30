@@ -1,8 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
-import { XmlTokenizer } from "./_tokenizer.ts";
-import type { XmlTokenCallbacks } from "./types.ts";
+import { type XmlTokenCallbacks, XmlTokenizer } from "./_tokenizer.ts";
 import { XmlSyntaxError } from "./types.ts";
 
 /** Token type for testing - recreates the old token structure for assertions. */
