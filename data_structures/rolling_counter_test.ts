@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
-import { RollingCounter } from "./unstable_rolling_counter.ts";
+import { RollingCounter } from "./rolling_counter.ts";
 
 // -- Constructor --
 
