@@ -4,6 +4,29 @@
  * A {@link https://en.wikipedia.org/wiki/Behavior-driven_development | BDD} interface
  * to `Deno.test()` API.
  *
+ * > [!WARNING]
+ * > **Deprecated**: A BDD interface is available through the `node:test`
+ * > module, which is supported first-class by `deno test`. Use `node:test`'s
+ * > `describe()` and `it()`, or the flat `Deno.test()` style with the
+ * > `Deno.test.beforeAll()`/`beforeEach()`/`afterEach()`/`afterAll()` hooks
+ * > (Deno 2.5+), instead. This module will be removed in 2.0.0.
+ *
+ * Migration is mostly a matter of changing the import:
+ *
+ * ```ts ignore
+ * // Before
+ * import { describe, it, beforeEach } from "@std/testing/bdd";
+ *
+ * // After
+ * import { describe, it, beforeEach } from "node:test";
+ * ```
+ *
+ * `it.only`, `it.skip` and `it.todo` (and the `describe` equivalents) are
+ * available in `node:test` as well. Note that `node:test` suites don't accept
+ * `Deno.test` options such as `sanitizeOps`, `sanitizeResources` or
+ * `permissions`; tests that rely on per-suite options can migrate to the flat
+ * `Deno.test()` style instead, which accepts them per test.
+ *
  * With `@std/testing/bdd` module you can write your tests in a familiar format for
  * grouping tests and adding setup/teardown hooks used by other JavaScript testing
  * frameworks like Jasmine, Jest, and Mocha.
@@ -399,6 +422,9 @@
  * });
  * ```
  *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s BDD interface
+ * or the flat `Deno.test()` style instead.
+ *
  * @module
  */
 
@@ -414,7 +440,12 @@ import {
 } from "./_test_suite.ts";
 export type { DescribeDefinition, ItDefinition, TestSuite };
 
-/** The arguments for an ItFunction. */
+/**
+ * The arguments for an ItFunction.
+ *
+ * @deprecated This will be removed in 2.0.0 together with {@linkcode it}.
+ * Use `node:test`'s `it()` instead.
+ */
 export type ItArgs<T> =
   | [options: ItDefinition<T>]
   | [
@@ -526,7 +557,12 @@ function itDefinition<T>(...args: ItArgs<T>): ItDefinition<T> {
   };
 }
 
-/** Registers an individual test case. */
+/**
+ * Registers an individual test case.
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `it()` or
+ * `Deno.test()` instead.
+ */
 // deno-lint-ignore deno-style-guide/naming-convention
 export interface it {
   <T>(...args: ItArgs<T>): void;
@@ -562,6 +598,9 @@ export interface it {
  *
  * @typeParam T The self type of the function to implement the test case
  * @param args The test case
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `it()` or
+ * `Deno.test()` instead.
  */
 export function it<T>(...args: ItArgs<T>) {
   if (TestSuiteInternal.runningCount > 0) {
@@ -742,6 +781,9 @@ it.skip = function itSkip<T>(...args: ItArgs<T>): void {
  *
  * @typeParam T The self type of the function to implement the test case
  * @param args The test case
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `test()` or
+ * `Deno.test()` instead.
  */
 export function test<T>(...args: ItArgs<T>) {
   it(...args);
@@ -864,6 +906,9 @@ function addHook<T>(
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the setup behavior.
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `before()` or
+ * `Deno.test.beforeAll()` (Deno 2.5+) instead.
  */
 export function beforeAll<T>(
   fn: (this: T) => void | Promise<void>,
@@ -895,6 +940,9 @@ export function beforeAll<T>(
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the setup behavior.
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `before()` or
+ * `Deno.test.beforeAll()` (Deno 2.5+) instead.
  */
 export function before<T>(
   fn: (this: T) => void | Promise<void>,
@@ -924,6 +972,9 @@ export function before<T>(
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the teardown behavior.
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `after()` or
+ * `Deno.test.afterAll()` (Deno 2.5+) instead.
  */
 export function afterAll<T>(
   fn: (this: T) => void | Promise<void>,
@@ -955,6 +1006,9 @@ export function afterAll<T>(
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the teardown behavior.
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `after()` or
+ * `Deno.test.afterAll()` (Deno 2.5+) instead.
  */
 export function after<T>(
   fn: (this: T) => void | Promise<void>,
@@ -984,6 +1038,9 @@ export function after<T>(
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the shared setup behavior
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `beforeEach()`
+ * or `Deno.test.beforeEach()` (Deno 2.5+) instead.
  */
 export function beforeEach<T>(
   fn: (this: T) => void | Promise<void>,
@@ -1013,6 +1070,9 @@ export function beforeEach<T>(
  *
  * @typeParam T The self type of the function
  * @param fn The function to implement the shared teardown behavior
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `afterEach()`
+ * or `Deno.test.afterEach()` (Deno 2.5+) instead.
  */
 export function afterEach<T>(
   fn: (this: T) => void | Promise<void>,
@@ -1020,7 +1080,12 @@ export function afterEach<T>(
   addHook("afterEach", fn);
 }
 
-/** The arguments for a DescribeFunction. */
+/**
+ * The arguments for a DescribeFunction.
+ *
+ * @deprecated This will be removed in 2.0.0 together with {@linkcode describe}.
+ * Use `node:test`'s `describe()` instead.
+ */
 export type DescribeArgs<T> =
   | [options: DescribeDefinition<T>]
   | [name: string]
@@ -1146,7 +1211,12 @@ function describeDefinition<T>(
   };
 }
 
-/** Registers a test suite. */
+/**
+ * Registers a test suite.
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `describe()`
+ * instead.
+ */
 // deno-lint-ignore deno-style-guide/naming-convention
 export interface describe {
   <T>(...args: DescribeArgs<T>): TestSuite<T>;
@@ -1180,6 +1250,9 @@ export interface describe {
  * @typeParam T The self type of the test suite body.
  * @param args The test suite body.
  * @returns The test suite
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `describe()`
+ * instead.
  */
 export function describe<T>(
   ...args: DescribeArgs<T>
