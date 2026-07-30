@@ -217,7 +217,7 @@ function encodeObject(
   offset: number,
 ): number {
   output[offset] = 0b101_00000;
-  // Must iterate the same keys as calcObjectEncodingSize().
+  // Must iterate the same keys as calcEncodingSize().
   const keys = Object.keys(input);
   offset = encodeHeader(0b101_00000, keys.length, output, offset);
   for (const key of keys) {
