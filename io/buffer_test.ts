@@ -401,19 +401,39 @@ Deno.test("Buffer.bytes() with copy set to false after Buffer.grow()", () => {
   assertEquals(actualBytes.buffer.byteLength, actualBytes.byteLength);
 });
 
-Deno.test("Buffer.readDiscard()", () => {
+Deno.test("Buffer.discard()", () => {
   const bytes = Uint8Array.of(10, 11, 12, 13);
   const reader = new Buffer();
+
+  function assertDiscardThrows(n: number) {
+    const bytesBefore = reader.bytes({ copy: true });
+    assertThrows(
+      () => reader.discard(n),
+      RangeError,
+      "Cannot discard bytes",
+    );
+    assertEquals(reader.bytes(), bytesBefore);
+  }
+
+  assertDiscardThrows(1);
+
+  reader.discard(0);
+  assert(reader.empty());
 
   writeAllSync(reader, bytes);
   assertEquals(reader.bytes(), bytes.subarray(0, 4));
 
-  assertThrows(() => reader.readDiscard(5));
+  assertDiscardThrows(-1);
+  assertDiscardThrows(5);
+  assertDiscardThrows(0.5);
+  assertDiscardThrows(NaN);
+
+  reader.discard(0);
   assertEquals(reader.bytes(), bytes.subarray(0, 4));
 
-  reader.readDiscard(1);
+  reader.discard(1);
   assertEquals(reader.bytes(), bytes.subarray(1, 4));
 
-  reader.readDiscard(2);
+  reader.discard(2);
   assertEquals(reader.bytes(), bytes.subarray(3, 4));
 });

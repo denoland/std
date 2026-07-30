@@ -194,15 +194,18 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
    *
    * const buf = new Buffer();
    * await buf.write(new TextEncoder().encode("Hello, world!"));
-   * buf.readDiscard(3);
+   * buf.discard(3);
    * assertEquals(buf.length, 10);
    * ```
    *
    * @param n The number of bytes to discard.
+   * @throws {RangeError} If `n` is not an integer, is negative, or exceeds the buffer length.
    */
-  readDiscard(n: number) {
-    if (n < 0 || n > this.length) {
-      throw new Error("Buffer read discard out of range");
+  discard(n: number) {
+    if (!Number.isInteger(n) || n < 0 || n > this.length) {
+      throw new RangeError(
+        `Cannot discard bytes as "n" must be an integer >= 0 and <= ${this.length}: received ${n}`,
+      );
     }
     this.#off += n;
   }
