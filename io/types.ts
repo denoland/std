@@ -4,6 +4,9 @@
 /**
  * An abstract interface which when implemented provides an interface to read
  * bytes into an array buffer asynchronously.
+ *
+ * @deprecated Use {@linkcode ReadableStream} instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export interface Reader {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number of
@@ -35,6 +38,10 @@ export interface Reader {
 /**
  * An abstract interface which when implemented provides an interface to read
  * bytes into an array buffer synchronously.
+ *
+ * @deprecated Web streams have no synchronous equivalent. See
+ * https://github.com/denoland/std/issues/6284 for the replacement discussion
+ * and https://github.com/denoland/std/issues/7258 for details.
  */
 export interface ReaderSync {
   /** Reads up to `p.byteLength` bytes into `p`. It resolves to the number
@@ -65,6 +72,9 @@ export interface ReaderSync {
 /**
  * An abstract interface which when implemented provides an interface to write
  * bytes from an array buffer to a file/resource asynchronously.
+ *
+ * @deprecated Use {@linkcode WritableStream} instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export interface Writer {
   /** Writes `p.byteLength` bytes from `p` to the underlying data stream. It
@@ -81,6 +91,10 @@ export interface Writer {
 /**
  * An abstract interface which when implemented provides an interface to write
  * bytes from an array buffer to a file/resource synchronously.
+ *
+ * @deprecated Web streams have no synchronous equivalent. See
+ * https://github.com/denoland/std/issues/6284 for the replacement discussion
+ * and https://github.com/denoland/std/issues/7258 for details.
  */
 export interface WriterSync {
   /** Writes `p.byteLength` bytes from `p` to the underlying data
@@ -98,6 +112,9 @@ export interface WriterSync {
 /**
  * An abstract interface which when implemented provides an interface to close
  * files/resources that were previously opened.
+ *
+ * @deprecated Use {@linkcode Disposable} instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export interface Closer {
   /** Closes the resource, "freeing" the backing file/resource. */
@@ -107,6 +124,9 @@ export interface Closer {
 /**
  * A enum which defines the seek mode for IO related APIs that support
  * seeking.
+ *
+ * @deprecated Use {@linkcode Deno.SeekMode} instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export enum SeekMode {
   /* Seek from the start of the file/resource. */
@@ -120,6 +140,9 @@ export enum SeekMode {
 /**
  * An abstract interface which when implemented provides an interface to seek
  * within an open file/resource asynchronously.
+ *
+ * @deprecated Use {@linkcode Deno.FsFile.seek} on the resource directly
+ * instead. See https://github.com/denoland/std/issues/7258 for details.
  */
 export interface Seeker {
   /** Seek sets the offset for the next `read()` or `write()` to offset,
@@ -140,6 +163,9 @@ export interface Seeker {
 /**
  * An abstract interface which when implemented provides an interface to seek
  * within an open file/resource synchronously.
+ *
+ * @deprecated Use {@linkcode Deno.FsFile.seekSync} on the resource directly
+ * instead. See https://github.com/denoland/std/issues/7258 for details.
  */
 export interface SeekerSync {
   /** Seek sets the offset for the next `readSync()` or `writeSync()` to
