@@ -12,7 +12,7 @@ import { ascend } from "./comparators.ts";
  * @typeParam K The type of the key.
  * @typeParam P The type of the priority. Defaults to `number`.
  */
-export interface HeapEntry<K, P = number> {
+export interface IndexedHeapEntry<K, P = number> {
   /** The key that identifies this entry in the heap. */
   readonly key: K;
   /** The priority of this entry (smaller = higher priority by default). */
@@ -80,9 +80,12 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  * key in logarithmic time.
  *
  * Priorities default to `number` and are sorted smallest-first via
- * {@linkcode ascend}. Pass a different comparator (e.g.,
- * {@linkcode descend} for max-heap order) or a different priority type
- * (e.g., `[number, number]` for stable tie-breaking) via the `compare`
+ * {@linkcode ascend}: a min-heap, matching the usual convention for keyed
+ * priority queues (Dijkstra, schedulers) where a smaller value means higher
+ * priority. Note this is the opposite of {@linkcode BinaryHeap}, whose
+ * default is {@linkcode descend} (max-heap). Pass a different comparator
+ * (e.g., {@linkcode descend} for max-heap order) or a different priority
+ * type (e.g., `[number, number]` for stable tie-breaking) via the `compare`
  * option.
  *
  * | Method              | Time complexity                       |
@@ -181,7 +184,8 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  * primitives.
  * @typeParam P The type of the priority. Defaults to `number`.
  */
-export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
+export class IndexedHeap<K, P = number>
+  implements Iterable<IndexedHeapEntry<K, P>> {
   #data: { key: K; priority: P }[] = [];
   #index: Map<K, number> = new Map();
   #compare: (a: P, b: P) => number;
@@ -584,7 +588,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns The front entry, or `undefined` if empty.
    */
-  pop(): HeapEntry<K, P> | undefined {
+  pop(): IndexedHeapEntry<K, P> | undefined {
     const size = this.#data.length;
     if (size === 0) return undefined;
 
@@ -624,7 +628,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns A wrapper around the front entry, or `undefined` if empty.
    */
-  peek(): HeapEntry<K, P> | undefined {
+  peek(): IndexedHeapEntry<K, P> | undefined {
     const entry = this.#data[0];
     if (entry === undefined) return undefined;
     return { key: entry.key, priority: entry.priority };
@@ -921,9 +925,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns An iterator yielding entries from smallest to largest priority.
    */
-  *drain(): IterableIterator<HeapEntry<K, P>> {
+  *drain(): IterableIterator<IndexedHeapEntry<K, P>> {
     while (!this.isEmpty()) {
-      yield this.pop() as HeapEntry<K, P>;
+      yield this.pop() as IndexedHeapEntry<K, P>;
     }
   }
 
@@ -956,7 +960,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns An array of entries in arbitrary (heap-internal) order.
    */
-  toArray(): HeapEntry<K, P>[] {
+  toArray(): IndexedHeapEntry<K, P>[] {
     return this.#data.map(({ key, priority }) => ({ key, priority }));
   }
 
@@ -992,7 +996,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns An iterator yielding entries in arbitrary (heap-internal) order.
    */
-  *[Symbol.iterator](): IterableIterator<HeapEntry<K, P>> {
+  *[Symbol.iterator](): IterableIterator<IndexedHeapEntry<K, P>> {
     for (const { key, priority } of this.#data) {
       yield { key, priority };
     }

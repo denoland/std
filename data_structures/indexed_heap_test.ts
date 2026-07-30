@@ -2,8 +2,8 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { descend } from "./comparators.ts";
 import {
-  type HeapEntry,
   IndexedHeap,
+  type IndexedHeapEntry,
   type ReadonlyIndexedHeap,
 } from "./indexed_heap.ts";
 
@@ -28,7 +28,7 @@ Deno.test("IndexedHeap push / pop / peek with ascending priorities", () => {
   assertEquals(heap.isEmpty(), false);
   assertEquals(heap.peek(), { key: "a", priority: 1 });
 
-  const popped: HeapEntry<string>[] = [];
+  const popped: IndexedHeapEntry<string>[] = [];
   while (!heap.isEmpty()) {
     popped.push(heap.pop()!);
   }
@@ -313,7 +313,7 @@ Deno.test("IndexedHeap drain() retains remaining entries on early break", () => 
   heap.push("c", 3);
   heap.push("d", 4);
 
-  const drained: HeapEntry<string>[] = [];
+  const drained: IndexedHeapEntry<string>[] = [];
   for (const entry of heap.drain()) {
     drained.push(entry);
     if (entry.key === "b") break;
@@ -387,7 +387,7 @@ Deno.test("IndexedHeap handles duplicate priorities", () => {
   heap.push("c", 5);
 
   assertEquals(heap.size, 3);
-  const results: HeapEntry<string>[] = [];
+  const results: IndexedHeapEntry<string>[] = [];
   while (!heap.isEmpty()) {
     results.push(heap.pop()!);
   }
@@ -802,7 +802,7 @@ Deno.test("IndexedHeap iterator works with for-of", () => {
   heap.push("x", 5);
   heap.push("y", 3);
 
-  const collected: HeapEntry<string>[] = [];
+  const collected: IndexedHeapEntry<string>[] = [];
   for (const entry of heap) {
     collected.push(entry);
   }
