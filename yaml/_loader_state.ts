@@ -39,6 +39,7 @@ import {
 import { DEFAULT_SCHEMA, type Schema, type TypeMap } from "./_schema.ts";
 import type { KindType, Type } from "./_type.ts";
 import { isObject, isPlainObject } from "./_utils.ts";
+import { YamlSyntaxError } from "./types.ts";
 
 const CONTEXT_FLOW_IN = 1;
 const CONTEXT_FLOW_OUT = 2;
@@ -64,7 +65,7 @@ export interface LoaderStateOptions {
   /** compatibility with JSON.parse behaviour. */
   allowDuplicateKeys?: boolean;
   /** function to call on warning messages. */
-  onWarning?(error: SyntaxError): void;
+  onWarning?(error: YamlSyntaxError): void;
 }
 
 const ESCAPED_HEX_LENGTHS = new Map<number, number>([
@@ -169,18 +170,6 @@ function getSnippet(buffer: string, position: number): string | null {
   return `${indent + head + snippet + tail}\n${caretIndent}^`;
 }
 
-function markToString(
-  buffer: string,
-  position: number,
-  line: number,
-  column: number,
-): string {
-  let where = `at line ${line + 1}, column ${column + 1}`;
-  const snippet = getSnippet(buffer, position);
-  if (snippet) where += `:\n${snippet}`;
-  return where;
-}
-
 function getIndentStatus(lineIndent: number, parentIndent: number) {
   if (lineIndent > parentIndent) return 1;
   if (lineIndent < parentIndent) return -1;
@@ -229,7 +218,7 @@ export class LoaderState {
   lineIndent = 0;
   lineStart = 0;
   line = 0;
-  onWarning: ((error: SyntaxError) => void) | undefined;
+  onWarning: ((error: YamlSyntaxError) => void) | undefined;
   allowDuplicateKeys: boolean;
   implicitTypes: Type<"scalar">[];
   typeMap: TypeMap;
@@ -283,14 +272,14 @@ export class LoaderState {
     }
   }
 
-  #createError(message: string): SyntaxError {
-    const mark = markToString(
-      this.#scanner.source,
-      this.#scanner.position,
-      this.line,
-      this.#scanner.position - this.lineStart,
-    );
-    return new SyntaxError(`${message} ${mark}`);
+  #createError(message: string): YamlSyntaxError {
+    const offset = this.#scanner.position;
+    const snippet = getSnippet(this.#scanner.source, offset) ?? undefined;
+    return new YamlSyntaxError(message, {
+      line: this.line + 1,
+      column: offset - this.lineStart + 1,
+      offset,
+    }, snippet);
   }
 
   dispatchWarning(message: string) {
@@ -1852,9 +1841,19 @@ export class LoaderState {
     return result;
   }
 
-  *readDocuments() {
+  *readDocuments(
+    options: { singleDocument?: boolean } = {},
+  ): Generator<unknown> {
+    const { singleDocument = false } = options;
+    let yielded = 0;
     while (!this.#scanner.eof()) {
+      if (singleDocument && yielded > 0) {
+        throw this.#createError(
+          "Found more than 1 document in the stream: expected a single document",
+        );
+      }
       yield this.readDocument();
+      yielded++;
     }
   }
 }
