@@ -105,7 +105,7 @@ Deno.test("includesValue() handles NaN value", () => {
 
 Deno.test("includesValue() prevents enumerable prototype check", () => {
   class Foo {}
-  // @ts-ignore: for test
+  // @ts-expect-error: for test
   Foo.prototype.a = "hello";
   const input = new Foo() as Record<string, string>;
 

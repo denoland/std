@@ -10,7 +10,12 @@ export const globalSanitizersState = {
 };
 const assertionState = getAssertionState();
 
-/** The options for creating a test suite with the describe function. */
+/**
+ * The options for creating a test suite with the describe function.
+ *
+ * @deprecated This will be removed in 2.0.0 together with `describe` from
+ * `@std/testing/bdd`. Use `node:test`'s `describe()` instead.
+ */
 export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
   /** The body of the test suite */
   fn?: () => void | undefined;
@@ -38,7 +43,12 @@ export interface DescribeDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
     | ((this: T) => void | Promise<void>)[];
 }
 
-/** The options for creating an individual test case with the it function. */
+/**
+ * The options for creating an individual test case with the it function.
+ *
+ * @deprecated This will be removed in 2.0.0 together with `it` from
+ * `@std/testing/bdd`. Use `node:test`'s `it()` instead.
+ */
 export interface ItDefinition<T> extends Omit<Deno.TestDefinition, "fn"> {
   /** The body of the test case */
   fn: (this: T, t: Deno.TestContext) => void | Promise<void>;
@@ -55,6 +65,9 @@ export type HookNames = "beforeAll" | "afterAll" | "beforeEach" | "afterEach";
 
 /**
  * A group of tests.
+ *
+ * @deprecated This will be removed in 2.0.0 together with `describe` from
+ * `@std/testing/bdd`. Use `node:test`'s `describe()` instead.
  */
 export interface TestSuite<T> {
   /** The symbol to use for grouping the test suite */
