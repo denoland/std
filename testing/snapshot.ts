@@ -2,6 +2,36 @@
 
 /** A snapshotting library.
  *
+ * > [!WARNING]
+ * > **Deprecated**: Snapshot testing is built into the Deno test runner as of
+ * > Deno 2.9 and into the `node:test` module. Use the built-in
+ * > [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/) or
+ * > `node:test`'s `t.assert.snapshot()` instead. This module will be removed
+ * > in 2.0.0.
+ *
+ * The built-in `t.assertSnapshot()` uses the same snapshot file format and
+ * default serialization as this module, so existing `__snapshots__/*.snap`
+ * files keep working. Migration is mechanical:
+ *
+ * ```ts ignore
+ * // Before
+ * import { assertSnapshot } from "@std/testing/snapshot";
+ *
+ * Deno.test("snapshot", async (t) => {
+ *   await assertSnapshot(t, { hello: "world!" });
+ * });
+ *
+ * // After (Deno 2.9+, no import needed)
+ * Deno.test("snapshot", async (t) => {
+ *   await t.assertSnapshot({ hello: "world!" });
+ * });
+ * ```
+ *
+ * Snapshots are updated with `deno test --update-snapshots` (or `-u`) instead
+ * of passing `-- --update` to the test runner. The built-in also accepts
+ * `serializer`, `name`, `dir`, `path`, and `mode` options, covering the
+ * {@linkcode createAssertSnapshot} use cases.
+ *
  * The `assertSnapshot` function will create a snapshot of a value and compare it
  * to a reference snapshot, which is stored alongside the test file in the
  * `__snapshots__` directory.
@@ -172,6 +202,10 @@
  * others pull your changes, their tests will pass without needing to update
  * snapshots locally.
  *
+ * @deprecated This will be removed in 2.0.0. Use the built-in
+ * [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) or `node:test`'s `t.assert.snapshot()` instead.
+ *
  * @module
  */
 
@@ -197,10 +231,22 @@ export { serialize };
 const SNAPSHOT_DIR = "__snapshots__";
 const SNAPSHOT_EXT = "snap";
 
-/** The mode of snapshot testing. */
+/**
+ * The mode of snapshot testing.
+ *
+ * @deprecated This will be removed in 2.0.0. Use the `mode` option of the
+ * built-in [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) instead.
+ */
 export type SnapshotMode = "assert" | "update";
 
-/** The options for {@linkcode assertSnapshot}. */
+/**
+ * The options for {@linkcode assertSnapshot}.
+ *
+ * @deprecated This will be removed in 2.0.0. Use the options of the built-in
+ * [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) instead.
+ */
 export type SnapshotOptions<T = unknown> = {
   /**
    * Snapshot output directory. Snapshot files will be written to this directory.
@@ -518,6 +564,10 @@ class AssertSnapshotContext {
  * @param context The test context
  * @param actual The actual value to compare
  * @param options The options
+ *
+ * @deprecated This will be removed in 2.0.0. Use the built-in
+ * [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) or `node:test`'s `t.assert.snapshot()` instead.
  */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
@@ -543,6 +593,10 @@ export async function assertSnapshot<T>(
  * @param context The test context
  * @param actual The actual value to compare
  * @param message The optional assertion message
+ *
+ * @deprecated This will be removed in 2.0.0. Use the built-in
+ * [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) or `node:test`'s `t.assert.snapshot()` instead.
  */
 export async function assertSnapshot<T>(
   context: Deno.TestContext,
@@ -633,6 +687,10 @@ export async function assertSnapshot(
  * @param options The options
  * @param baseAssertSnapshot {@linkcode assertSnapshot} function implementation. Default to the original {@linkcode assertSnapshot}
  * @returns {@linkcode assertSnapshot} function with the given default options.
+ *
+ * @deprecated This will be removed in 2.0.0. Pass options to the built-in
+ * [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) instead.
  */
 export function createAssertSnapshot<T>(
   options: SnapshotOptions<T>,

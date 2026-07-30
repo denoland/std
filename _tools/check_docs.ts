@@ -131,7 +131,7 @@ function assertHasParamTag(
   );
   if (tag === undefined) return;
   assert(
-    // @ts-ignore doc is defined
+    // @ts-expect-error doc is defined
     tag.doc !== undefined,
     `@param tag for ${param} must have a description`,
     document,
@@ -205,7 +205,7 @@ function assertHasTypeParamTags(
   );
   if (tag === undefined) return;
   assert(
-    // @ts-ignore doc is defined
+    // @ts-expect-error doc is defined
     tag.doc !== undefined,
     `@typeParam tag for ${typeParamName} must have a description`,
     document,
