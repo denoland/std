@@ -52,3 +52,4 @@
 
 export * from "./parse.ts";
 export * from "./stringify.ts";
+export * from "./types.ts";

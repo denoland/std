@@ -274,6 +274,8 @@ export class BinarySearchTree<T> implements Iterable<T> {
             ? BinarySearchNode.from(node.right)
             : null;
 
+          node.left = left;
+          node.right = right;
           if (left) {
             left.parent = node;
             nodes.push(left);

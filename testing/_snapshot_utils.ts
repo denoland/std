@@ -21,6 +21,11 @@ export function getErrorMessage(message: string, options: SnapshotOptions) {
  *
  * @param actual The value to serialize
  * @returns The serialized string
+ *
+ * @deprecated This will be removed in 2.0.0. The built-in
+ * [`t.assertSnapshot()`](https://docs.deno.com/runtime/test/snapshots/)
+ * (Deno 2.9+) uses the same serialization by default; for custom
+ * serialization, call `Deno.inspect()` directly.
  */
 export function serialize(actual: unknown): string {
   return Deno.inspect(actual, {
