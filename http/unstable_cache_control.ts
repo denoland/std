@@ -220,10 +220,13 @@ function parseFieldNames(value: string): string[] {
  *
  * Parsing is lenient and never throws: unknown directives are ignored per
  * RFC 9111 §5.2.3, and known directives with a malformed or missing value
- * (e.g. `max-age=abc` or bare `max-age`) are ignored as well. Callers
- * implementing a cache may want to treat a response whose freshness
- * directives do not survive parsing as stale, as encouraged by RFC 9111
- * §4.2.1.
+ * (e.g. `max-age=abc` or bare `max-age`) are ignored as well. The one
+ * exception is bare `max-stale`, which is valid per RFC 9111 §5.2.1.2 and
+ * parses as `true`. When a directive appears more than once, only the first
+ * occurrence counts, even if it is malformed (`max-age=abc, max-age=100`
+ * yields no `maxAge`). Callers implementing a cache may want to treat a
+ * response whose freshness directives do not survive parsing as stale, as
+ * encouraged by RFC 9111 §4.2.1.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
