@@ -14,8 +14,10 @@ import type {
   XmlDocument,
   XmlElement,
   XmlNode,
+  XmlProcessingInstructionNode,
 } from "./types.ts";
 import { encodeAttributeValue, encodeEntities } from "./_entities.ts";
+import { isReservedPiTarget } from "./_common.ts";
 
 export type { StringifyOptions } from "./types.ts";
 
@@ -58,7 +60,13 @@ export function stringify(
     if (doctype && node.doctype) {
       result += serializeDoctype(node.doctype) + newline;
     }
+    for (const misc of node.prolog ?? []) {
+      result += serializeNode(misc, indent, 0, indentFn) + newline;
+    }
     result += serializeElement(node.root, indent, 0, indentFn);
+    for (const misc of node.epilog ?? []) {
+      result += newline + serializeNode(misc, indent, 0, indentFn);
+    }
     return result;
   }
 
@@ -198,6 +206,13 @@ function serializeNode(
       const prefix = getIndent(depth);
       return `${prefix}<!--${validateCommentText(node.text)}-->`;
     }
+    case "processing_instruction": {
+      const prefix = getIndent(depth);
+      validateProcessingInstruction(node);
+      return node.content === ""
+        ? `${prefix}<?${node.target}?>`
+        : `${prefix}<?${node.target} ${node.content}?>`;
+    }
   }
 }
 
@@ -236,4 +251,40 @@ function validateCommentText(text: string): string {
     );
   }
   return text;
+}
+
+/**
+ * Validates a processing instruction per XML 1.0 §2.6. Only well-formedness
+ * is checked; the failing cases are only reachable via hand-built nodes, as
+ * the parser never produces them.
+ * @throws {TypeError} If the target or content is not serializable.
+ */
+function validateProcessingInstruction(
+  node: XmlProcessingInstructionNode,
+): void {
+  if (node.target === "") {
+    throw new TypeError(
+      "Cannot serialize processing instruction: target is empty",
+    );
+  }
+  if (/\s/.test(node.target)) {
+    throw new TypeError(
+      "Cannot serialize processing instruction: target contains whitespace",
+    );
+  }
+  if (node.target.includes("?>")) {
+    throw new TypeError(
+      `Cannot serialize processing instruction: target contains "?>"`,
+    );
+  }
+  if (isReservedPiTarget(node.target)) {
+    throw new TypeError(
+      `Cannot serialize processing instruction: target "${node.target}" is reserved (XML 1.0 §2.6)`,
+    );
+  }
+  if (node.content.includes("?>")) {
+    throw new TypeError(
+      `Cannot serialize processing instruction: content contains "?>"`,
+    );
+  }
 }

@@ -5,6 +5,7 @@ import {
   isCData,
   isComment,
   isElement,
+  isProcessingInstruction,
   isText,
   XmlSyntaxError,
 } from "./types.ts";
@@ -92,6 +93,32 @@ Deno.test("isComment() returns false for non-comment nodes", () => {
   assertEquals(isComment(element), false);
   assertEquals(isComment(text), false);
   assertEquals(isComment(cdata), false);
+});
+
+Deno.test("isProcessingInstruction() returns true for processing instruction nodes", () => {
+  const node: XmlNode = {
+    type: "processing_instruction",
+    target: "xml-stylesheet",
+    content: "href='style.css'",
+  };
+  assertEquals(isProcessingInstruction(node), true);
+});
+
+Deno.test("isProcessingInstruction() returns false for other nodes", () => {
+  const element: XmlNode = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [],
+  };
+  const text: XmlNode = { type: "text", text: "hello" };
+  const cdata: XmlNode = { type: "cdata", text: "data" };
+  const comment: XmlNode = { type: "comment", text: "note" };
+
+  assertEquals(isProcessingInstruction(element), false);
+  assertEquals(isProcessingInstruction(text), false);
+  assertEquals(isProcessingInstruction(cdata), false);
+  assertEquals(isProcessingInstruction(comment), false);
 });
 
 // =============================================================================

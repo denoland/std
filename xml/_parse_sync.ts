@@ -23,6 +23,7 @@ import type {
   XmlElement,
   XmlName,
   XmlNode,
+  XmlProcessingInstructionNode,
   XmlTextNode,
 } from "./types.ts";
 import { XmlSyntaxError } from "./types.ts";
@@ -89,6 +90,8 @@ type MutableElement = {
 export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const ignoreWhitespace = options?.ignoreWhitespace ?? false;
   const ignoreComments = options?.ignoreComments ?? false;
+  const ignoreProcessingInstructions = options?.ignoreProcessingInstructions ??
+    false;
   const trackPosition = options?.trackPosition ?? true;
   const disallowDoctype = options?.disallowDoctype ?? true;
   const maxDepth = options?.maxDepth ?? Infinity;
@@ -118,6 +121,8 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   let declaration: XmlDeclaration | undefined;
   let doctype: XmlDoctype | undefined;
   let rootClosed = false; // Track whether root element has been closed
+  const prolog: Array<XmlProcessingInstructionNode | XmlCommentNode> = [];
+  const epilog: Array<XmlProcessingInstructionNode | XmlCommentNode> = [];
 
   // Namespace tracking (lazy initialization for performance)
   // Only created when first namespace prefix is encountered
@@ -808,6 +813,20 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     }
   }
 
+  /**
+   * Add a Misc node (XML 1.0 §2.8): inside an element it becomes a child;
+   * outside the root it goes to the prolog or epilog.
+   */
+  function addMisc(node: XmlProcessingInstructionNode | XmlCommentNode): void {
+    if (stack.length > 0) {
+      stack[stack.length - 1]!.children.push(node);
+    } else if (root) {
+      epilog.push(node);
+    } else {
+      prolog.push(node);
+    }
+  }
+
   // ===========================================================================
   // MAIN PARSING LOOP
   // ===========================================================================
@@ -953,7 +972,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         }
 
         if (!ignoreComments) {
-          addNode({ type: "comment", text: content });
+          addMisc({ type: "comment", text: content });
         }
         pos = endIdx + 3;
         continue;
@@ -1219,8 +1238,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         error(
           `Processing instruction target '${target}' is reserved; 'xml' must be lowercase (XML 1.0 §2.6)`,
         );
+      } else if (!ignoreProcessingInstructions) {
+        addMisc({ type: "processing_instruction", target, content });
       }
-      // Other PIs are ignored for tree building
       continue;
     }
 
@@ -1492,6 +1512,8 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   return {
     ...(declaration !== undefined && { declaration }),
     ...(doctype !== undefined && { doctype }),
+    ...(prolog.length > 0 && { prolog }),
     root: root as XmlElement,
+    ...(epilog.length > 0 && { epilog }),
   };
 }

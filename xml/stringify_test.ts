@@ -471,6 +471,147 @@ Deno.test("stringify() throws when public identifier contains double quote", () 
 });
 
 // =============================================================================
+// Processing Instructions
+// =============================================================================
+
+Deno.test("stringify() serializes processing instruction child", () => {
+  const element: XmlElement = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [{
+      type: "processing_instruction",
+      target: "php",
+      content: "echo 1;",
+    }],
+  };
+
+  assertEquals(stringify(element), "<root><?php echo 1;?></root>");
+});
+
+Deno.test("stringify() serializes processing instruction without content", () => {
+  const element: XmlElement = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [{
+      type: "processing_instruction",
+      target: "marker",
+      content: "",
+    }],
+  };
+
+  assertEquals(stringify(element), "<root><?marker?></root>");
+});
+
+Deno.test("stringify() serializes prolog and epilog around the root", () => {
+  const doc: XmlDocument = {
+    prolog: [
+      {
+        type: "processing_instruction",
+        target: "xml-stylesheet",
+        content: `href="style.css"`,
+      },
+      { type: "comment", text: " license " },
+    ],
+    root: EMPTY_ROOT,
+    epilog: [{ type: "comment", text: " trailer " }],
+  };
+
+  assertEquals(
+    stringify(doc),
+    `<?xml-stylesheet href="style.css"?><!-- license --><root/><!-- trailer -->`,
+  );
+});
+
+Deno.test("stringify() puts prolog and epilog nodes on separate lines when indenting", () => {
+  const doc: XmlDocument = {
+    doctype: { type: "doctype", name: "root", line: 1, column: 1, offset: 0 },
+    prolog: [{
+      type: "processing_instruction",
+      target: "xml-stylesheet",
+      content: `href="style.css"`,
+    }],
+    root: EMPTY_ROOT,
+    epilog: [{ type: "comment", text: " trailer " }],
+  };
+
+  assertEquals(
+    stringify(doc, { indent: "  " }),
+    `<!DOCTYPE root>\n<?xml-stylesheet href="style.css"?>\n<root/>\n<!-- trailer -->`,
+  );
+});
+
+Deno.test("stringify() uses block layout for element with processing instruction child", () => {
+  const element: XmlElement = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [
+      { type: "text", text: "text" },
+      { type: "processing_instruction", target: "pi", content: "" },
+    ],
+  };
+
+  assertEquals(
+    stringify(element, { indent: "  " }),
+    "<root>\ntext\n  <?pi?>\n</root>",
+  );
+});
+
+Deno.test("stringify() throws on processing instruction with empty target", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "", content: "" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    "Cannot serialize processing instruction: target is empty",
+  );
+});
+
+Deno.test("stringify() throws on processing instruction target with whitespace", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "a b", content: "" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    "Cannot serialize processing instruction: target contains whitespace",
+  );
+});
+
+Deno.test("stringify() throws on processing instruction with reserved target", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "XML", content: "" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    `Cannot serialize processing instruction: target "XML" is reserved (XML 1.0 §2.6)`,
+  );
+});
+
+Deno.test("stringify() throws on processing instruction content containing '?>'", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "pi", content: "a?>b" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    `Cannot serialize processing instruction: content contains "?>"`,
+  );
+});
+
+// =============================================================================
 // Pretty Printing
 // =============================================================================
 
@@ -765,6 +906,15 @@ Deno.test("stringify() allows single hyphen in comment", () => {
 
 Deno.test("stringify() round-trips doctype from parse()", () => {
   const xml = `<?xml version="1.0"?><!DOCTYPE root SYSTEM "root.dtd"><root/>`;
+
+  const doc = parse(xml, { disallowDoctype: false });
+
+  assertEquals(stringify(doc), xml);
+});
+
+Deno.test("stringify() round-trips doctype and processing instructions", () => {
+  const xml =
+    `<?xml version="1.0"?><!DOCTYPE root SYSTEM "root.dtd"><?xml-stylesheet href="style.css"?><root><?pi data?></root><!-- trailer -->`;
 
   const doc = parse(xml, { disallowDoctype: false });
 

@@ -181,6 +181,13 @@ export interface BaseParseOptions {
   readonly ignoreComments?: boolean;
 
   /**
+   * If true, processing instructions are not emitted/included.
+   *
+   * @default {false}
+   */
+  readonly ignoreProcessingInstructions?: boolean;
+
+  /**
    * If true, track line/column positions for events and error messages.
    * Disabling improves performance but makes debugging harder.
    */
@@ -240,13 +247,6 @@ export interface BaseParseOptions {
  * Options for {@linkcode parseXmlStream}.
  */
 export interface ParseStreamOptions extends BaseParseOptions {
-  /**
-   * If true, processing instruction events are not emitted.
-   *
-   * @default {false}
-   */
-  readonly ignoreProcessingInstructions?: boolean;
-
   /**
    * If true, CDATA sections are emitted as regular text events.
    *
@@ -324,6 +324,23 @@ export interface XmlCommentNode {
 }
 
 /**
+ * A processing instruction node in the XML tree.
+ *
+ * @see {@link https://www.w3.org/TR/xml/#sec-pi | XML 1.0 §2.6 Processing Instructions}
+ */
+export interface XmlProcessingInstructionNode {
+  /** The node type discriminant. */
+  readonly type: "processing_instruction";
+  /** The target of the processing instruction (e.g. `xml-stylesheet`). */
+  readonly target: string;
+  /**
+   * The instruction content after the target, with surrounding whitespace
+   * trimmed. Empty string when the instruction has no content.
+   */
+  readonly content: string;
+}
+
+/**
  * An element node in the XML tree.
  */
 export interface XmlElement {
@@ -348,7 +365,8 @@ export type XmlNode =
   | XmlElement
   | XmlTextNode
   | XmlCDataNode
-  | XmlCommentNode;
+  | XmlCommentNode
+  | XmlProcessingInstructionNode;
 
 /**
  * A parsed XML document.
@@ -362,8 +380,27 @@ export interface XmlDocument {
    * `false`.
    */
   readonly doctype?: XmlDoctype;
+  /**
+   * Processing instructions and comments appearing before the root element,
+   * in document order. Omitted when there are none.
+   *
+   * Interleaving with the doctype is not preserved (the declaration and
+   * doctype are separate fields): a processing instruction written before
+   * `<!DOCTYPE>` re-serializes after it, which is still valid per
+   * XML 1.0 §2.8.
+   */
+  readonly prolog?: ReadonlyArray<
+    XmlProcessingInstructionNode | XmlCommentNode
+  >;
   /** The root element of the document. */
   readonly root: XmlElement;
+  /**
+   * Processing instructions and comments appearing after the root element,
+   * in document order. Omitted when there are none.
+   */
+  readonly epilog?: ReadonlyArray<
+    XmlProcessingInstructionNode | XmlCommentNode
+  >;
 }
 
 // ============================================================================
@@ -578,4 +615,25 @@ export function isCData(node: XmlNode): node is XmlCDataNode {
  */
 export function isComment(node: XmlNode): node is XmlCommentNode {
   return node.type === "comment";
+}
+
+/**
+ * Type guard to check if a node is a processing instruction.
+ *
+ * @example Usage
+ * ```ts
+ * import { isProcessingInstruction } from "@std/xml/types";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const node = { type: "processing_instruction" as const, target: "xml-stylesheet", content: "href='style.css'" };
+ * assertEquals(isProcessingInstruction(node), true);
+ * ```
+ *
+ * @param node The XML node to check.
+ * @returns `true` if the node is a processing instruction, `false` otherwise.
+ */
+export function isProcessingInstruction(
+  node: XmlNode,
+): node is XmlProcessingInstructionNode {
+  return node.type === "processing_instruction";
 }
