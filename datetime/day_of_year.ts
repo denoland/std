@@ -16,6 +16,21 @@ import { DAY } from "./constants.ts";
  *
  * assertEquals(dayOfYear(new Date("2019-03-11T03:24:00")), 70);
  * ```
+ *
+ * @example Migration to Temporal
+ * ```ts
+ * import { dayOfYear } from "@std/datetime/day-of-year";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // Before
+ * assertEquals(dayOfYear(new Date("2019-03-11T03:24:00")), 70);
+ *
+ * // After
+ * assertEquals(Temporal.PlainDate.from("2019-03-11").dayOfYear, 70);
+ * ```
+ *
+ * @deprecated Use {@linkcode Temporal.PlainDate.prototype.dayOfYear} instead.
+ * See https://github.com/denoland/std/issues/7262 for details.
  */
 export function dayOfYear(date: Date): number {
   // Values from 0 to 99 map to the years 1900 to 1999. All other values are the actual year. (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date)
@@ -43,6 +58,24 @@ export function dayOfYear(date: Date): number {
  *
  * assertEquals(dayOfYearUtc(new Date("2019-03-11T03:24:00.000Z")), 70);
  * ```
+ *
+ * @example Migration to Temporal
+ * ```ts
+ * import { dayOfYearUtc } from "@std/datetime/day-of-year";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const date = new Date("2019-03-11T03:24:00.000Z");
+ *
+ * // Before
+ * assertEquals(dayOfYearUtc(date), 70);
+ *
+ * // After
+ * assertEquals(date.toTemporalInstant().toZonedDateTimeISO("UTC").dayOfYear, 70);
+ * ```
+ *
+ * @deprecated Use {@linkcode Date.prototype.toTemporalInstant} and
+ * {@linkcode Temporal.ZonedDateTime.prototype.dayOfYear} instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
  */
 export function dayOfYearUtc(date: Date): number {
   // Values from 0 to 99 map to the years 1900 to 1999. All other values are the actual year. (https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/Date)

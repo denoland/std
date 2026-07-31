@@ -3,7 +3,12 @@
 
 import { DateTimeFormatter } from "./_date_time_formatter.ts";
 
-/** Options for {@linkcode format}. */
+/**
+ * Options for {@linkcode format}.
+ *
+ * @deprecated Use {@linkcode Intl.DateTimeFormat} instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
+ */
 export interface FormatOptions {
   /**
    * The timezone the formatted date should be in.
@@ -71,6 +76,28 @@ export interface FormatOptions {
  *
  * assertEquals(format(date, "yyyy-MM-dd HH:mm:ss", { timeZone: "UTC" }), "2019-01-20 05:34:23");
  * ```
+ *
+ * @example Migration to Temporal
+ *
+ * For ISO 8601 output, use the `toString()` methods of the Temporal classes.
+ * For locale-aware output, use {@linkcode Intl.DateTimeFormat}.
+ *
+ * ```ts
+ * import { format } from "@std/datetime/format";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // Before
+ * assertEquals(format(new Date(2019, 0, 20), "yyyy-MM-dd"), "2019-01-20");
+ *
+ * // After
+ * const date = Temporal.PlainDate.from({ year: 2019, month: 1, day: 20 });
+ * assertEquals(date.toString(), "2019-01-20");
+ * assertEquals(new Intl.DateTimeFormat("en-US").format(new Date(2019, 0, 20)), "1/20/2019");
+ * ```
+ *
+ * @deprecated Use {@linkcode Intl.DateTimeFormat} or the `toString()` and
+ * `toLocaleString()` methods of the Temporal classes instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
  */
 export function format(
   date: Date,
