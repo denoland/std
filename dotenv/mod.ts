@@ -1,15 +1,9 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
- * Parses and loads environment variables from a `.env` file into the current
- * process, or stringify data into a `.env` file format.
+ * Parses and stringifies data in the `.env` file format.
  *
  * Note: The key needs to match the pattern /^[a-zA-Z_][a-zA-Z0-9_]*$/.
- *
- * ```ts no-assert
- * // Automatically load environment variables from a `.env` file
- * import "@std/dotenv/load";
- * ```
  *
  * ```ts
  * import { parse, stringify } from "@std/dotenv";
@@ -19,6 +13,51 @@
  * assertEquals(stringify({ GREETING: "hello world" }), "GREETING='hello world'");
  * ```
  *
+ * ## Migrating from `load()`
+ *
+ * {@linkcode load}, {@linkcode loadSync} and the `@std/dotenv/load` side-effect
+ * module are deprecated in favor of the runtime's
+ * {@link https://docs.deno.com/runtime/reference/env_variables/ | --env-file}
+ * flag, which Node.js and Bun also support:
+ *
+ * ```sh
+ * deno run --env-file app.ts
+ * deno run --env-file=.env --env-file=.env.local app.ts
+ * ```
+ *
+ * | Deprecated API | Replacement |
+ * | -------------- | ----------- |
+ * | `import "@std/dotenv/load"` | `deno run --env-file app.ts` |
+ * | `load({ export: true })` / `loadSync({ export: true })` | `--env-file` |
+ * | `load({ envPath: "./.env_prod" })` | `--env-file=.env_prod` |
+ * | `load()` (read into an object, no export) | `parse(await Deno.readTextFile(".env"))` |
+ *
+ * Differences to be aware of:
+ *
+ * - `load()` silently ignores a missing file. `--env-file` warns but continues,
+ *   while the `parse()` replacement above throws. To treat the file as
+ *   optional:
+ *
+ * ```ts ignore
+ * import { parse } from "@std/dotenv";
+ *
+ * let env: Record<string, string> = {};
+ * try {
+ *   env = parse(await Deno.readTextFile(".env"));
+ * } catch (e) {
+ *   if (!(e instanceof Deno.errors.NotFound)) throw e;
+ * }
+ * ```
+ *
+ * - `$VAR` inside a double-quoted value stays literal with `load()` but
+ *   expands with `--env-file`. Use single quotes for values containing a
+ *   literal `$`.
+ * - `${KEY:-default}` and nested defaults are not supported by `--env-file`.
+ *   Use {@linkcode parse}, which keeps the full expansion behavior.
+ * - Node's `--env-file` performs no variable expansion at all.
+ * - On platforms without a CLI, e.g. Deno Deploy, set environment variables
+ *   through the platform's configuration instead.
+ *
  * @module
  */
 
@@ -27,7 +66,15 @@ import { parse } from "./parse.ts";
 export * from "./stringify.ts";
 export * from "./parse.ts";
 
-/** Options for {@linkcode load} and {@linkcode loadSync}. */
+/**
+ * Options for {@linkcode load} and {@linkcode loadSync}.
+ *
+ * @deprecated This will be removed in 0.227.0. Use the
+ * {@link https://docs.deno.com/runtime/reference/env_variables/ | --env-file}
+ * flag or {@linkcode parse} instead. See the
+ * {@link https://jsr.io/@std/dotenv | module documentation} for migration
+ * notes.
+ */
 export interface LoadOptions {
   /**
    * Optional path to `.env` file. To prevent the default value from being
@@ -50,7 +97,7 @@ export interface LoadOptions {
  * Works identically to {@linkcode load}, but synchronously.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts ignore
  * import { loadSync } from "@std/dotenv";
  *
  * const conf = loadSync();
@@ -58,6 +105,12 @@ export interface LoadOptions {
  *
  * @param options Options for loading the environment variables.
  * @returns The parsed environment variables.
+ *
+ * @deprecated This will be removed in 0.227.0. Use the
+ * {@link https://docs.deno.com/runtime/reference/env_variables/ | --env-file}
+ * flag or {@linkcode parse} instead. See the
+ * {@link https://jsr.io/@std/dotenv | module documentation} for migration
+ * notes.
  */
 export function loadSync(
   options: LoadOptions = {},
@@ -97,7 +150,7 @@ export function loadSync(
  * Then import the environment variables using the `load` function.
  *
  * @example Basic usage
- * ```ts no-assert
+ * ```ts ignore
  * // app.ts
  * import { load } from "@std/dotenv";
  *
@@ -115,7 +168,7 @@ export function loadSync(
  * the process environment.
  *
  * @example Auto-loading
- * ```ts no-assert
+ * ```ts ignore
  * // app.ts
  * import "@std/dotenv/load";
  *
@@ -145,7 +198,7 @@ export function loadSync(
  * ### Example configuration
  *
  * @example Using with options
- * ```ts no-assert
+ * ```ts ignore
  * import { load } from "@std/dotenv";
  *
  * const conf = await load({
@@ -206,6 +259,12 @@ export function loadSync(
  *
  * @param options The options
  * @returns The parsed environment variables
+ *
+ * @deprecated This will be removed in 0.227.0. Use the
+ * {@link https://docs.deno.com/runtime/reference/env_variables/ | --env-file}
+ * flag or {@linkcode parse} instead. See the
+ * {@link https://jsr.io/@std/dotenv | module documentation} for migration
+ * notes.
  */
 export async function load(
   options: LoadOptions = {},

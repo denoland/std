@@ -32,13 +32,14 @@ const regDetect = /(?:\r?\n)/g;
  * @returns The detected EOL character(s) or `null` if no EOL character is detected.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts
  * import { detect } from "@std/fs/eol";
+ * import { assertEquals } from "@std/assert";
  *
- * detect("deno\r\nis not\r\nnode"); // "\r\n"
- * detect("deno\nis not\r\nnode"); // "\r\n"
- * detect("deno\nis not\nnode"); // "\n"
- * detect("deno is not node"); // null
+ * assertEquals(detect("deno\r\nis not\r\nnode"), "\r\n");
+ * assertEquals(detect("deno\nis not\r\nnode"), "\r\n");
+ * assertEquals(detect("deno\nis not\nnode"), "\n");
+ * assertEquals(detect("deno is not node"), null);
  * ```
  */
 export function detect(content: string): typeof EOL | null {
@@ -60,12 +61,13 @@ export function detect(content: string): typeof EOL | null {
  * @returns The input string normalized to the targeted EOL.
  *
  * @example Usage
- * ```ts no-assert
+ * ```ts
  * import { LF, format } from "@std/fs/eol";
+ * import { assertEquals } from "@std/assert";
  *
  * const CRLFinput = "deno\r\nis not\r\nnode";
  *
- * format(CRLFinput, LF); // "deno\nis not\nnode"
+ * assertEquals(format(CRLFinput, LF), "deno\nis not\nnode");
  * ```
  */
 export function format(content: string, eol: typeof EOL): string {
