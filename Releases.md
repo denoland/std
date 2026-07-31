@@ -1,3 +1,43 @@
+### 2026.07.30
+
+#### @std/cache 0.2.4 (patch)
+
+- chore(cache): stop relying on globalThis.gc being untyped (#7253)
+
+#### @std/data-structures 1.1.2 (patch)
+
+- feat(data-structures/unstable): add Readonly view and clone path to
+  RollingCounter (#7234)
+- fix(data-structures): deep-copy nodes in BinarySearchTree/RedBlackTree.from()
+  (#7230)
+
+#### @std/dotenv 0.225.8 (patch)
+
+- deprecation(dotenv): deprecate `load()`, `loadSync()` and `@std/dotenv/load`
+  (#7248)
+
+#### @std/http 1.1.3 (patch)
+
+- feat(http/unstable): `HttpError` (#7132)
+
+#### @std/streams 1.1.2 (patch)
+
+- fix(streams): remove quadratic buffering in TextLineStream (#7231)
+
+#### @std/testing 1.0.20 (patch)
+
+- deprecation(testing): `assertSnapshot()`, `createAssertSnapshot()`,
+  `serialize()` (#7216)
+- deprecation(testing): `bdd` and `unstable-bdd` modules (#7217)
+
+#### @std/xml 0.2.0 (minor)
+
+- BREAKING(xml): clean up public API (#7233)
+
+#### @std/yaml 1.2.0 (minor)
+
+- feat(yaml): introduce `YamlSyntaxError` with structured position info (#7235)
+
 ### 2026.07.03
 
 #### @std/cli 1.0.32 (patch)
