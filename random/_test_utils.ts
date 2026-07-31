@@ -37,7 +37,7 @@ export function mockLittleEndian(littleEndian: boolean) {
     const TypedArray = globalThis[`${type}Array`];
 
     const MockTypedArray = class extends TypedArray {
-      // @ts-ignore missing super() call
+      // @ts-expect-error missing super() call
       constructor(...args: any[]) {
         const target = new TypedArray(...args);
         const dv = new DataView(
@@ -101,11 +101,11 @@ export function mockLittleEndian(littleEndian: boolean) {
       }
     };
 
-    // @ts-ignore mock
+    // @ts-expect-error mock
     globalThis[`${type}Array`] = MockTypedArray;
 
     stack.defer(() => {
-      // @ts-ignore restore mock
+      // @ts-expect-error restore mock
       globalThis[`${type}Array`] = TypedArray;
     });
   }

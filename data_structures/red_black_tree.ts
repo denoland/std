@@ -231,8 +231,11 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
         const nodes: RedBlackNode<U>[] = [];
         const root = getRoot(collection);
         if (root) {
-          setRoot(result, root as unknown as RedBlackNode<U>);
-          nodes.push(root as unknown as RedBlackNode<U>);
+          const rootCopy = RedBlackNode.from(
+            root as unknown as RedBlackNode<U>,
+          );
+          setRoot(result, rootCopy);
+          nodes.push(rootCopy);
         }
         while (nodes.length) {
           const node: RedBlackNode<U> = nodes.pop()!;
@@ -243,6 +246,8 @@ export class RedBlackTree<T> extends BinarySearchTree<T> {
             ? RedBlackNode.from(node.right)
             : null;
 
+          node.left = left;
+          node.right = right;
           if (left) {
             left.parent = node;
             nodes.push(left);

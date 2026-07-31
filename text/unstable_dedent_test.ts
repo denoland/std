@@ -90,7 +90,7 @@ Deno.test("dedent() handles multiline substitution", () => {
 });
 
 Deno.test("dedent() handles mixed tabs and spaces", async (t) => {
-  // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
+  // @ts-expect-error augmenting globalThis so we don't need to resort to bare `eval`
   using _ = stub(globalThis, "dedent", dedent);
 
   await t.step("with partial common prefix", () => {
@@ -109,7 +109,7 @@ Deno.test("dedent() handles mixed tabs and spaces", async (t) => {
 });
 
 Deno.test("dedent() handles blank lines correctly", async (t) => {
-  // @ts-ignore augmenting globalThis so we don't need to resort to bare `eval`
+  // @ts-expect-error augmenting globalThis so we don't need to resort to bare `eval`
   using _ = stub(globalThis, "dedent", dedent);
 
   for (const lineEnding of ["\n", "\r\n"]) {

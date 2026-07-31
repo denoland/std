@@ -17,7 +17,7 @@ import type {
   ParseOptions,
   XmlCDataNode,
   XmlCommentNode,
-  XmlDeclarationEvent,
+  XmlDeclaration,
   XmlDocument,
   XmlElement,
   XmlName,
@@ -114,7 +114,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   // Tree building state
   const stack: MutableElement[] = [];
   let root: MutableElement | undefined;
-  let declaration: XmlDeclarationEvent | undefined;
+  let declaration: XmlDeclaration | undefined;
   let rootClosed = false; // Track whether root element has been closed
 
   // Namespace tracking (lazy initialization for performance)
