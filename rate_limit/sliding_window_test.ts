@@ -305,24 +305,47 @@ Deno.test("replenish() throws when autoReplenishment is true", () => {
   );
 });
 
-Deno.test("replenish() rotates a segment when autoReplenishment is false", () => {
+Deno.test("replenish() rotates the segments elapsed on the clock", () => {
+  let now = 0;
   using limiter = createSlidingWindow({
     limit: 4,
     window: 1000,
     segmentsPerWindow: 4,
     autoReplenishment: false,
+    clock: () => now,
   });
 
   limiter.tryAcquire(4);
   assertFalse(limiter.tryAcquire().acquired);
 
-  // Each replenish() rotates one segment. Need 4 rotations to evict segment 0.
+  // Segment 0's count leaves the window only after all 4 segments rotate.
+  for (let i = 0; i < 3; i++) {
+    now += 250;
+    limiter.replenish();
+    assertFalse(limiter.tryAcquire().acquired);
+  }
+  now += 250;
+  limiter.replenish();
+  assert(limiter.tryAcquire(4).acquired);
+});
+
+Deno.test("replenish() is a no-op before a segment elapses", () => {
+  let now = 0;
+  using limiter = createSlidingWindow({
+    limit: 4,
+    window: 1000,
+    segmentsPerWindow: 4,
+    autoReplenishment: false,
+    clock: () => now,
+  });
+
+  limiter.tryAcquire(4);
+
+  now += 999;
   limiter.replenish();
   assertFalse(limiter.tryAcquire().acquired);
-  limiter.replenish();
-  assertFalse(limiter.tryAcquire().acquired);
-  limiter.replenish();
-  assertFalse(limiter.tryAcquire().acquired);
+
+  now += 1;
   limiter.replenish();
   assert(limiter.tryAcquire(4).acquired);
 });
@@ -463,7 +486,7 @@ Deno.test("tryAcquire() returns rejected lease after disposal", () => {
   assertFalse(lease.acquired);
 });
 
-Deno.test("acquire() rejects after disposal", async () => {
+Deno.test("acquire() resolves with rejected lease after disposal", async () => {
   using time = new FakeTime(0);
   const limiter = createSlidingWindow({
     limit: 5,
@@ -473,7 +496,12 @@ Deno.test("acquire() rejects after disposal", async () => {
   void time;
 
   limiter[Symbol.dispose]();
-  await assertRejects(() => limiter.acquire(), Error, "disposed");
+  const lease = await limiter.acquire();
+  assertFalse(lease.acquired);
+  if (!lease.acquired) {
+    assertEquals(lease.reason, "Rate limiter has been disposed");
+    assertEquals(lease.retryAfter, 0);
+  }
 });
 
 // --- Queue ordering ---
@@ -686,4 +714,27 @@ Deno.test("double dispose is a no-op", () => {
 
   limiter[Symbol.dispose]();
   limiter[Symbol.dispose]();
+});
+
+// --- Timer interval cap ---
+
+Deno.test("createSlidingWindow() throws when the segment duration exceeds the timer maximum", () => {
+  assertThrows(
+    () =>
+      createSlidingWindow({ limit: 1, window: 2 ** 33, segmentsPerWindow: 2 }),
+    RangeError,
+    `Cannot create sliding window: 'window' / 'segmentsPerWindow' (${
+      2 ** 32
+    }) exceeds the maximum timer interval of ${2 ** 31 - 1} milliseconds`,
+  );
+});
+
+Deno.test("createSlidingWindow() accepts a segment duration above the timer maximum when autoReplenishment is false", () => {
+  using limiter = createSlidingWindow({
+    limit: 1,
+    window: 2 ** 33,
+    segmentsPerWindow: 2,
+    autoReplenishment: false,
+  });
+  assert(limiter.tryAcquire().acquired);
 });

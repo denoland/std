@@ -234,16 +234,19 @@ Deno.test("replenish() throws when autoReplenishment is true", () => {
 });
 
 Deno.test("replenish() replenishes when autoReplenishment is false", () => {
+  let now = 0;
   const limiter = createTokenBucket({
     limit: 5,
     tokensPerPeriod: 2,
     replenishmentPeriod: 1000,
     autoReplenishment: false,
+    clock: () => now,
   });
 
   for (let i = 0; i < 5; i++) limiter.tryAcquire();
   assertFalse(limiter.tryAcquire().acquired);
 
+  now += 1000;
   limiter.replenish();
   assert(limiter.tryAcquire().acquired);
   assert(limiter.tryAcquire().acquired);
@@ -252,13 +255,38 @@ Deno.test("replenish() replenishes when autoReplenishment is false", () => {
   limiter[Symbol.dispose]();
 });
 
+Deno.test("replenish() is a no-op before the period elapses", () => {
+  let now = 0;
+  const limiter = createTokenBucket({
+    limit: 5,
+    tokensPerPeriod: 2,
+    replenishmentPeriod: 1000,
+    autoReplenishment: false,
+    clock: () => now,
+  });
+
+  for (let i = 0; i < 5; i++) limiter.tryAcquire();
+
+  now += 999;
+  limiter.replenish();
+  assertFalse(limiter.tryAcquire().acquired);
+
+  now += 1;
+  limiter.replenish();
+  assert(limiter.tryAcquire().acquired);
+
+  limiter[Symbol.dispose]();
+});
+
 Deno.test("replenish() drains queued acquire() waiters", async () => {
+  let now = 0;
   const limiter = createTokenBucket({
     limit: 2,
     tokensPerPeriod: 2,
     replenishmentPeriod: 1000,
     autoReplenishment: false,
     queueLimit: 5,
+    clock: () => now,
   });
 
   limiter.tryAcquire(2);
@@ -272,6 +300,7 @@ Deno.test("replenish() drains queued acquire() waiters", async () => {
   await Promise.resolve();
   assertFalse(resolved);
 
+  now += 1000;
   limiter.replenish();
   const lease = await promise;
   assert(resolved);
@@ -427,7 +456,7 @@ Deno.test("tryAcquire() returns rejected lease after disposal", () => {
   assertFalse(lease.acquired);
 });
 
-Deno.test("acquire() rejects after disposal", async () => {
+Deno.test("acquire() resolves with rejected lease after disposal", async () => {
   using time = new FakeTime(0);
   const limiter = createTokenBucket({
     limit: 5,
@@ -437,7 +466,12 @@ Deno.test("acquire() rejects after disposal", async () => {
   void time;
 
   limiter[Symbol.dispose]();
-  await assertRejects(() => limiter.acquire(), Error, "disposed");
+  const lease = await limiter.acquire();
+  assertFalse(lease.acquired);
+  if (!lease.acquired) {
+    assertEquals(lease.reason, "Rate limiter has been disposed");
+    assertEquals(lease.retryAfter, 0);
+  }
 });
 
 // --- Queue ordering ---
@@ -624,7 +658,7 @@ Deno.test("acquire() rejects when permits exceed queueLimit even if queue is emp
   assertEquals(lease.reason, "Queue limit exceeded");
 });
 
-Deno.test("oldest-first queue evicts oldest waiter when queue is full", async () => {
+Deno.test("oldest-first queue rejects incoming request when queue is full", async () => {
   using time = new FakeTime(0);
   using limiter = createTokenBucket({
     limit: 1,
@@ -646,13 +680,14 @@ Deno.test("oldest-first queue evicts oldest waiter when queue is full", async ()
     return l;
   });
 
-  await p1;
-  assertEquals(results, ["p1:Evicted by newer request"]);
+  // The queued waiter keeps its FIFO position; the newcomer is rejected.
+  await p2;
+  assertEquals(results, ["p2:Queue limit exceeded"]);
 
   time.tick(1000);
-  await p2;
+  await p1;
 
-  assertEquals(results, ["p1:Evicted by newer request", "p2:acquired"]);
+  assertEquals(results, ["p2:Queue limit exceeded", "p1:acquired"]);
 });
 
 Deno.test("eviction evicts multiple waiters to make room for a large request", async () => {
@@ -710,21 +745,24 @@ Deno.test("eviction evicts multiple waiters to make room for a large request", a
 // --- retryAfter after manual replenish ---
 
 Deno.test("retryAfter is correct after manual replenish", () => {
+  let now = 0;
   const limiter = createTokenBucket({
     limit: 3,
     tokensPerPeriod: 1,
     replenishmentPeriod: 1000,
     autoReplenishment: false,
+    clock: () => now,
   });
 
   for (let i = 0; i < 3; i++) limiter.tryAcquire();
+  now += 1000;
   limiter.replenish();
   limiter.tryAcquire();
 
+  // 0 tokens at t=1000; 3 tokens need 3 refills, the last at t=4000.
   const lease = limiter.tryAcquire(3);
   assertFalse(lease.acquired);
-  assert(lease.retryAfter > 0);
-  assert(Number.isFinite(lease.retryAfter));
+  assertEquals(lease.retryAfter, 3000);
 
   limiter[Symbol.dispose]();
 });
@@ -800,4 +838,31 @@ Deno.test("double dispose is a no-op", () => {
 
   limiter[Symbol.dispose]();
   limiter[Symbol.dispose]();
+});
+
+// --- Timer interval cap ---
+
+Deno.test("createTokenBucket() throws when replenishmentPeriod exceeds the timer maximum", () => {
+  assertThrows(
+    () =>
+      createTokenBucket({
+        limit: 1,
+        tokensPerPeriod: 1,
+        replenishmentPeriod: 2 ** 31,
+      }),
+    RangeError,
+    `Cannot create token bucket: 'replenishmentPeriod' (${
+      2 ** 31
+    }) exceeds the maximum timer interval of ${2 ** 31 - 1} milliseconds`,
+  );
+});
+
+Deno.test("createTokenBucket() accepts a replenishmentPeriod above the timer maximum when autoReplenishment is false", () => {
+  using limiter = createTokenBucket({
+    limit: 1,
+    tokensPerPeriod: 1,
+    replenishmentPeriod: 2 ** 31,
+    autoReplenishment: false,
+  });
+  assert(limiter.tryAcquire().acquired);
 });

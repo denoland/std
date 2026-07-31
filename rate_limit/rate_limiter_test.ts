@@ -1465,3 +1465,83 @@ Deno.test("maxKeys evicts the least-recently-used key", async () => {
   assert(store.has("c"));
   assert(store.has("d"));
 });
+
+// --- Timer interval cap ---
+
+Deno.test("createRateLimiter() throws when evictionInterval exceeds the timer maximum", () => {
+  assertThrows(
+    () =>
+      createRateLimiter({
+        limit: 5,
+        window: 1000,
+        evictionInterval: 2 ** 31,
+      }),
+    RangeError,
+    `Cannot create memory store: 'evictionInterval' (${
+      2 ** 31
+    }) exceeds the maximum timer interval of ${2 ** 31 - 1} milliseconds`,
+  );
+});
+
+// --- Eviction TTL default ---
+
+Deno.test("default evictionTtl covers windows longer than 5 minutes", async () => {
+  using time = new FakeTime(0);
+  await using limiter = createRateLimiter({
+    limit: 1,
+    window: 600_000,
+    algorithm: "fixed-window",
+  });
+
+  assert((await limiter.limit("key")).ok);
+  assertFalse((await limiter.limit("key")).ok);
+
+  // Idle past the base 5-minute TTL: eviction scans must not reset the
+  // still-limited key, because the default TTL extends to the window.
+  time.tick(400_000);
+  assertFalse((await limiter.limit("key")).ok);
+
+  // Once the window rolls over, the key is allowed again.
+  time.tick(200_000);
+  assert((await limiter.limit("key")).ok);
+});
+
+Deno.test("default evictionTtl covers the token-bucket refill horizon", async () => {
+  using time = new FakeTime(0);
+  await using limiter = createRateLimiter({
+    limit: 10,
+    window: 60_000,
+    algorithm: "token-bucket",
+    tokensPerPeriod: 1,
+  });
+
+  // Drain the bucket; a full refill takes 10 cycles (600s > 5 minutes).
+  assert((await limiter.limit("key", { cost: 10 })).ok);
+  assertFalse((await limiter.limit("key", { cost: 10 })).ok);
+
+  // Idle past the base 5-minute TTL: the key keeps its refill debt.
+  time.tick(360_000); // 6 cycles -> 6 tokens
+  assertFalse((await limiter.limit("key", { cost: 10 })).ok);
+
+  time.tick(240_000); // 4 more cycles -> full bucket
+  assert((await limiter.limit("key", { cost: 10 })).ok);
+});
+
+// --- Process lifetime ---
+
+Deno.test("an undisposed rate limiter does not keep the process alive", async () => {
+  const script = `
+    import { createRateLimiter } from ${
+    JSON.stringify(new URL("./rate_limiter.ts", import.meta.url).href)
+  };
+    const limiter = createRateLimiter({ limit: 5, window: 1000 });
+    await limiter.limit("key");
+  `;
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["eval", "--no-lock", script],
+    stderr: "inherit",
+    signal: AbortSignal.timeout(30_000),
+  });
+  const { success } = await command.output();
+  assert(success, "process did not exit with an undisposed rate limiter");
+});

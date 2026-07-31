@@ -7,6 +7,7 @@ import {
   assertNonNegativeInteger,
   assertPositiveFinite,
   assertPositiveInteger,
+  assertTimerInterval,
 } from "./_validation.ts";
 
 /**
@@ -26,7 +27,9 @@ export interface SlidingWindowOptions extends QueueOptions {
    */
   segmentsPerWindow: number;
   /**
-   * Start an internal timer for automatic segment rotation.
+   * Start an internal timer for automatic segment rotation. Requires the
+   * segment duration (`window` / `segmentsPerWindow`) to be at most
+   * 2^31 - 1 milliseconds (the `setInterval` limit).
    *
    * When `false`, call {@linkcode ReplenishingRateLimiter.replenish}
    * manually.
@@ -67,17 +70,23 @@ export interface SlidingWindowOptions extends QueueOptions {
  * ```
  *
  * @example Manual replenishment
- * ```ts no-assert
+ * ```ts
  * import { createSlidingWindow } from "@std/rate-limit/sliding-window";
+ * import { assert } from "@std/assert";
  *
+ * let now = 0;
  * using limiter = createSlidingWindow({
  *   limit: 100,
  *   window: 60_000,
  *   segmentsPerWindow: 6,
  *   autoReplenishment: false,
+ *   clock: () => now,
  * });
  *
- * limiter.replenish();
+ * limiter.tryAcquire(100); // exhaust the window
+ * now += 60_000;
+ * limiter.replenish(); // rotates the segments elapsed since creation
+ * assert(limiter.tryAcquire().acquired);
  * ```
  *
  * @param options Configuration for the sliding window.
@@ -105,16 +114,23 @@ export function createSlidingWindow(
   assertNonNegativeInteger(context, "queueLimit", options.queueLimit);
 
   const { limit, segmentsPerWindow, window } = options;
-  const clock = options.clock ?? Date.now;
   const segmentDuration = window / segmentsPerWindow;
+  const autoReplenishment = options.autoReplenishment ?? true;
+  if (autoReplenishment) {
+    assertTimerInterval(
+      context,
+      "'window' / 'segmentsPerWindow'",
+      segmentDuration,
+    );
+  }
+  const clock = options.clock ?? Date.now;
   const ops = createSlidingWindowOps(limit, window, segmentsPerWindow);
   const state = ops.create(clock());
-  let lastNow = 0;
 
   return createReplenishingLimiter(
     {
       replenishmentPeriod: segmentDuration,
-      autoReplenishment: options.autoReplenishment ?? true,
+      autoReplenishment,
       queueLimit: options.queueLimit ?? 0,
       queueOrder: options.queueOrder ?? "oldest-first",
     },
@@ -123,16 +139,15 @@ export function createSlidingWindow(
         return ops.limit;
       },
       tryAcquirePermits(permits: number): boolean {
-        lastNow = clock();
-        ops.advance(state, lastNow);
-        return ops.tryConsume(state, permits, lastNow);
+        const now = clock();
+        ops.advance(state, now);
+        return ops.tryConsume(state, permits, now);
       },
       replenish(): void {
-        lastNow = state.segmentStart + segmentDuration;
-        ops.advance(state, lastNow);
+        ops.advance(state, clock());
       },
       computeRetryAfter(permits: number): number {
-        return ops.computeRetryAfter(state, permits, lastNow);
+        return Math.max(0, ops.computeRetryAfter(state, permits, clock()));
       },
     },
   );

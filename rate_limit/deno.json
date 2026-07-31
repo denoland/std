@@ -9,7 +9,6 @@
     "./types": "./types.ts",
     "./rate-limiter": "./rate_limiter.ts",
     "./store-types": "./store_types.ts",
-    "./memory-store": "./memory_store.ts",
-    "./redis-store": "./redis_store.ts"
+    "./memory-store": "./memory_store.ts"
   }
 }

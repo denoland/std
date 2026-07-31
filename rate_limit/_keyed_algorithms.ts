@@ -70,8 +70,7 @@ function createKeyedAlgorithm<S extends object>(
   // Computes the result for a key with no tracked state by evaluating the
   // algorithm against a transient fresh state. This keeps metadata (notably
   // `resetAt`, which must point at the next replenishment event) consistent
-  // with the value a subsequent `limit()` call would produce, and matches
-  // the Redis store's behavior for unknown keys.
+  // with the value a subsequent `limit()` call would produce.
   function peekDefault(cost: number, now: number): AlgorithmResult {
     const state = ops.create(now);
     const ok = ops.wouldAllow(state, cost, now);

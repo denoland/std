@@ -198,11 +198,13 @@ Deno.test("replenish() throws when autoReplenishment is true", () => {
 });
 
 Deno.test("replenish() drains queued acquire() waiters", async () => {
+  let now = 0;
   const limiter = createFixedWindow({
     limit: 3,
     window: 1000,
     autoReplenishment: false,
     queueLimit: 5,
+    clock: () => now,
   });
 
   limiter.tryAcquire(3);
@@ -216,6 +218,7 @@ Deno.test("replenish() drains queued acquire() waiters", async () => {
   await Promise.resolve();
   assertFalse(resolved);
 
+  now += 1000;
   limiter.replenish();
   const lease = await promise;
   assert(resolved);
@@ -225,10 +228,12 @@ Deno.test("replenish() drains queued acquire() waiters", async () => {
 });
 
 Deno.test("replenish() resets the window when autoReplenishment is false", () => {
+  let now = 0;
   const limiter = createFixedWindow({
     limit: 3,
     window: 1000,
     autoReplenishment: false,
+    clock: () => now,
   });
 
   limiter.tryAcquire();
@@ -236,6 +241,29 @@ Deno.test("replenish() resets the window when autoReplenishment is false", () =>
   limiter.tryAcquire();
   assertFalse(limiter.tryAcquire().acquired);
 
+  now += 1000;
+  limiter.replenish();
+  assert(limiter.tryAcquire().acquired);
+
+  limiter[Symbol.dispose]();
+});
+
+Deno.test("replenish() is a no-op before the window elapses", () => {
+  let now = 0;
+  const limiter = createFixedWindow({
+    limit: 3,
+    window: 1000,
+    autoReplenishment: false,
+    clock: () => now,
+  });
+
+  limiter.tryAcquire(3);
+
+  now += 999;
+  limiter.replenish();
+  assertFalse(limiter.tryAcquire().acquired);
+
+  now += 1;
   limiter.replenish();
   assert(limiter.tryAcquire().acquired);
 
@@ -401,13 +429,18 @@ Deno.test("tryAcquire() returns rejected lease after disposal", () => {
   assertFalse(lease.acquired);
 });
 
-Deno.test("acquire() rejects after disposal", async () => {
+Deno.test("acquire() resolves with rejected lease after disposal", async () => {
   using time = new FakeTime(0);
   const limiter = createFixedWindow({ limit: 5, window: 1000 });
   void time;
 
   limiter[Symbol.dispose]();
-  await assertRejects(() => limiter.acquire(), Error, "disposed");
+  const lease = await limiter.acquire();
+  assertFalse(lease.acquired);
+  if (!lease.acquired) {
+    assertEquals(lease.reason, "Rate limiter has been disposed");
+    assertEquals(lease.retryAfter, 0);
+  }
 });
 
 // --- Queue ordering ---
@@ -497,8 +530,13 @@ Deno.test("newest-first queue evicts oldest waiter when queue is full", async ()
     return l;
   });
 
-  await p1;
+  const evicted = await p1;
   assertEquals(results, ["p1:Evicted by newer request"]);
+  assertFalse(evicted.acquired);
+  if (!evicted.acquired) {
+    // The window was consumed at t=0, so a retry helps at t=1000.
+    assertEquals(evicted.retryAfter, 1000);
+  }
 
   time.tick(1000);
   await p3;
@@ -512,7 +550,7 @@ Deno.test("newest-first queue evicts oldest waiter when queue is full", async ()
   ]);
 });
 
-Deno.test("oldest-first queue evicts oldest waiter when queue is full", async () => {
+Deno.test("oldest-first queue rejects incoming request when queue is full", async () => {
   using time = new FakeTime(0);
   using limiter = createFixedWindow({
     limit: 1,
@@ -533,13 +571,14 @@ Deno.test("oldest-first queue evicts oldest waiter when queue is full", async ()
     return l;
   });
 
-  await p1;
-  assertEquals(results, ["p1:Evicted by newer request"]);
+  // The queued waiter keeps its FIFO position; the newcomer is rejected.
+  await p2;
+  assertEquals(results, ["p2:Queue limit exceeded"]);
 
   time.tick(1000);
-  await p2;
+  await p1;
 
-  assertEquals(results, ["p1:Evicted by newer request", "p2:acquired"]);
+  assertEquals(results, ["p2:Queue limit exceeded", "p1:acquired"]);
 });
 
 // --- Multi-permit queued waiters ---
@@ -694,4 +733,43 @@ Deno.test("queued waiter with non-aborted signal is drained cleanly", async () =
   assert(lease.acquired);
 
   controller.abort();
+});
+
+// --- Timer interval cap ---
+
+Deno.test("createFixedWindow() throws when window exceeds the timer maximum", () => {
+  assertThrows(
+    () => createFixedWindow({ limit: 1, window: 2 ** 31 }),
+    RangeError,
+    `Cannot create fixed window: 'window' (${
+      2 ** 31
+    }) exceeds the maximum timer interval of ${2 ** 31 - 1} milliseconds`,
+  );
+});
+
+Deno.test("createFixedWindow() accepts a window above the timer maximum when autoReplenishment is false", () => {
+  using limiter = createFixedWindow({
+    limit: 1,
+    window: 2 ** 31,
+    autoReplenishment: false,
+  });
+  assert(limiter.tryAcquire().acquired);
+});
+
+// --- Process lifetime ---
+
+Deno.test("an undisposed limiter does not keep the process alive", async () => {
+  const script = `
+    import { createFixedWindow } from ${
+    JSON.stringify(new URL("./fixed_window.ts", import.meta.url).href)
+  };
+    createFixedWindow({ limit: 1, window: 60_000 });
+  `;
+  const command = new Deno.Command(Deno.execPath(), {
+    args: ["eval", "--no-lock", script],
+    stderr: "inherit",
+    signal: AbortSignal.timeout(30_000),
+  });
+  const { success } = await command.output();
+  assert(success, "process did not exit with an undisposed limiter");
 });

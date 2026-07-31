@@ -7,6 +7,7 @@ import {
   assertNonNegativeInteger,
   assertPositiveFinite,
   assertPositiveInteger,
+  assertTimerInterval,
 } from "./_validation.ts";
 
 /**
@@ -22,7 +23,9 @@ export interface TokenBucketOptions extends QueueOptions {
   /** Replenishment interval in milliseconds. */
   replenishmentPeriod: number;
   /**
-   * Start an internal timer for automatic replenishment.
+   * Start an internal timer for automatic replenishment. Requires
+   * `replenishmentPeriod` to be at most 2^31 - 1 milliseconds (the
+   * `setInterval` limit).
    *
    * When `false`, call {@linkcode ReplenishingRateLimiter.replenish}
    * manually.
@@ -61,17 +64,23 @@ export interface TokenBucketOptions extends QueueOptions {
  * ```
  *
  * @example Manual replenishment
- * ```ts no-assert
+ * ```ts
  * import { createTokenBucket } from "@std/rate-limit/token-bucket";
+ * import { assert } from "@std/assert";
  *
+ * let now = 0;
  * using limiter = createTokenBucket({
  *   limit: 10,
  *   tokensPerPeriod: 5,
  *   replenishmentPeriod: 1000,
  *   autoReplenishment: false,
+ *   clock: () => now,
  * });
  *
- * limiter.replenish();
+ * limiter.tryAcquire(10); // drain the bucket
+ * now += 1000;
+ * limiter.replenish(); // refills 5 tokens for the elapsed period
+ * assert(limiter.tryAcquire(5).acquired);
  * ```
  *
  * @param options Configuration for the token bucket.
@@ -96,6 +105,10 @@ export function createTokenBucket(
   assertNonNegativeInteger(context, "queueLimit", options.queueLimit);
 
   const { limit, tokensPerPeriod, replenishmentPeriod } = options;
+  const autoReplenishment = options.autoReplenishment ?? true;
+  if (autoReplenishment) {
+    assertTimerInterval(context, "'replenishmentPeriod'", replenishmentPeriod);
+  }
   const clock = options.clock ?? Date.now;
   const ops = createTokenBucketOps(
     limit,
@@ -103,12 +116,11 @@ export function createTokenBucket(
     tokensPerPeriod,
   );
   const state = ops.create(clock());
-  let lastNow = 0;
 
   return createReplenishingLimiter(
     {
       replenishmentPeriod,
-      autoReplenishment: options.autoReplenishment ?? true,
+      autoReplenishment,
       queueLimit: options.queueLimit ?? 0,
       queueOrder: options.queueOrder ?? "oldest-first",
     },
@@ -117,16 +129,15 @@ export function createTokenBucket(
         return ops.limit;
       },
       tryAcquirePermits(permits: number): boolean {
-        lastNow = clock();
-        ops.advance(state, lastNow);
-        return ops.tryConsume(state, permits, lastNow);
+        const now = clock();
+        ops.advance(state, now);
+        return ops.tryConsume(state, permits, now);
       },
       replenish(): void {
-        lastNow = state.lastRefill + replenishmentPeriod;
-        ops.advance(state, lastNow);
+        ops.advance(state, clock());
       },
       computeRetryAfter(permits: number): number {
-        return ops.computeRetryAfter(state, permits, lastNow);
+        return Math.max(0, ops.computeRetryAfter(state, permits, clock()));
       },
     },
   );

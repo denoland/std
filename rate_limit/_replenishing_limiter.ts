@@ -8,6 +8,7 @@ import type {
   ReplenishingRateLimiter,
 } from "./types.ts";
 import { Deque } from "@std/data-structures/deque";
+import { unrefTimer } from "./_unref_timer.ts";
 
 type RejectionReason =
   | "Insufficient permits"
@@ -95,7 +96,7 @@ export function createReplenishingLimiter(
 
   if (config.autoReplenishment) {
     timer = setInterval(replenishAndDrain, config.replenishmentPeriod);
-    if (typeof Deno !== "undefined") Deno.unrefTimer(Number(timer));
+    unrefTimer(timer);
   }
 
   function peekNext(): Waiter | undefined {
@@ -144,7 +145,10 @@ export function createReplenishingLimiter(
     }
   }
 
-  /** Evicts the oldest (stalest) waiter to make room, regardless of queue order. */
+  /**
+   * Evicts the oldest waiters until `permits` fits under the queue limit.
+   * Only called in newest-first mode.
+   */
   function evictOldest(permits: number): void {
     while (queuedPermits + permits > config.queueLimit) {
       const evicted = queue.popFront();
@@ -161,9 +165,6 @@ export function createReplenishingLimiter(
   }
 
   function tryAcquire(permits = 1): RateLimitLease {
-    if (disposed) {
-      return createRejectedLease(0, DISPOSED_REASON);
-    }
     if (permits < 1 || !Number.isInteger(permits)) {
       throw new RangeError(
         `Cannot acquire: 'permits' must be a positive integer, received ${permits}`,
@@ -173,6 +174,9 @@ export function createReplenishingLimiter(
       throw new RangeError(
         `Cannot acquire: 'permits' (${permits}) exceeds the permit limit (${strategy.permitLimit})`,
       );
+    }
+    if (disposed) {
+      return createRejectedLease(0, DISPOSED_REASON);
     }
 
     if (strategy.tryAcquirePermits(permits)) {
@@ -188,9 +192,6 @@ export function createReplenishingLimiter(
     permits = 1,
     options?: AcquireOptions,
   ): Promise<RateLimitLease> {
-    if (disposed) {
-      return Promise.reject(new Error(DISPOSED_REASON));
-    }
     if (permits < 1 || !Number.isInteger(permits)) {
       return Promise.reject(
         new RangeError(
@@ -213,12 +214,20 @@ export function createReplenishingLimiter(
       );
     }
 
+    if (disposed) {
+      return Promise.resolve(createRejectedLease(0, DISPOSED_REASON));
+    }
+
     if (strategy.tryAcquirePermits(permits)) {
       return Promise.resolve(ACQUIRED_LEASE);
     }
 
     if (queuedPermits + permits > config.queueLimit) {
-      const canEvict = queue.length > 0 &&
+      // Eviction only happens in newest-first mode, where the newest request
+      // has priority; in oldest-first mode the incoming request is rejected
+      // so queued waiters keep their FIFO position.
+      const canEvict = isNewestFirst &&
+        queue.length > 0 &&
         config.queueLimit > 0 &&
         permits <= config.queueLimit;
 

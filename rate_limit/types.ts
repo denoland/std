@@ -53,9 +53,9 @@ export interface RateLimiter extends Disposable {
    * is queued until permits are replenished.
    *
    * **Disposal behavior:** calling `acquire()` after the limiter has been
-   * disposed rejects with {@linkcode Error}. Waiters already queued at the
-   * time of disposal resolve with a {@linkcode RejectedLease} (not a
-   * rejection) so they can be handled uniformly via the `acquired` field.
+   * disposed resolves with a {@linkcode RejectedLease} (`retryAfter: 0`),
+   * as do waiters still queued at the time of disposal, so all outcomes
+   * can be handled uniformly via the `acquired` field.
    *
    * Rejects with {@linkcode DOMException} if the signal is aborted.
    *
@@ -78,7 +78,11 @@ export interface RateLimiter extends Disposable {
  */
 export interface ReplenishingRateLimiter extends RateLimiter {
   /**
-   * Manually trigger a replenishment cycle and drain queued waiters.
+   * Advance the limiter to the current time — rotating windows or segments
+   * and refilling tokens for the time elapsed since the last advance — then
+   * drain queued waiters. Call this periodically when `autoReplenishment`
+   * is `false`; it has no effect on permit accounting when no time has
+   * elapsed.
    *
    * @throws {Error} If the limiter uses automatic replenishment.
    */

@@ -38,9 +38,9 @@ export interface CostOptions {
  * primary rate limiting API for the common case of "allow key X at most N
  * requests per window."
  *
- * All methods are async to support pluggable store backends (in-memory,
- * Redis, Deno KV). For in-memory stores the returned promises resolve
- * synchronously.
+ * All methods are async to support pluggable store backends (in-memory by
+ * default, or distributed stores such as Redis or Deno KV). For in-memory
+ * stores the returned promises resolve synchronously.
  *
  * **Disposal behavior:** after disposal, `limit()` and `peek()` return a
  * result with `ok: false` (remaining/resetAt/retryAfter all `0`), and
@@ -127,18 +127,22 @@ export type RateLimiterOptions =
  * ```
  *
  * @example Custom store backend
- * ```ts ignore
+ * ```ts
  * import { createRateLimiter } from "@std/rate-limit/rate-limiter";
- * import { createRedisStore } from "@std/rate-limit/redis-store";
+ * import { createMemoryStore } from "@std/rate-limit/memory-store";
+ * import { assert } from "@std/assert";
  *
- * const store = createRedisStore({
- *   redis: myRedisClient,
- *   algorithm: "sliding-window",
+ * // Any RateLimitStore implementation works here, e.g. one backed by a
+ * // distributed database. The limiter takes ownership and disposes it.
+ * const store = createMemoryStore({
+ *   algorithm: "token-bucket",
  *   limit: 100,
  *   window: 60_000,
  * });
  *
  * await using limiter = createRateLimiter({ store });
+ * const result = await limiter.limit("user:123");
+ * assert(result.ok);
  * ```
  *
  * @param options Configuration for the rate limiter.
@@ -177,15 +181,15 @@ export function createRateLimiter(
 
   return {
     limit(key: string, options?: CostOptions): Promise<RateLimitResult> {
-      if (disposed) return Promise.resolve(DISPOSED_RESULT);
       const cost = options?.cost ?? 1;
       validateCost("limit", cost);
+      if (disposed) return Promise.resolve(DISPOSED_RESULT);
       return store.consume(key, cost);
     },
     peek(key: string, options?: CostOptions): Promise<RateLimitResult> {
-      if (disposed) return Promise.resolve(DISPOSED_RESULT);
       const cost = options?.cost ?? 1;
       validateCost("peek", cost);
+      if (disposed) return Promise.resolve(DISPOSED_RESULT);
       return store.peek(key, cost);
     },
     reset(key: string): Promise<void> {

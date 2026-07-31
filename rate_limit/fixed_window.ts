@@ -7,6 +7,7 @@ import {
   assertNonNegativeInteger,
   assertPositiveFinite,
   assertPositiveInteger,
+  assertTimerInterval,
 } from "./_validation.ts";
 
 /**
@@ -20,7 +21,8 @@ export interface FixedWindowOptions extends QueueOptions {
   /** Window duration in milliseconds. */
   window: number;
   /**
-   * Start an internal timer for automatic window rotation.
+   * Start an internal timer for automatic window rotation. Requires
+   * `window` to be at most 2^31 - 1 milliseconds (the `setInterval` limit).
    *
    * When `false`, call {@linkcode ReplenishingRateLimiter.replenish}
    * manually.
@@ -59,16 +61,22 @@ export interface FixedWindowOptions extends QueueOptions {
  * ```
  *
  * @example Manual replenishment
- * ```ts no-assert
+ * ```ts
  * import { createFixedWindow } from "@std/rate-limit/fixed-window";
+ * import { assert } from "@std/assert";
  *
+ * let now = 0;
  * using limiter = createFixedWindow({
  *   limit: 100,
  *   window: 60_000,
  *   autoReplenishment: false,
+ *   clock: () => now,
  * });
  *
- * limiter.replenish();
+ * limiter.tryAcquire(100); // exhaust the window
+ * now += 60_000;
+ * limiter.replenish(); // rotates the window for the elapsed time
+ * assert(limiter.tryAcquire().acquired);
  * ```
  *
  * @param options Configuration for the fixed window.
@@ -83,15 +91,18 @@ export function createFixedWindow(
   assertNonNegativeInteger(context, "queueLimit", options.queueLimit);
 
   const { limit, window: windowMs } = options;
+  const autoReplenishment = options.autoReplenishment ?? true;
+  if (autoReplenishment) {
+    assertTimerInterval(context, "'window'", windowMs);
+  }
   const clock = options.clock ?? Date.now;
   const ops = createFixedWindowOps(limit, windowMs);
   const state = ops.create(clock());
-  let lastNow = 0;
 
   return createReplenishingLimiter(
     {
       replenishmentPeriod: windowMs,
-      autoReplenishment: options.autoReplenishment ?? true,
+      autoReplenishment,
       queueLimit: options.queueLimit ?? 0,
       queueOrder: options.queueOrder ?? "oldest-first",
     },
@@ -100,16 +111,15 @@ export function createFixedWindow(
         return ops.limit;
       },
       tryAcquirePermits(permits: number): boolean {
-        lastNow = clock();
-        ops.advance(state, lastNow);
-        return ops.tryConsume(state, permits, lastNow);
+        const now = clock();
+        ops.advance(state, now);
+        return ops.tryConsume(state, permits, now);
       },
       replenish(): void {
-        lastNow = state.windowStart + windowMs;
-        ops.advance(state, lastNow);
+        ops.advance(state, clock());
       },
       computeRetryAfter(permits: number): number {
-        return ops.computeRetryAfter(state, permits, lastNow);
+        return Math.max(0, ops.computeRetryAfter(state, permits, clock()));
       },
     },
   );

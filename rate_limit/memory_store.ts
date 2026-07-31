@@ -9,7 +9,9 @@ import {
   assertNonNegativeInteger,
   assertPositiveFinite,
   assertPositiveInteger,
+  assertTimerInterval,
 } from "./_validation.ts";
+import { unrefTimer } from "./_unref_timer.ts";
 import {
   createFixedWindowAlgorithm,
   createGcraAlgorithm,
@@ -29,6 +31,12 @@ import type {
 export interface MemoryStoreOptions extends AlgorithmOptions {
   /**
    * Time-to-live for idle key state in milliseconds. Set to `0` to disable.
+   *
+   * Defaults to 5 minutes, extended to the algorithm's full state horizon
+   * (the window; for token-bucket, the time to refill an empty bucket) when
+   * that is longer. Explicit values shorter than the state horizon cause
+   * idle keys to be evicted — and restored to full capacity — while still
+   * rate limited.
    *
    * @default {300_000}
    */
@@ -115,7 +123,6 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
     algorithm: algorithmName = "sliding-window",
     segmentsPerWindow = 10,
     tokensPerPeriod = limit,
-    evictionTtl = 300_000,
     evictionInterval = 60_000,
     maxKeys = 0,
     clock = Date.now,
@@ -130,10 +137,19 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
     }
   }
 
-  assertNonNegativeInteger(context, "evictionTtl", evictionTtl);
+  assertNonNegativeInteger(context, "evictionTtl", options.evictionTtl);
+
+  // The TTL must outlive the algorithm's state horizon, or an idle key can
+  // be evicted — and restored to full capacity — while still rate limited.
+  const stateHorizon = algorithmName === "token-bucket"
+    ? Math.ceil(limit / tokensPerPeriod) * windowMs
+    : windowMs;
+  const evictionTtl = options.evictionTtl ??
+    Math.max(300_000, stateHorizon);
 
   if (evictionTtl > 0) {
     assertPositiveInteger(context, "evictionInterval", evictionInterval);
+    assertTimerInterval(context, "'evictionInterval'", evictionInterval);
   }
 
   assertNonNegativeInteger(context, "maxKeys", maxKeys);
@@ -177,7 +193,7 @@ export function createMemoryStore(options: MemoryStoreOptions): MemoryStore {
       () => algorithm.evict(clock(), evictionTtl),
       evictionInterval,
     );
-    if (typeof Deno !== "undefined") Deno.unrefTimer(Number(evictionTimer));
+    unrefTimer(evictionTimer);
   }
 
   return {

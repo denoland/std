@@ -57,3 +57,29 @@ export function assertPositiveFinite(
     );
   }
 }
+
+/**
+ * Maximum delay `setInterval` handles portably. Larger delays overflow the
+ * 32-bit signed range: Node clamps them to 1ms and Deno wraps them negative,
+ * either way firing the timer (near-)immediately.
+ */
+export const MAX_TIMER_INTERVAL = 2 ** 31 - 1;
+
+/**
+ * Asserts that a timer interval does not exceed {@linkcode MAX_TIMER_INTERVAL}.
+ *
+ * @param context Noun phrase for the error prefix, e.g. "token bucket".
+ * @param description The option (or expression) shown in the error message.
+ * @param value The interval in milliseconds.
+ */
+export function assertTimerInterval(
+  context: string,
+  description: string,
+  value: number,
+): void {
+  if (value > MAX_TIMER_INTERVAL) {
+    throw new RangeError(
+      `Cannot create ${context}: ${description} (${value}) exceeds the maximum timer interval of ${MAX_TIMER_INTERVAL} milliseconds`,
+    );
+  }
+}
