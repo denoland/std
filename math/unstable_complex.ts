@@ -1,37 +1,24 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-/*
-ISO/IEC 9899:202y (en) - N3886 working draft Annex G https://www.open-std.org/jtc1/sc22/wg14/www/docs/n3886.pdf
+// This library is in compliance with ISO/IEC 9899:2024 (en)
 
-Summary:
-
-Rules for constructing complex numbers regarding NaN and Infinity
-- Real Infinity + Real Finite * i = Complex Infinity
-- Real Finite + Real Infinity * i = Complex Infinity
-- Real Infinity + Real NaN * i = Complex Infinity
-- Real NaN + Real Infinity * i = Complex Infinity
-- Real NaN + Real NaN * i = Complex NaN
-
-Rules for complex multiplication and division
-- Infinity * Finite = Infinity
-- Infinity / Finite = Infinity
-- Finite / Infinity = Zero
-- Nonzero / Zero = Infinity
-*/
+import { simpleSpecialValues } from "./unstable_complex_values.ts";
 
 function isInfinite(num: number): boolean {
   return num === Infinity || num === -Infinity;
 }
 
-function isZero(num: number): boolean {
-  return Object.is(num, 0) || Object.is(num, -0);
+function isPositiveSigned(num: number): boolean {
+  return Object.is(num, 0) || 0 < num;
 }
 
-function isPositive(num: number): boolean {
-  return Object.is(num, 0) || num > 0;
+function isNegativeSigned(num: number): boolean {
+  return Object.is(num, -0) || num < 0;
 }
 
-type SimpleSpecialValues = [[number, number], [number, number]][];
+function strictEqualsComplex(z0: Complex, z1: Complex): boolean {
+  return Object.is(z0.real, z1.real) && Object.is(z0.imag, z1.imag);
+}
 
 /**
  * A class representing a complex number. Also contains utility functions for complex numbers.
@@ -117,10 +104,6 @@ export class Complex {
    */
   // deno-lint-ignore deno-style-guide/naming-convention
   static Infinity = new Complex(Infinity);
-
-  static #isNaN = (num: Complex | number): boolean =>
-    (typeof num === "number" && Number.isNaN(num)) ||
-    (num instanceof Complex && num.isNaN());
 
   /**
    * Checks whether a complex number is real, meaning its imaginary part is equal to zero.
@@ -277,7 +260,32 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   equals(num: Complex | number, tolerance?: number): boolean {
-    return this.sub(num).abs() <= (tolerance ?? 0);
+    if (typeof num === "number") num = new Complex(num);
+
+    // If both numbers are finite, check whether their cartesian distance is below the tolerance
+    if (this.isFinite() && num.isFinite()) {
+      return this.sub(num).abs() <= (tolerance ?? 0);
+    }
+
+    const isRealEqual =
+      // If both real parts are finite, check whether the difference is below the tolerance
+      (Number.isFinite(this.real) && Number.isFinite(num.real) &&
+        Math.abs(this.real - num.real) <= (tolerance ?? 0)) ||
+      // If both real parts are NaN
+      (Number.isNaN(this.real) && Number.isNaN(num.real)) ||
+      // If both real parts are the same type of infinity
+      this.real === num.real;
+
+    const isImagEqual =
+      // If both imaginary parts are finite, check whether the difference is below the tolerance
+      (Number.isFinite(this.imag) && Number.isFinite(num.imag) &&
+        Math.abs(this.imag - num.imag) <= (tolerance ?? 0)) ||
+      // If both imaginary parts are NaN
+      (Number.isNaN(this.imag) && Number.isNaN(num.imag)) ||
+      // If both imaginary parts are the same type of infinity
+      this.imag === num.imag;
+
+    return isRealEqual && isImagEqual;
   }
 
   /**
@@ -394,7 +402,6 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   div(num: Complex | number): Complex {
-    if (this.isNaN() || Complex.#isNaN(num)) return Complex.NaN;
     if (num instanceof Complex && num.isReal()) num = num.real;
 
     if (typeof num === "number") {
@@ -426,8 +433,6 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   recip(): Complex {
-    if (this.isReal()) return new Complex(1 / this.real);
-    if (typeof this === "number") return new Complex(1 / this);
     if (this.isInfinite()) return Complex.zero;
 
     const absSquaredThis = this.absSquared();
@@ -752,10 +757,41 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   sinh(): Complex {
-    return this.isReal() ? new Complex(Math.sinh(this.real)) : new Complex(
-      Math.sinh(this.real) * Math.cos(this.imag),
-      Math.cosh(this.real) * Math.sin(this.imag),
-    );
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.neg().sinh().neg();
+    }
+    if (isPositiveSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.conj().sinh().conj();
+    }
+    if (isNegativeSigned(this.real) && isPositiveSigned(this.imag)) {
+      return this.neg().conj().sinh().conj().neg();
+    }
+
+    for (
+      const [[realInput, imagInput], [realOutput, imagOutput]]
+        of simpleSpecialValues.sinh
+    ) {
+      if (
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
+      ) return new Complex(realOutput, imagOutput);
+    }
+
+    return Number.isFinite(this.real) && 0 < this.real &&
+        this.imag === Infinity
+      ? new Complex(NaN, NaN)
+      : Number.isFinite(this.real) && this.real !== 0 &&
+          Number.isNaN(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.real === Infinity &&
+          Number.isFinite(this.imag)
+      ? Complex.cis(this.imag).mul(Infinity)
+      : Number.isNaN(this.real) && this.imag !== 0
+      ? new Complex(NaN, NaN)
+      : new Complex(
+        Math.sinh(this.real) * Math.cos(this.imag),
+        Math.cosh(this.real) * Math.sin(this.imag),
+      );
   }
 
   /**
@@ -779,10 +815,42 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   cosh(): Complex {
-    return this.isReal() ? new Complex(Math.cosh(this.real)) : new Complex(
-      Math.cosh(this.real) * Math.cos(this.imag),
-      Math.sinh(this.real) * Math.sin(this.imag),
-    );
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.neg().cosh();
+    }
+    if (isPositiveSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.conj().cosh().conj();
+    }
+    if (isNegativeSigned(this.real) && isPositiveSigned(this.imag)) {
+      return this.neg().conj().cosh().conj();
+    }
+
+    for (
+      const [[realInput, imagInput], [realOutput, imagOutput]]
+        of simpleSpecialValues.cosh
+    ) {
+      if (
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
+      ) return new Complex(realOutput, imagOutput);
+    }
+
+    return Number.isFinite(this.real) && this.real !== 0 &&
+        this.imag === Infinity
+      ? new Complex(NaN, NaN)
+      : Number.isFinite(this.real) && this.real !== 0 &&
+          Number.isNaN(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.real === Infinity &&
+          Number.isFinite(this.imag) && this.imag !== 0
+      ? Complex.cis(this.imag).mul(Infinity)
+      : Number.isNaN(this.real) &&
+          this.imag !== 0
+      ? new Complex(NaN, NaN)
+      : new Complex(
+        Math.cosh(this.real) * Math.cos(this.imag),
+        Math.sinh(this.real) * Math.sin(this.imag),
+      );
   }
 
   /**
@@ -806,7 +874,31 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   tanh(): Complex {
-    return this.sinh().div(this.cosh());
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.imag)) return this.conj().tanh().conj();
+
+    for (
+      const [[realInput, imagInput], [realOutput, imagOutput]]
+        of simpleSpecialValues.tanh
+    ) {
+      if (
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
+      ) return new Complex(realOutput, imagOutput);
+    }
+
+    return Number.isFinite(this.real) && this.real !== 0 &&
+        this.imag === Infinity
+      ? new Complex(NaN, NaN)
+      : Number.isFinite(this.real) && this.real !== 0 &&
+          Number.isNaN(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.real === Infinity &&
+          Number.isFinite(this.imag) && isPositiveSigned(this.imag)
+      ? new Complex(1, 0 * Math.sin(2 * this.imag))
+      : Number.isNaN(this.real) &&
+          this.imag !== 0
+      ? new Complex(NaN, NaN)
+      : this.sinh().div(this.cosh());
   }
 
   /**
@@ -902,25 +994,39 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   asinh(): Complex {
-    const simpleSpecialValues: SimpleSpecialValues = [
-      [[0, 0], [0, 0]],
-      [[Infinity, Infinity], [NaN, Math.PI / 4]],
-      [[Infinity, NaN], [Infinity, NaN]],
-      [[NaN, 0], [NaN, 0]],
-      [[NaN, Infinity], [Infinity, NaN]], // Sign of real output is unspecified
-      [[NaN, NaN], [NaN, NaN]],
-    ] as const;
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.neg().asinh().neg();
+    }
+    if (isPositiveSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.conj().asinh().conj();
+    }
+    if (isNegativeSigned(this.real) && isPositiveSigned(this.imag)) {
+      return this.neg().conj().asinh().conj().neg();
+    }
 
     for (
       const [[realInput, imagInput], [realOutput, imagOutput]]
-        of simpleSpecialValues
+        of simpleSpecialValues.asinh
     ) {
       if (
-        Object.is(this, new Complex(realInput, imagInput))
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
       ) return new Complex(realOutput, imagOutput);
     }
 
-    return this.pow(2).add(1).sqrt().add(this).log();
+    return Number.isFinite(this.real) && isPositiveSigned(this.real) &&
+        this.imag === Infinity
+      ? new Complex(Infinity, Math.PI / 2)
+      : Number.isFinite(this.real) && this.real !== 0 &&
+          Number.isNaN(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.real === Infinity &&
+          isPositiveSigned(this.imag) && Number.isFinite(this.imag)
+      ? new Complex(Infinity, 0)
+      : Number.isNaN(this.real) &&
+          Number.isFinite(this.imag) && this.imag !== 0
+      ? new Complex(NaN, NaN)
+      : this.pow(2).add(1).sqrt().add(this).log();
   }
 
   /**
@@ -944,23 +1050,15 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   acosh(): Complex {
-    const simpleSpecialValues: SimpleSpecialValues = [
-      [[0, 0], [0, Math.PI / 2]],
-      [[0, NaN], [NaN, Math.PI / 2]], // Sign of imag output is unspecified
-      [[-Infinity, Infinity], [Infinity, 3 * Math.PI / 4]],
-      [[Infinity, Infinity], [Infinity, Math.PI / 4]],
-      [[Infinity, NaN], [Infinity, NaN]],
-      [[-Infinity, NaN], [Infinity, NaN]],
-      [[NaN, Infinity], [Infinity, NaN]],
-      [[NaN, NaN], [NaN, NaN]],
-    ] as const;
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.imag)) return this.conj().acosh().conj();
 
     for (
       const [[realInput, imagInput], [realOutput, imagOutput]]
-        of simpleSpecialValues
+        of simpleSpecialValues.acosh
     ) {
       if (
-        Object.is(this, new Complex(realInput, imagInput))
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
       ) return new Complex(realOutput, imagOutput);
     }
 
@@ -968,10 +1066,10 @@ export class Complex {
         Number.isNaN(this.imag)
       ? new Complex(NaN, NaN)
       : this.real === -Infinity &&
-          Number.isFinite(this.imag) && isPositive(this.imag)
+          Number.isFinite(this.imag) && isPositiveSigned(this.imag)
       ? new Complex(Infinity, Math.PI)
       : this.real === Infinity &&
-          Number.isFinite(this.imag) && isPositive(this.imag)
+          Number.isFinite(this.imag) && isPositiveSigned(this.imag)
       ? new Complex(Infinity)
       : Number.isNaN(this.real) &&
           Number.isFinite(this.imag)
@@ -1000,7 +1098,39 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   atanh(): Complex {
-    return this.add(1).log().sub(Complex.one.sub(this).log()).div(2);
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.neg().atanh().neg();
+    }
+    if (isPositiveSigned(this.real) && isNegativeSigned(this.imag)) {
+      return this.conj().atanh().conj();
+    }
+    if (isNegativeSigned(this.real) && isPositiveSigned(this.imag)) {
+      return this.neg().conj().atanh().conj().neg();
+    }
+
+    for (
+      const [[realInput, imagInput], [realOutput, imagOutput]]
+        of simpleSpecialValues.atanh
+    ) {
+      if (
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
+      ) return new Complex(realOutput, imagOutput);
+    }
+
+    return Number.isFinite(this.real) && isPositiveSigned(this.real) &&
+        this.imag === Infinity
+      ? new Complex(0, Math.PI / 2)
+      : Number.isFinite(this.real) && this.real !== 0 &&
+          Number.isNaN(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.real === Infinity &&
+          isPositiveSigned(this.imag)
+      ? new Complex(0, Math.PI / 2)
+      : Number.isNaN(this.real) &&
+          Number.isFinite(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.add(1).log().sub(Complex.one.sub(this).log()).div(2);
   }
 
   /**
@@ -1024,8 +1154,8 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   sin(): Complex {
-    // ISO/IEC 9899 compliant
-    return this.mul(Complex.i).sinh().mul(Complex.negI);
+    // ISO/IEC specified
+    return this.mul(new Complex(0, 1)).sinh().mul(new Complex(0, -1));
   }
 
   /**
@@ -1049,8 +1179,8 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   cos(): Complex {
-    // ISO/IEC 9899 compliant
-    return this.mul(Complex.i).cosh();
+    // ISO/IEC specified
+    return this.mul(new Complex(0, 1)).cosh();
   }
 
   /**
@@ -1074,8 +1204,8 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   tan(): Complex {
-    // ISO/IEC 9899 compliant
-    return this.mul(Complex.i).tanh().mul(Complex.negI);
+    // ISO/IEC specified
+    return this.mul(new Complex(0, 1)).tanh().mul(new Complex(0, -1));
   }
 
   /**
@@ -1171,8 +1301,8 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   asin(): Complex {
-    // ISO/IEC 9899 compliant
-    return this.mul(Complex.i).asinh().mul(Complex.negI);
+    // ISO/IEC specified
+    return this.mul(new Complex(0, 1)).asinh().mul(new Complex(0, -1));
   }
 
   /**
@@ -1196,40 +1326,29 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   acos(): Complex {
-    // ISO/IEC compliant, yet to be tested
-    const simpleSpecialValues: SimpleSpecialValues = [
-      [[0, 0], [Math.PI / 2, -0]],
-      [[-0, 0], [Math.PI / 2, -0]],
-      [[0, NaN], [Math.PI / 2, NaN]],
-      [[-0, NaN], [Math.PI / 2, NaN]],
-      [[-Infinity, Infinity], [Math.PI * 3 / 4, -Infinity]],
-      [[Infinity, Infinity], [Math.PI / 4, -Infinity]],
-      [[Infinity, NaN], [NaN, Infinity]], // The sign on the second
-      [[-Infinity, NaN], [NaN, Infinity]], // Infinity is unspecified
-      [[NaN, Infinity], [NaN, -Infinity]],
-      [[NaN, NaN], [NaN, NaN]],
-    ] as const;
+    // ISO/IEC compliant
+    if (isNegativeSigned(this.imag)) return this.conj().acos().conj();
 
     for (
       const [[realInput, imagInput], [realOutput, imagOutput]]
-        of simpleSpecialValues
+        of simpleSpecialValues.acos
     ) {
       if (
-        Object.is(this, new Complex(realInput, imagInput))
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
       ) return new Complex(realOutput, imagOutput);
     }
 
     return Number.isFinite(this.real) &&
-        this.imag === -Infinity
+        this.imag === Infinity
       ? new Complex(Math.PI / 2, -Infinity)
-      : Number.isFinite(this.real) && !isZero(this.real) &&
+      : Number.isFinite(this.real) && this.real !== 0 &&
           Number.isNaN(this.imag)
       ? new Complex(NaN, NaN)
       : this.real === -Infinity &&
-          isPositive(this.imag) && Number.isFinite(this.imag)
+          isPositiveSigned(this.imag) && Number.isFinite(this.imag)
       ? new Complex(Math.PI, -Infinity)
       : this.real === Infinity &&
-          isPositive(this.imag) && Number.isFinite(this.imag)
+          isPositiveSigned(this.imag) && Number.isFinite(this.imag)
       ? new Complex(0, -Infinity)
       : Number.isNaN(this.real)
       ? new Complex(NaN, NaN)
@@ -1257,7 +1376,7 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   atan(): Complex {
-    /// ISO/IEC 9899 compliant
-    return this.mul(Complex.i).atanh().mul(Complex.negI);
+    // ISO/IEC specified
+    return this.mul(new Complex(0, 1)).atanh().mul(new Complex(0, -1));
   }
 }
