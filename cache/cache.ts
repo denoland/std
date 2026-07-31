@@ -2,6 +2,7 @@
 // This module is browser compatible.
 
 import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+import { unrefTimer } from "./_unref_timer.ts";
 
 /**
  * The minimal structural shape of a key/value cache.
@@ -638,16 +639,11 @@ export class Cache<K, V> implements CacheLike<K, V> {
     if (this.#timerId !== undefined) clearTimeout(this.#timerId);
     this.#scheduledDeadline = nextDeadline;
     const delay = Math.min(Math.max(0, nextDeadline - Date.now()), 0x7FFFFFFF);
-    const id = setTimeout(() => this.#onTimer(), delay);
-    this.#timerId = id;
+    this.#timerId = setTimeout(() => this.#onTimer(), delay);
     // Unref so an idle cache never holds the event loop open: expiration is
     // also enforced lazily on access, so an unfired sweep only delays
     // memory reclamation and onRemove callbacks.
-    if (typeof id === "object") {
-      (id as unknown as { unref?: () => void }).unref?.();
-    } else {
-      globalThis.Deno?.unrefTimer?.(id);
-    }
+    unrefTimer(this.#timerId);
   }
 
   #onTimer(): void {
