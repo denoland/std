@@ -23,6 +23,9 @@ import { describe as describe_, it as it_, test as test_ } from "./bdd.ts";
  * @typeParam T The self type of the test suite body.
  * @param args The test suite body.
  * @returns The test suite
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `describe()`,
+ * which also supports `describe.todo()`, instead.
  */
 const describe = describe_ as typeof describe_ & describe;
 
@@ -44,6 +47,9 @@ const describe = describe_ as typeof describe_ & describe;
  *
  * @typeParam T The self type of the function to implement the test case
  * @param args The test case
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `it()`, which
+ * also supports `it.todo()`, instead.
  */
 const it = it_ as typeof it_ & it;
 
@@ -65,6 +71,9 @@ const it = it_ as typeof it_ & it;
  *
  * @typeParam T The self type of the function to implement the test case
  * @param args The test case
+ *
+ * @deprecated This will be removed in 2.0.0. Use `node:test`'s `test()`, which
+ * also supports `test.todo()`, instead.
  */
 const test = test_ as typeof test_ & test;
 
@@ -95,7 +104,12 @@ interface test {
   todo<T>(...args: ItArgs<T>): void;
 }
 
-/** Options for {@linkcode configureGlobalSanitizers}. */
+/**
+ * Options for {@linkcode configureGlobalSanitizers}.
+ *
+ * @deprecated This will be removed in 2.0.0 together with
+ * {@linkcode configureGlobalSanitizers}.
+ */
 export type ConfigureGlobalSanitizersOptions = {
   sanitizeOps?: boolean;
   sanitizeResources?: boolean;
@@ -110,6 +124,10 @@ export type ConfigureGlobalSanitizersOptions = {
  * import { configureGlobalSanitizers } from "@std/testing/unstable-bdd";
  * configureGlobalSanitizers({ sanitizeResources: false })
  * ```
+ *
+ * @deprecated This will be removed in 2.0.0. There is no global equivalent;
+ * pass `sanitizeOps`, `sanitizeResources` or `sanitizeExit` options to
+ * individual `Deno.test()` calls instead.
  */
 export function configureGlobalSanitizers(
   options: ConfigureGlobalSanitizersOptions,

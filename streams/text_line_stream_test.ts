@@ -104,6 +104,35 @@ Deno.test("TextLineStream parses no final empty chunk with terminal newline", as
   ]);
 });
 
+Deno.test("TextLineStream parses a line spanning many chunks", async () => {
+  const longLine = "a".repeat(4096);
+  const chunks: string[] = [];
+  for (let i = 0; i < longLine.length; i += 7) {
+    chunks.push(longLine.slice(i, i + 7));
+  }
+  chunks.push("\nrest");
+
+  for (const allowCR of [false, true]) {
+    const stream = ReadableStream.from(chunks.slice())
+      .pipeThrough(new TextLineStream({ allowCR }));
+    assertEquals(await Array.fromAsync(stream), [longLine, "rest"]);
+  }
+});
+
+Deno.test("TextLineStream parses input with empty chunks", async () => {
+  const stream = ReadableStream.from(["", "abc\nd", "", "ef", ""])
+    .pipeThrough(new TextLineStream());
+
+  assertEquals(await Array.fromAsync(stream), ["abc", "def"]);
+});
+
+Deno.test("TextLineStream with `allowCR` parses a chunk-final `\\r` once the next chunk arrives", async () => {
+  const stream = ReadableStream.from(["abc\r", "def"])
+    .pipeThrough(new TextLineStream({ allowCR: true }));
+
+  assertEquals(await Array.fromAsync(stream), ["abc", "def"]);
+});
+
 Deno.test("TextLineStream parses no final empty chunk without terminal newline", async () => {
   const stream = ReadableStream.from([
     "abc\n",
