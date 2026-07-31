@@ -137,6 +137,32 @@ export interface XmlDeclaration extends XmlPosition {
 }
 
 /**
+ * The document type declaration of a document, exposed as
+ * {@linkcode XmlDocument.doctype}.
+ *
+ * Only produced when parsing with the
+ * {@linkcode BaseParseOptions.disallowDoctype} option set to `false`; with
+ * the default (`true`), a DOCTYPE declaration throws an
+ * {@linkcode XmlSyntaxError} instead.
+ *
+ * The DTD internal subset is not captured: its contents are validated but
+ * deliberately not processed, so it is lost when re-serializing with
+ * {@linkcode stringify}.
+ *
+ * @see {@link https://www.w3.org/TR/xml/#dt-doctype | XML 1.0 §2.8 Prolog}
+ */
+export interface XmlDoctype extends XmlPosition {
+  /** The type discriminant. */
+  readonly type: "doctype";
+  /** The root element name as declared in the DOCTYPE. */
+  readonly name: string;
+  /** The public identifier, if declared with `PUBLIC`. */
+  readonly publicId?: string;
+  /** The system identifier, if declared with `SYSTEM` or `PUBLIC`. */
+  readonly systemId?: string;
+}
+
+/**
  * Base options shared by parsing functions.
  */
 export interface BaseParseOptions {
@@ -253,6 +279,14 @@ export interface StringifyOptions {
    * @default {true}
    */
   readonly declaration?: boolean;
+
+  /**
+   * If true, include the DOCTYPE declaration when stringifying a document.
+   * Only applies when the input is an XmlDocument with a doctype.
+   *
+   * @default {true}
+   */
+  readonly doctype?: boolean;
 }
 
 // ============================================================================
@@ -322,6 +356,12 @@ export type XmlNode =
 export interface XmlDocument {
   /** The XML declaration, if present. */
   readonly declaration?: XmlDeclaration;
+  /**
+   * The document type declaration, if present. Only produced when parsing
+   * with the {@linkcode BaseParseOptions.disallowDoctype} option set to
+   * `false`.
+   */
+  readonly doctype?: XmlDoctype;
   /** The root element of the document. */
   readonly root: XmlElement;
 }

@@ -10,6 +10,7 @@
 import type {
   StringifyOptions,
   XmlDeclaration,
+  XmlDoctype,
   XmlDocument,
   XmlElement,
   XmlNode,
@@ -44,18 +45,20 @@ export function stringify(
   node: XmlDocument | XmlElement,
   options?: StringifyOptions,
 ): string {
-  const { indent, declaration = true } = options ?? {};
+  const { indent, declaration = true, doctype = true } = options ?? {};
 
   // Check if it's a document (has 'root' property) or an element
   if ("root" in node) {
+    const newline = indent !== undefined ? "\n" : "";
+    const indentFn = createIndentCache(indent);
     let result = "";
     if (declaration && node.declaration) {
-      result += serializeDeclaration(node.declaration);
-      if (indent !== undefined) {
-        result += "\n";
-      }
+      result += serializeDeclaration(node.declaration) + newline;
     }
-    result += serializeElement(node.root, indent, 0);
+    if (doctype && node.doctype) {
+      result += serializeDoctype(node.doctype) + newline;
+    }
+    result += serializeElement(node.root, indent, 0, indentFn);
     return result;
   }
 
@@ -72,6 +75,45 @@ function serializeDeclaration(decl: XmlDeclaration): string {
     ? ` standalone="${decl.standalone}"`
     : "";
   return `<?xml version="${decl.version}"${encoding}${standalone}?>`;
+}
+
+/**
+ * Serializes a DOCTYPE declaration to a string.
+ *
+ * A `publicId` without a `systemId` is emitted as-is
+ * (`<!DOCTYPE name PUBLIC "pub">`), matching the DOM `XMLSerializer`:
+ * the parser leniently accepts that form, and round-tripping
+ * parser-produced data must never throw.
+ */
+function serializeDoctype(doctype: XmlDoctype): string {
+  let result = `<!DOCTYPE ${doctype.name}`;
+  if (doctype.publicId !== undefined) {
+    if (doctype.publicId.includes('"')) {
+      throw new TypeError(
+        `Cannot serialize DOCTYPE: public identifier contains '"'`,
+      );
+    }
+    result += ` PUBLIC "${doctype.publicId}"`;
+    if (doctype.systemId !== undefined) {
+      result += ` ${quoteSystemId(doctype.systemId)}`;
+    }
+  } else if (doctype.systemId !== undefined) {
+    result += ` SYSTEM ${quoteSystemId(doctype.systemId)}`;
+  }
+  return `${result}>`;
+}
+
+/**
+ * Quotes a system identifier, preferring double quotes and falling back to
+ * single quotes.
+ * @throws {TypeError} If the system identifier contains both quote kinds.
+ */
+function quoteSystemId(systemId: string): string {
+  if (!systemId.includes('"')) return `"${systemId}"`;
+  if (!systemId.includes("'")) return `'${systemId}'`;
+  throw new TypeError(
+    "Cannot serialize DOCTYPE: system identifier contains both single and double quotes",
+  );
 }
 
 /**

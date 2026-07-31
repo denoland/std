@@ -18,6 +18,7 @@ import type {
   XmlCDataNode,
   XmlCommentNode,
   XmlDeclaration,
+  XmlDoctype,
   XmlDocument,
   XmlElement,
   XmlName,
@@ -115,6 +116,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const stack: MutableElement[] = [];
   let root: MutableElement | undefined;
   let declaration: XmlDeclaration | undefined;
+  let doctype: XmlDoctype | undefined;
   let rootClosed = false; // Track whether root element has been closed
 
   // Namespace tracking (lazy initialization for performance)
@@ -1001,6 +1003,17 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (disallowDoctype) {
           error("DOCTYPE declarations are not allowed");
         }
+        const doctypeStart = pos - 2; // Offset of '<' in '<!DOCTYPE'
+        if (root) {
+          pos = doctypeStart;
+          error(
+            "Cannot have DOCTYPE declaration after the root element (XML 1.0 §2.8)",
+          );
+        }
+        if (doctype) {
+          pos = doctypeStart;
+          error("Cannot have multiple DOCTYPE declarations (XML 1.0 §2.8)");
+        }
         pos += 7; // Skip 'DOCTYPE'
 
         // Skip whitespace before name (required)
@@ -1020,10 +1033,13 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (pos === nameStart) {
           error("Missing name in DOCTYPE declaration");
         }
+        const doctypeName = input.slice(nameStart, pos);
 
         // Skip whitespace and handle PUBLIC/SYSTEM or internal subset
         let expectPubidLiteral = false;
         let sawExternalIdKeyword = false; // Track if we've seen PUBLIC or SYSTEM
+        let doctypePublicId: string | undefined;
+        let doctypeSystemId: string | undefined;
         while (pos < len && input.charCodeAt(pos) !== CC_GT) {
           const dc = input.charCodeAt(pos);
 
@@ -1050,13 +1066,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
             if (pos >= len) {
               error("Unterminated quoted string in DOCTYPE");
             }
+            const literal = input.slice(valueStart, pos);
             if (expectPubidLiteral) {
-              const pubidError = validatePubidLiteral(
-                input.slice(valueStart, pos),
-                quoteChar,
-              );
+              const pubidError = validatePubidLiteral(literal, quoteChar);
               if (pubidError) error(pubidError);
               expectPubidLiteral = false;
+              doctypePublicId = literal;
+            } else if (doctypeSystemId === undefined) {
+              doctypeSystemId = literal;
             }
             pos++;
           } else if (
@@ -1095,6 +1112,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
           }
         }
         if (pos < len) pos++;
+
+        doctype = {
+          type: "doctype",
+          name: doctypeName,
+          ...(doctypePublicId !== undefined && { publicId: doctypePublicId }),
+          ...(doctypeSystemId !== undefined && { systemId: doctypeSystemId }),
+          ...computePosition(doctypeStart),
+        };
         continue;
       }
 
@@ -1466,6 +1491,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
   return {
     ...(declaration !== undefined && { declaration }),
+    ...(doctype !== undefined && { doctype }),
     root: root as XmlElement,
   };
 }
