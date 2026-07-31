@@ -8,153 +8,138 @@ import { createMemoryStore } from "./memory_store.ts";
 // --- Factory validation ---
 
 Deno.test("createRateLimiter() throws for invalid limit", () => {
-  assertThrows(
-    () => createRateLimiter({ limit: 0, window: 1000 }),
-    RangeError,
-    "limit",
-  );
-  assertThrows(
-    () => createRateLimiter({ limit: -1, window: 1000 }),
-    RangeError,
-    "limit",
-  );
-  assertThrows(
-    () => createRateLimiter({ limit: 1.5, window: 1000 }),
-    RangeError,
-    "limit",
-  );
+  const cases: [limit: number, message: string][] = [
+    [
+      0,
+      "Cannot create memory store: 'limit' must be a positive integer, received 0",
+    ],
+    [
+      -1,
+      "Cannot create memory store: 'limit' must be a positive integer, received -1",
+    ],
+    [
+      1.5,
+      "Cannot create memory store: 'limit' must be a positive integer, received 1.5",
+    ],
+  ];
+  for (const [limit, message] of cases) {
+    assertThrows(
+      () => createRateLimiter({ limit, window: 1000 }),
+      RangeError,
+      message,
+    );
+  }
 });
 
 Deno.test("createRateLimiter() throws for invalid window", () => {
-  assertThrows(
-    () => createRateLimiter({ limit: 10, window: 0 }),
-    RangeError,
-    "window",
-  );
-  assertThrows(
-    () => createRateLimiter({ limit: 10, window: -100 }),
-    RangeError,
-    "window",
-  );
+  const cases: [window: number, message: string][] = [
+    [
+      0,
+      "Cannot create memory store: 'window' must be a positive finite number, received 0",
+    ],
+    [
+      -100,
+      "Cannot create memory store: 'window' must be a positive finite number, received -100",
+    ],
+  ];
+  for (const [window, message] of cases) {
+    assertThrows(
+      () => createRateLimiter({ limit: 10, window }),
+      RangeError,
+      message,
+    );
+  }
 });
 
 Deno.test("createRateLimiter() throws for invalid segmentsPerWindow", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "sliding-window",
-        segmentsPerWindow: 1,
-      }),
-    RangeError,
-    "segmentsPerWindow",
-  );
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "sliding-window",
-        segmentsPerWindow: 3,
-      }),
-    RangeError,
-    "divisible",
-  );
+  const cases: [segmentsPerWindow: number, message: string][] = [
+    [
+      0,
+      "Cannot create sliding window: 'segmentsPerWindow' must be an integer >= 2, received 0",
+    ],
+    [
+      1,
+      "Cannot create sliding window: 'segmentsPerWindow' must be an integer >= 2, received 1",
+    ],
+    [
+      2.5,
+      "Cannot create sliding window: 'segmentsPerWindow' must be an integer >= 2, received 2.5",
+    ],
+    [
+      3,
+      "Cannot create sliding window: 'window' (1000) must be evenly divisible by 'segmentsPerWindow' (3)",
+    ],
+  ];
+  for (const [segmentsPerWindow, message] of cases) {
+    assertThrows(
+      () =>
+        createRateLimiter({
+          limit: 10,
+          window: 1000,
+          algorithm: "sliding-window",
+          segmentsPerWindow,
+        }),
+      RangeError,
+      message,
+    );
+  }
 });
 
 Deno.test("createRateLimiter() throws for invalid tokensPerPeriod", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "token-bucket",
-        tokensPerPeriod: 0,
-      }),
-    RangeError,
-    "tokensPerPeriod",
-  );
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "token-bucket",
-        tokensPerPeriod: 11,
-      }),
-    RangeError,
-    "tokensPerPeriod",
-  );
+  const cases: [tokensPerPeriod: number, message: string][] = [
+    [
+      0,
+      "Cannot create memory store: 'tokensPerPeriod' must be a positive integer, received 0",
+    ],
+    [
+      11,
+      "Cannot create memory store: 'tokensPerPeriod' (11) exceeds 'limit' (10)",
+    ],
+  ];
+  for (const [tokensPerPeriod, message] of cases) {
+    assertThrows(
+      () =>
+        createRateLimiter({
+          limit: 10,
+          window: 1000,
+          algorithm: "token-bucket",
+          tokensPerPeriod,
+        }),
+      RangeError,
+      message,
+    );
+  }
 });
 
-Deno.test("createRateLimiter() throws for invalid eviction options when evictionTtl > 0", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        evictionTtl: 5000,
-        evictionInterval: 0,
-      }),
-    RangeError,
-    "evictionInterval",
-  );
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        evictionTtl: 5000,
-        evictionInterval: -100,
-      }),
-    RangeError,
-    "evictionInterval",
-  );
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        evictionTtl: Infinity,
-        evictionInterval: 60_000,
-      }),
-    RangeError,
-    "evictionTtl",
-  );
-});
-
-Deno.test("createRateLimiter() throws for negative evictionTtl", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        evictionTtl: -1,
-      }),
-    RangeError,
-    "evictionTtl",
-  );
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        evictionTtl: NaN,
-      }),
-    RangeError,
-    "evictionTtl",
-  );
-});
-
-Deno.test("createRateLimiter() throws for invalid cost", async () => {
-  using _time = new FakeTime();
-  await using limiter = createRateLimiter({ limit: 10, window: 1000 });
-
-  assertThrows(() => limiter.limit("a", { cost: 0 }), RangeError, "cost");
-  assertThrows(() => limiter.limit("a", { cost: -1 }), RangeError, "cost");
-  assertThrows(() => limiter.limit("a", { cost: 1.5 }), RangeError, "cost");
-  assertThrows(() => limiter.limit("a", { cost: 11 }), RangeError, "exceeds");
+Deno.test("createRateLimiter() throws for invalid eviction options", () => {
+  const cases: [
+    options: Parameters<typeof createRateLimiter>[0],
+    message: string,
+  ][] = [
+    [
+      { limit: 10, window: 1000, evictionTtl: 5000, evictionInterval: 0 },
+      "Cannot create memory store: 'evictionInterval' must be a positive integer, received 0",
+    ],
+    [
+      { limit: 10, window: 1000, evictionTtl: 5000, evictionInterval: -100 },
+      "Cannot create memory store: 'evictionInterval' must be a positive integer, received -100",
+    ],
+    [
+      { limit: 10, window: 1000, evictionTtl: Infinity },
+      "Cannot create memory store: 'evictionTtl' must be a non-negative integer, received Infinity",
+    ],
+    [
+      { limit: 10, window: 1000, evictionTtl: -1 },
+      "Cannot create memory store: 'evictionTtl' must be a non-negative integer, received -1",
+    ],
+    [
+      { limit: 10, window: 1000, evictionTtl: NaN },
+      "Cannot create memory store: 'evictionTtl' must be a non-negative integer, received NaN",
+    ],
+  ];
+  for (const [options, message] of cases) {
+    assertThrows(() => createRateLimiter(options), RangeError, message);
+  }
 });
 
 Deno.test("createRateLimiter() accepts all algorithms", async () => {
@@ -177,9 +162,52 @@ Deno.test("createRateLimiter() accepts all algorithms", async () => {
   }
 });
 
-// === Fixed window ===
+Deno.test("createRateLimiter() accepts evictionInterval: 0 when evictionTtl is 0", async () => {
+  await using limiter = createRateLimiter({
+    limit: 5,
+    window: 1000,
+    evictionTtl: 0,
+    evictionInterval: 0,
+    clock: () => 0,
+  });
+  assert((await limiter.limit("a")).ok);
+});
 
-Deno.test("fixed-window: first request allowed with correct remaining", async () => {
+// --- Cost validation ---
+
+Deno.test("limit() throws for invalid cost", async () => {
+  using _time = new FakeTime();
+  await using limiter = createRateLimiter({ limit: 10, window: 1000 });
+
+  const cases: [cost: number, message: string][] = [
+    [0, "Cannot limit: 'cost' must be a positive integer, received 0"],
+    [-1, "Cannot limit: 'cost' must be a positive integer, received -1"],
+    [1.5, "Cannot limit: 'cost' must be a positive integer, received 1.5"],
+    [11, "Cannot limit: 'cost' (11) exceeds the limit (10)"],
+  ];
+  for (const [cost, message] of cases) {
+    assertThrows(() => limiter.limit("a", { cost }), RangeError, message);
+  }
+});
+
+Deno.test("peek() throws for invalid cost", async () => {
+  using _time = new FakeTime();
+  await using limiter = createRateLimiter({ limit: 10, window: 1000 });
+
+  const cases: [cost: number, message: string][] = [
+    [0, "Cannot peek: 'cost' must be a positive integer, received 0"],
+    [-1, "Cannot peek: 'cost' must be a positive integer, received -1"],
+    [1.5, "Cannot peek: 'cost' must be a positive integer, received 1.5"],
+    [11, "Cannot peek: 'cost' (11) exceeds the limit (10)"],
+  ];
+  for (const [cost, message] of cases) {
+    assertThrows(() => limiter.peek("a", { cost }), RangeError, message);
+  }
+});
+
+// --- Fixed window ---
+
+Deno.test("limit() allows the first request with fixed-window", async () => {
   const now = 1000;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -196,7 +224,7 @@ Deno.test("fixed-window: first request allowed with correct remaining", async ()
   assertEquals(r.retryAfter, 0);
 });
 
-Deno.test("fixed-window: exhausting limit returns ok: false", async () => {
+Deno.test("limit() denies requests once the limit is exhausted with fixed-window", async () => {
   const now = 1000;
   await using limiter = createRateLimiter({
     limit: 3,
@@ -213,11 +241,11 @@ Deno.test("fixed-window: exhausting limit returns ok: false", async () => {
   const r = await limiter.limit("a");
   assertFalse(r.ok);
   assertEquals(r.remaining, 0);
-  assert(r.retryAfter > 0);
+  assertEquals(r.retryAfter, 1000); // windowStart + window - now
   assertEquals(r.resetAt, 2000);
 });
 
-Deno.test("fixed-window: permits restore after window elapses", async () => {
+Deno.test("limit() restores permits after the window elapses with fixed-window", async () => {
   let now = 1000;
   await using limiter = createRateLimiter({
     limit: 2,
@@ -237,7 +265,7 @@ Deno.test("fixed-window: permits restore after window elapses", async () => {
   assertEquals(r.remaining, 1);
 });
 
-Deno.test("fixed-window: variable cost consumes multiple permits", async () => {
+Deno.test("limit() consumes multiple permits per cost with fixed-window", async () => {
   const now = 1000;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -255,9 +283,29 @@ Deno.test("fixed-window: variable cost consumes multiple permits", async () => {
   assert((await limiter.limit("a", { cost: 3 })).ok);
 });
 
-// === Sliding window ===
+Deno.test("limit() realigns the window after an idle gap with fixed-window", async () => {
+  let now = 0;
+  await using limiter = createRateLimiter({
+    limit: 2,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+    clock: () => now,
+  });
 
-Deno.test("sliding-window: permits freed incrementally as segments rotate", async () => {
+  assertEquals((await limiter.limit("a")).resetAt, 1000);
+
+  // 2.5 windows idle: windowStart realigns to 2000, not a stale boundary.
+  now = 2500;
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.remaining, 1);
+  assertEquals(r.resetAt, 3000);
+});
+
+// --- Sliding window ---
+
+Deno.test("limit() frees permits incrementally as segments rotate with sliding-window", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 4,
@@ -268,7 +316,9 @@ Deno.test("sliding-window: permits freed incrementally as segments rotate", asyn
     clock: () => now,
   });
 
-  await limiter.limit("a", { cost: 4 });
+  const first = await limiter.limit("a", { cost: 4 });
+  assert(first.ok);
+  assertEquals(first.remaining, 0);
   assertFalse((await limiter.limit("a")).ok);
 
   now = 100;
@@ -282,7 +332,7 @@ Deno.test("sliding-window: permits freed incrementally as segments rotate", asyn
   assert((await limiter.limit("a", { cost: 4 })).ok);
 });
 
-Deno.test("sliding-window: no boundary burst", async () => {
+Deno.test("limit() prevents boundary bursts with sliding-window", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -302,7 +352,7 @@ Deno.test("sliding-window: no boundary burst", async () => {
   assert((await limiter.limit("a", { cost: 10 })).ok);
 });
 
-Deno.test("sliding-window: retryAfter reflects next segment rotation", async () => {
+Deno.test("limit() reports retryAfter as the next segment rotation with sliding-window", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 1,
@@ -319,9 +369,37 @@ Deno.test("sliding-window: retryAfter reflects next segment rotation", async () 
   assertEquals(r.retryAfter, 250);
 });
 
-// === Token bucket ===
+Deno.test("limit() reports exact remaining with sliding-window", async () => {
+  let now = 0;
+  await using limiter = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "sliding-window",
+    segmentsPerWindow: 2,
+    evictionTtl: 0,
+    clock: () => now,
+  });
 
-Deno.test("token-bucket: starts at full capacity", async () => {
+  const r1 = await limiter.limit("a", { cost: 3 });
+  assert(r1.ok);
+  assertEquals(r1.remaining, 7);
+
+  const r2 = await limiter.limit("a", { cost: 2 });
+  assert(r2.ok);
+  assertEquals(r2.remaining, 5);
+
+  // One segment rotation: the counts stay within the window.
+  now = 500;
+  assertEquals((await limiter.peek("a")).remaining, 5);
+
+  // Full window elapsed: all counts rotate out.
+  now = 1000;
+  assertEquals((await limiter.peek("a")).remaining, 10);
+});
+
+// --- Token bucket ---
+
+Deno.test("limit() starts at full capacity with token-bucket", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -334,9 +412,10 @@ Deno.test("token-bucket: starts at full capacity", async () => {
   const r = await limiter.limit("a");
   assert(r.ok);
   assertEquals(r.remaining, 4);
+  assertEquals(r.resetAt, 1000); // lastRefill + window
 });
 
-Deno.test("token-bucket: tokens refill lazily on access", async () => {
+Deno.test("limit() refills tokens lazily on access with token-bucket", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 3,
@@ -351,14 +430,16 @@ Deno.test("token-bucket: tokens refill lazily on access", async () => {
   assertFalse((await limiter.limit("a")).ok);
 
   now = 1000;
-  assert((await limiter.limit("a")).ok);
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.resetAt, 2000); // lastRefill advanced to 1000
   assertFalse((await limiter.limit("a")).ok);
 
   now = 3000;
   assert((await limiter.limit("a", { cost: 2 })).ok);
 });
 
-Deno.test("token-bucket: refill capped at limit", async () => {
+Deno.test("limit() caps refills at the limit with token-bucket", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 3,
@@ -376,7 +457,7 @@ Deno.test("token-bucket: refill capped at limit", async () => {
   assertEquals(r.remaining, 2);
 });
 
-Deno.test("token-bucket: retryAfter reflects time until enough tokens", async () => {
+Deno.test("limit() reports retryAfter as the time until enough tokens with token-bucket", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -393,7 +474,7 @@ Deno.test("token-bucket: retryAfter reflects time until enough tokens", async ()
   assertEquals(r.retryAfter, 1000);
 });
 
-Deno.test("token-bucket: remaining is integer even with partial-cycle elapsed time", async () => {
+Deno.test("limit() reports integer remaining after partial-cycle elapsed time with token-bucket", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -416,7 +497,7 @@ Deno.test("token-bucket: remaining is integer even with partial-cycle elapsed ti
   assertEquals(r.remaining, 2);
 });
 
-Deno.test("token-bucket: exact token boundary with multi-cycle refill", async () => {
+Deno.test("limit() handles exact token boundaries across multi-cycle refills with token-bucket", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 7,
@@ -439,9 +520,9 @@ Deno.test("token-bucket: exact token boundary with multi-cycle refill", async ()
   assertFalse((await limiter.limit("a")).ok);
 });
 
-// === GCRA ===
+// --- GCRA ---
 
-Deno.test("gcra: first request always allowed", async () => {
+Deno.test("limit() always allows the first request with gcra", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -456,7 +537,7 @@ Deno.test("gcra: first request always allowed", async () => {
   assertEquals(r.limit, 10);
 });
 
-Deno.test("gcra: requests spaced >= emission_interval apart always allowed", async () => {
+Deno.test("limit() allows requests spaced one emission interval apart with gcra", async () => {
   let now = 0;
   const emissionInterval = 100; // window(1000) / limit(10)
   await using limiter = createRateLimiter({
@@ -474,7 +555,7 @@ Deno.test("gcra: requests spaced >= emission_interval apart always allowed", asy
   }
 });
 
-Deno.test("gcra: burst up to limit requests when idle", async () => {
+Deno.test("limit() allows a burst up to the limit when idle with gcra", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -493,7 +574,7 @@ Deno.test("gcra: burst up to limit requests when idle", async () => {
   assertFalse((await limiter.limit("a")).ok);
 });
 
-Deno.test("gcra: after burst, requests denied until tat drains", async () => {
+Deno.test("limit() denies requests after a burst until the tat drains with gcra", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -512,7 +593,7 @@ Deno.test("gcra: after burst, requests denied until tat drains", async () => {
   assertFalse((await limiter.limit("a")).ok);
 });
 
-Deno.test("gcra: retryAfter is exact", async () => {
+Deno.test("limit() reports exact retryAfter with gcra", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -528,7 +609,7 @@ Deno.test("gcra: retryAfter is exact", async () => {
   assertEquals(r.retryAfter, 200);
 });
 
-Deno.test("gcra: variable cost advances tat by emission_interval * cost", async () => {
+Deno.test("limit() advances the tat by emission interval times cost with gcra", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -548,7 +629,7 @@ Deno.test("gcra: variable cost advances tat by emission_interval * cost", async 
   assertFalse((await limiter.limit("a")).ok);
 });
 
-Deno.test("gcra: remaining derived correctly", async () => {
+Deno.test("limit() derives remaining from the tat with gcra", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -567,7 +648,27 @@ Deno.test("gcra: remaining derived correctly", async () => {
   assertEquals(r2.remaining, 5);
 });
 
-Deno.test("gcra: remaining never exceeds limit after long idle", async () => {
+Deno.test("limit() reports resetAt as the theoretical arrival time with gcra", async () => {
+  const now = 1000;
+  await using limiter = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  // emission_interval = window / limit = 100ms per permit.
+  const r1 = await limiter.limit("a");
+  assert(r1.ok);
+  assertEquals(r1.resetAt, 1100); // now + emission_interval
+
+  const r2 = await limiter.limit("a", { cost: 3 });
+  assert(r2.ok);
+  assertEquals(r2.resetAt, 1400); // tat advanced by 3 more intervals
+});
+
+Deno.test("limit() never reports remaining above the limit after a long idle with gcra", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -596,7 +697,7 @@ Deno.test("gcra: remaining never exceeds limit after long idle", async () => {
   );
 });
 
-Deno.test("gcra: cost exceeding remaining burst is denied", async () => {
+Deno.test("limit() denies a cost exceeding the remaining burst with gcra", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -612,7 +713,7 @@ Deno.test("gcra: cost exceeding remaining burst is denied", async () => {
   assert(r.retryAfter > 0);
 });
 
-Deno.test("gcra: state is a single timestamp per key (minimal memory)", async () => {
+Deno.test("limit() keeps a single state entry per key with gcra", async () => {
   const now = 0;
   const store = createMemoryStore({
     limit: 100,
@@ -629,7 +730,7 @@ Deno.test("gcra: state is a single timestamp per key (minimal memory)", async ()
   assertEquals(store.size, 1000);
 });
 
-// === peek() ===
+// --- peek() ---
 
 Deno.test("peek() returns current state without consuming permits", async () => {
   const now = 0;
@@ -703,6 +804,15 @@ Deno.test("peek() on unknown key reports forward-looking resetAt", async () => {
     clock: () => now,
   });
   assertEquals((await sliding.peek("unknown")).resetAt, now + 250);
+
+  await using gcra = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+  assertEquals((await gcra.peek("unknown")).resetAt, now);
 });
 
 Deno.test("peek() reflects consumed permits after limit()", async () => {
@@ -721,7 +831,33 @@ Deno.test("peek() reflects consumed permits after limit()", async () => {
   assertEquals(p.remaining, 2);
 });
 
-// === reset() ===
+Deno.test("peek() reflects refills on an existing key without consuming", async () => {
+  let now = 0;
+  await using limiter = createRateLimiter({
+    limit: 3,
+    window: 1000,
+    algorithm: "token-bucket",
+    tokensPerPeriod: 1,
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  await limiter.limit("a", { cost: 3 });
+  assertEquals((await limiter.peek("a")).remaining, 0);
+
+  // Two refill cycles elapse: peek reports them without consuming.
+  now = 2000;
+  const p = await limiter.peek("a");
+  assert(p.ok);
+  assertEquals(p.remaining, 2);
+  assertEquals(p.resetAt, 3000);
+
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.remaining, 1);
+});
+
+// --- reset() ---
 
 Deno.test("reset() restores key to full capacity", async () => {
   const now = 0;
@@ -753,7 +889,7 @@ Deno.test("reset() on unknown key is a no-op", async () => {
   await limiter.reset("nonexistent"); // should not throw
 });
 
-// === size (via MemoryStore) ===
+// --- Store size ---
 
 Deno.test("MemoryStore.size tracks number of keys", async () => {
   const now = 0;
@@ -777,9 +913,9 @@ Deno.test("MemoryStore.size tracks number of keys", async () => {
   assertEquals(store.size, 1);
 });
 
-// === Eviction ===
+// --- TTL eviction ---
 
-Deno.test("keys are evicted after evictionTtl of inactivity", async () => {
+Deno.test("createMemoryStore() evicts idle keys after evictionTtl", async () => {
   using time = new FakeTime();
   const store = createMemoryStore({
     limit: 5,
@@ -798,7 +934,7 @@ Deno.test("keys are evicted after evictionTtl of inactivity", async () => {
   assertEquals(store.size, 0);
 });
 
-Deno.test("active keys are not evicted", async () => {
+Deno.test("createMemoryStore() does not evict recently active keys", async () => {
   using time = new FakeTime();
   const store = createMemoryStore({
     limit: 5,
@@ -841,7 +977,7 @@ Deno.test("peek() does not refresh activity for TTL eviction", async () => {
   assertEquals(store.size, 0);
 });
 
-Deno.test("evictionTtl: 0 disables eviction", async () => {
+Deno.test("createMemoryStore() disables eviction when evictionTtl is 0", async () => {
   using time = new FakeTime();
   const store = createMemoryStore({
     limit: 5,
@@ -856,9 +992,9 @@ Deno.test("evictionTtl: 0 disables eviction", async () => {
   assertEquals(store.size, 1);
 });
 
-// === Disposal ===
+// --- Disposal ---
 
-Deno.test("dispose clears all state", async () => {
+Deno.test("[Symbol.asyncDispose]() clears all state", async () => {
   using _time = new FakeTime();
   const store = createMemoryStore({
     limit: 5,
@@ -889,6 +1025,13 @@ Deno.test("limit() returns ok: false after disposal", async () => {
   assertEquals(r.remaining, 0);
   assertEquals(r.resetAt, 0);
   assertEquals(r.retryAfter, 0);
+
+  // Cost validation runs before the disposed check.
+  assertThrows(
+    () => limiter.limit("a", { cost: 0 }),
+    RangeError,
+    "Cannot limit: 'cost' must be a positive integer, received 0",
+  );
 });
 
 Deno.test("peek() returns ok: false after disposal", async () => {
@@ -905,6 +1048,13 @@ Deno.test("peek() returns ok: false after disposal", async () => {
   assertEquals(r.remaining, 0);
   assertEquals(r.resetAt, 0);
   assertEquals(r.retryAfter, 0);
+
+  // Cost validation runs before the disposed check.
+  assertThrows(
+    () => limiter.peek("a", { cost: 0 }),
+    RangeError,
+    "Cannot peek: 'cost' must be a positive integer, received 0",
+  );
 });
 
 Deno.test("reset() is a no-op after disposal", async () => {
@@ -919,9 +1069,20 @@ Deno.test("reset() is a no-op after disposal", async () => {
   await limiter.reset("a"); // should not throw
 });
 
-// === Metadata correctness ===
+Deno.test("[Symbol.asyncDispose]() is a no-op when called twice", async () => {
+  const limiter = createRateLimiter({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+  });
 
-Deno.test("result.limit matches configured value", async () => {
+  await limiter[Symbol.asyncDispose]();
+  await limiter[Symbol.asyncDispose]();
+});
+
+// --- Metadata correctness ---
+
+Deno.test("limit() and peek() report the configured limit", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 42,
@@ -935,7 +1096,7 @@ Deno.test("result.limit matches configured value", async () => {
   assertEquals((await limiter.peek("a")).limit, 42);
 });
 
-Deno.test("retryAfter is 0 when allowed, positive when denied", async () => {
+Deno.test("limit() reports zero retryAfter when allowed and positive when denied", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 1,
@@ -952,7 +1113,7 @@ Deno.test("retryAfter is 0 when allowed, positive when denied", async () => {
   assert(denied.retryAfter > 0);
 });
 
-Deno.test("resetAt is a future timestamp", async () => {
+Deno.test("limit() reports resetAt in the future", async () => {
   const now = 5000;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -964,9 +1125,10 @@ Deno.test("resetAt is a future timestamp", async () => {
 
   const r = await limiter.limit("a");
   assert(r.resetAt > now);
+  assertEquals(r.resetAt, 6000);
 });
 
-Deno.test("gcra: retryAfter when now < allowAt (request arrives too early)", async () => {
+Deno.test("limit() reports positive retryAfter before and after allowAt with gcra", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 5,
@@ -994,9 +1156,9 @@ Deno.test("gcra: retryAfter when now < allowAt (request arrives too early)", asy
   assert(r2.retryAfter > 0);
 });
 
-// === Per-key isolation ===
+// --- Per-key isolation ---
 
-Deno.test("keys are isolated from each other", async () => {
+Deno.test("limit() isolates keys from each other", async () => {
   const now = 0;
   await using limiter = createRateLimiter({
     limit: 2,
@@ -1013,9 +1175,9 @@ Deno.test("keys are isolated from each other", async () => {
   assert((await limiter.limit("b")).ok);
 });
 
-// === Default algorithm is sliding-window ===
+// --- Default algorithm ---
 
-Deno.test("default algorithm is sliding-window", async () => {
+Deno.test("createRateLimiter() defaults to the sliding-window algorithm", async () => {
   let now = 0;
   await using limiter = createRateLimiter({
     limit: 10,
@@ -1035,9 +1197,9 @@ Deno.test("default algorithm is sliding-window", async () => {
   assert((await limiter.limit("a")).ok);
 });
 
-// === Default clock uses Date.now (T-1 test) ===
+// --- Default clock ---
 
-Deno.test("default clock uses Date.now", async () => {
+Deno.test("createRateLimiter() defaults to Date.now as the clock", async () => {
   using _time = new FakeTime(0);
   await using limiter = createRateLimiter({
     limit: 5,
@@ -1050,7 +1212,7 @@ Deno.test("default clock uses Date.now", async () => {
   assertEquals(r.resetAt, 1000);
 });
 
-// === peek() with cost (C-2/A-2) ===
+// --- peek() with cost ---
 
 Deno.test("peek() with cost checks whether that cost would be allowed", async () => {
   const now = 0;
@@ -1068,19 +1230,9 @@ Deno.test("peek() with cost checks whether that cost would be allowed", async ()
   assertFalse((await limiter.peek("a", { cost: 3 })).ok);
 });
 
-Deno.test("peek() validates cost", async () => {
-  using _time = new FakeTime();
-  await using limiter = createRateLimiter({ limit: 10, window: 1000 });
+// --- maxKeys ---
 
-  assertThrows(() => limiter.peek("a", { cost: 0 }), RangeError, "cost");
-  assertThrows(() => limiter.peek("a", { cost: -1 }), RangeError, "cost");
-  assertThrows(() => limiter.peek("a", { cost: 1.5 }), RangeError, "cost");
-  assertThrows(() => limiter.peek("a", { cost: 11 }), RangeError, "exceeds");
-});
-
-// === maxKeys (S-1) ===
-
-Deno.test("maxKeys evicts LRU key when a new key arrives at capacity", async () => {
+Deno.test("limit() evicts a key to admit a new key at maxKeys", async () => {
   const now = 0;
   const store = createMemoryStore({
     limit: 5,
@@ -1104,335 +1256,7 @@ Deno.test("maxKeys evicts LRU key when a new key arrives at capacity", async () 
   assert(store.has("c"));
 });
 
-Deno.test("maxKeys allows existing keys even when at capacity", async () => {
-  const now = 0;
-  const store = createMemoryStore({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    maxKeys: 2,
-    clock: () => now,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  await limiter.limit("a");
-  await limiter.limit("b");
-
-  const r = await limiter.limit("a");
-  assert(r.ok);
-});
-
-Deno.test("maxKeys: 0 disables key limit", async () => {
-  const now = 0;
-  const store = createMemoryStore({
-    limit: 100,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    maxKeys: 0,
-    clock: () => now,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  for (let i = 0; i < 1000; i++) {
-    assert((await limiter.limit(`key:${i}`)).ok);
-  }
-  assertEquals(store.size, 1000);
-});
-
-Deno.test("createRateLimiter() throws for invalid maxKeys", () => {
-  assertThrows(
-    () => createRateLimiter({ limit: 10, window: 1000, maxKeys: -1 }),
-    RangeError,
-    "maxKeys",
-  );
-  assertThrows(
-    () => createRateLimiter({ limit: 10, window: 1000, maxKeys: 1.5 }),
-    RangeError,
-    "maxKeys",
-  );
-});
-
-Deno.test("maxKeys: peek for unknown key at capacity does not evict", async () => {
-  const now = 0;
-  const store = createMemoryStore({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    maxKeys: 2,
-    clock: () => now,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  await limiter.limit("a");
-  await limiter.limit("b");
-
-  const r = await limiter.peek("c");
-  assert(r.ok);
-  assertEquals(r.remaining, 5);
-  assertEquals(store.size, 2);
-  assert(store.has("a"));
-  assert(store.has("b"));
-});
-
-Deno.test("maxKeys allows peek for existing key at capacity", async () => {
-  const now = 0;
-  const store = createMemoryStore({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    maxKeys: 2,
-    clock: () => now,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  await limiter.limit("a");
-  await limiter.limit("b");
-
-  const r = await limiter.peek("a");
-  assert(r.ok);
-  assertEquals(r.remaining, 4);
-});
-
-// === maxKeys + window reset (C-1 regression) ===
-
-Deno.test("maxKeys allows existing key whose window has reset", async () => {
-  let now = 0;
-  const store = createMemoryStore({
-    limit: 3,
-    window: 1000,
-    algorithm: "fixed-window",
-    evictionTtl: 0,
-    maxKeys: 2,
-    clock: () => now,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  await limiter.limit("a");
-  await limiter.limit("b");
-  assertEquals(store.size, 2);
-
-  // Advance past the window so "a" resets to full capacity
-  now = 2000;
-  const r = await limiter.limit("a");
-  assert(r.ok);
-  assertEquals(r.remaining, 2);
-});
-
-Deno.test("maxKeys allows GCRA key after full tat drain", async () => {
-  let now = 0;
-  const store = createMemoryStore({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    maxKeys: 2,
-    clock: () => now,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  await limiter.limit("a");
-  await limiter.limit("b");
-
-  // Advance well past the window so "a" drains fully
-  now = 5000;
-  const r = await limiter.limit("a");
-  assert(r.ok);
-});
-
-// === peek() unknown key with cost > 1 (T-TEST-3) ===
-
-Deno.test("peek() returns ok for unknown key with cost <= limit", async () => {
-  const now = 0;
-  await using limiter = createRateLimiter({
-    limit: 10,
-    window: 1000,
-    algorithm: "fixed-window",
-    evictionTtl: 0,
-    clock: () => now,
-  });
-
-  const p = await limiter.peek("unknown", { cost: 5 });
-  assert(p.ok);
-  assertEquals(p.remaining, 10);
-  assertEquals(p.limit, 10);
-});
-
-Deno.test("peek() returns not-ok for unknown key with cost > limit", async () => {
-  const now = 0;
-  await using limiter = createRateLimiter({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    clock: () => now,
-  });
-
-  assertThrows(
-    () => limiter.peek("unknown", { cost: 6 }),
-    RangeError,
-    "exceeds",
-  );
-});
-
-// === Unknown algorithm (T-TEST-4) ===
-
-Deno.test("createRateLimiter() throws for unknown algorithm", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "unknown" as "fixed-window",
-      }),
-    TypeError,
-    "unknown",
-  );
-});
-
-// === segmentsPerWindow edge cases in createRateLimiter (T-TEST-5) ===
-
-Deno.test("createRateLimiter() throws for segmentsPerWindow: 0", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "sliding-window",
-        segmentsPerWindow: 0,
-      }),
-    RangeError,
-    "segmentsPerWindow",
-  );
-});
-
-Deno.test("createRateLimiter() throws for non-integer segmentsPerWindow", () => {
-  assertThrows(
-    () =>
-      createRateLimiter({
-        limit: 10,
-        window: 1000,
-        algorithm: "sliding-window",
-        segmentsPerWindow: 2.5,
-      }),
-    RangeError,
-    "segmentsPerWindow",
-  );
-});
-
-// === Store backend integration ===
-
-Deno.test("createRateLimiter() with custom store delegates correctly", async () => {
-  const store = createMemoryStore({
-    limit: 3,
-    window: 1000,
-    algorithm: "fixed-window",
-    evictionTtl: 0,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  const r = await limiter.limit("a");
-  assert(r.ok);
-  assertEquals(r.remaining, 2);
-  assertEquals(r.limit, 3);
-});
-
-Deno.test("createRateLimiter() reads capacity/window from store", async () => {
-  const store = createMemoryStore({
-    limit: 42,
-    window: 5000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-  });
-  await using limiter = createRateLimiter({ store });
-
-  const r = await limiter.limit("a");
-  assert(r.ok);
-  assertEquals(r.limit, 42);
-});
-
-// === Concurrent limit() calls ===
-
-Deno.test("concurrent limit() calls on the same key respect the limit", async () => {
-  const now = 0;
-  await using limiter = createRateLimiter({
-    limit: 2,
-    window: 1000,
-    algorithm: "fixed-window",
-    evictionTtl: 0,
-    clock: () => now,
-  });
-
-  const results = await Promise.all([
-    limiter.limit("a"),
-    limiter.limit("a"),
-    limiter.limit("a"),
-  ]);
-
-  const allowed = results.filter((r) => r.ok).length;
-  const denied = results.filter((r) => !r.ok).length;
-  assertEquals(allowed, 2);
-  assertEquals(denied, 1);
-});
-
-// === LRU eviction ordering ===
-
-// === GCRA clock regression ===
-
-Deno.test("gcra: limit() rejects when clock regresses past allowAt", async () => {
-  let now = 1000;
-  await using limiter = createRateLimiter({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-    evictionTtl: 0,
-    clock: () => now,
-  });
-
-  // Fill all 5 slots: tat advances to now + window = 2000.
-  for (let i = 0; i < 5; i++) await limiter.limit("a");
-
-  // Regress the clock so now < allowAt (allowAt = tat - tau = 2000 - 1000 = 1000).
-  now = 500;
-  const r = await limiter.limit("a");
-  assertFalse(r.ok);
-  assert(r.retryAfter > 0);
-});
-
-// === Double dispose ===
-
-Deno.test("double dispose of rate limiter is a no-op", async () => {
-  const limiter = createRateLimiter({
-    limit: 5,
-    window: 1000,
-    algorithm: "gcra",
-  });
-
-  await limiter[Symbol.asyncDispose]();
-  await limiter[Symbol.asyncDispose]();
-});
-
-// === Memory store metadata ===
-
-Deno.test("memory store exposes capacity and window", async () => {
-  using _time = new FakeTime();
-  const store = createMemoryStore({
-    limit: 7,
-    window: 2500,
-    algorithm: "gcra",
-    evictionTtl: 0,
-  });
-
-  assertEquals(store.capacity, 7);
-  assertEquals(store.window, 2500);
-
-  await store[Symbol.asyncDispose]();
-});
-
-Deno.test("maxKeys evicts the least-recently-used key", async () => {
+Deno.test("limit() evicts the least-recently-used key at maxKeys", async () => {
   let now = 0;
   const store = createMemoryStore({
     limit: 5,
@@ -1466,6 +1290,322 @@ Deno.test("maxKeys evicts the least-recently-used key", async () => {
   assert(store.has("d"));
 });
 
+Deno.test("limit() allows existing keys at maxKeys capacity", async () => {
+  const now = 0;
+  const store = createMemoryStore({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    maxKeys: 2,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  await limiter.limit("a");
+  await limiter.limit("b");
+
+  const r = await limiter.limit("a");
+  assert(r.ok);
+});
+
+// Bounded-memory tradeoff: LRU eviction at maxKeys discards rate-limit
+// state, so an exhausted key regains full capacity on its next request.
+Deno.test("limit() restores full capacity for an exhausted key evicted at maxKeys", async () => {
+  const now = 0;
+  const store = createMemoryStore({
+    limit: 2,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+    maxKeys: 2,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  await limiter.limit("a", { cost: 2 });
+  assertFalse((await limiter.limit("a")).ok);
+
+  await limiter.limit("b");
+  await limiter.limit("c"); // evicts "a" (LRU)
+  assertFalse(store.has("a"));
+
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.remaining, 1);
+});
+
+Deno.test("createMemoryStore() disables the key limit when maxKeys is 0", async () => {
+  const now = 0;
+  const store = createMemoryStore({
+    limit: 100,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    maxKeys: 0,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  for (let i = 0; i < 1000; i++) {
+    assert((await limiter.limit(`key:${i}`)).ok);
+  }
+  assertEquals(store.size, 1000);
+});
+
+Deno.test("createRateLimiter() throws for invalid maxKeys", () => {
+  const cases: [maxKeys: number, message: string][] = [
+    [
+      -1,
+      "Cannot create memory store: 'maxKeys' must be a non-negative integer, received -1",
+    ],
+    [
+      1.5,
+      "Cannot create memory store: 'maxKeys' must be a non-negative integer, received 1.5",
+    ],
+  ];
+  for (const [maxKeys, message] of cases) {
+    assertThrows(
+      () => createRateLimiter({ limit: 10, window: 1000, maxKeys }),
+      RangeError,
+      message,
+    );
+  }
+});
+
+Deno.test("peek() does not evict at maxKeys capacity for an unknown key", async () => {
+  const now = 0;
+  const store = createMemoryStore({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    maxKeys: 2,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  await limiter.limit("a");
+  await limiter.limit("b");
+
+  const r = await limiter.peek("c");
+  assert(r.ok);
+  assertEquals(r.remaining, 5);
+  assertEquals(store.size, 2);
+  assert(store.has("a"));
+  assert(store.has("b"));
+});
+
+Deno.test("peek() reads an existing key at maxKeys capacity", async () => {
+  const now = 0;
+  const store = createMemoryStore({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    maxKeys: 2,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  await limiter.limit("a");
+  await limiter.limit("b");
+
+  const r = await limiter.peek("a");
+  assert(r.ok);
+  assertEquals(r.remaining, 4);
+});
+
+// --- maxKeys + window reset ---
+
+Deno.test("limit() allows an existing key whose window has reset at maxKeys", async () => {
+  let now = 0;
+  const store = createMemoryStore({
+    limit: 3,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+    maxKeys: 2,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  await limiter.limit("a");
+  await limiter.limit("b");
+  assertEquals(store.size, 2);
+
+  // Advance past the window so "a" resets to full capacity
+  now = 2000;
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.remaining, 2);
+});
+
+Deno.test("limit() allows an existing key after full tat drain at maxKeys with gcra", async () => {
+  let now = 0;
+  const store = createMemoryStore({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    maxKeys: 2,
+    clock: () => now,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  await limiter.limit("a");
+  await limiter.limit("b");
+
+  // Advance well past the window so "a" drains fully
+  now = 5000;
+  const r = await limiter.limit("a");
+  assert(r.ok);
+});
+
+// --- peek() unknown key with cost > 1 ---
+
+Deno.test("peek() returns ok for unknown key with cost <= limit", async () => {
+  const now = 0;
+  await using limiter = createRateLimiter({
+    limit: 10,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  const p = await limiter.peek("unknown", { cost: 5 });
+  assert(p.ok);
+  assertEquals(p.remaining, 10);
+  assertEquals(p.limit, 10);
+});
+
+Deno.test("peek() throws for unknown key with cost exceeding the limit", async () => {
+  const now = 0;
+  await using limiter = createRateLimiter({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  assertThrows(
+    () => limiter.peek("unknown", { cost: 6 }),
+    RangeError,
+    "Cannot peek: 'cost' (6) exceeds the limit (5)",
+  );
+});
+
+// --- Unknown algorithm ---
+
+Deno.test("createRateLimiter() throws for unknown algorithm", () => {
+  assertThrows(
+    () =>
+      createRateLimiter({
+        limit: 10,
+        window: 1000,
+        algorithm: "unknown" as "fixed-window",
+      }),
+    TypeError,
+    "Cannot create memory store: unknown algorithm 'unknown'",
+  );
+});
+
+// --- Store backend integration ---
+
+Deno.test("createRateLimiter() with custom store delegates correctly", async () => {
+  const store = createMemoryStore({
+    limit: 3,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.remaining, 2);
+  assertEquals(r.limit, 3);
+});
+
+Deno.test("createRateLimiter() reads capacity/window from store", async () => {
+  const store = createMemoryStore({
+    limit: 42,
+    window: 5000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+  });
+  await using limiter = createRateLimiter({ store });
+
+  const r = await limiter.limit("a");
+  assert(r.ok);
+  assertEquals(r.limit, 42);
+});
+
+// --- Concurrent limit() calls ---
+
+Deno.test("concurrent limit() calls on the same key respect the limit", async () => {
+  const now = 0;
+  await using limiter = createRateLimiter({
+    limit: 2,
+    window: 1000,
+    algorithm: "fixed-window",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  const results = await Promise.all([
+    limiter.limit("a"),
+    limiter.limit("a"),
+    limiter.limit("a"),
+  ]);
+
+  const allowed = results.filter((r) => r.ok).length;
+  const denied = results.filter((r) => !r.ok).length;
+  assertEquals(allowed, 2);
+  assertEquals(denied, 1);
+});
+
+// --- GCRA clock regression ---
+
+Deno.test("limit() rejects when the clock regresses past allowAt with gcra", async () => {
+  let now = 1000;
+  await using limiter = createRateLimiter({
+    limit: 5,
+    window: 1000,
+    algorithm: "gcra",
+    evictionTtl: 0,
+    clock: () => now,
+  });
+
+  // Fill all 5 slots: tat advances to now + window = 2000.
+  for (let i = 0; i < 5; i++) await limiter.limit("a");
+
+  // Regress the clock so now < allowAt (allowAt = tat - tau = 2000 - 1000 = 1000).
+  now = 500;
+  const r = await limiter.limit("a");
+  assertFalse(r.ok);
+  assert(r.retryAfter > 0);
+});
+
+// --- Memory store metadata ---
+
+Deno.test("createMemoryStore() exposes capacity and window", async () => {
+  using _time = new FakeTime();
+  const store = createMemoryStore({
+    limit: 7,
+    window: 2500,
+    algorithm: "gcra",
+    evictionTtl: 0,
+  });
+
+  assertEquals(store.capacity, 7);
+  assertEquals(store.window, 2500);
+
+  await store[Symbol.asyncDispose]();
+});
+
 // --- Timer interval cap ---
 
 Deno.test("createRateLimiter() throws when evictionInterval exceeds the timer maximum", () => {
@@ -1485,7 +1625,7 @@ Deno.test("createRateLimiter() throws when evictionInterval exceeds the timer ma
 
 // --- Eviction TTL default ---
 
-Deno.test("default evictionTtl covers windows longer than 5 minutes", async () => {
+Deno.test("createRateLimiter() extends the default evictionTtl to cover long windows", async () => {
   using time = new FakeTime(0);
   await using limiter = createRateLimiter({
     limit: 1,
@@ -1506,7 +1646,7 @@ Deno.test("default evictionTtl covers windows longer than 5 minutes", async () =
   assert((await limiter.limit("key")).ok);
 });
 
-Deno.test("default evictionTtl covers the token-bucket refill horizon", async () => {
+Deno.test("createRateLimiter() extends the default evictionTtl to cover the token-bucket refill horizon", async () => {
   using time = new FakeTime(0);
   await using limiter = createRateLimiter({
     limit: 10,
@@ -1529,7 +1669,7 @@ Deno.test("default evictionTtl covers the token-bucket refill horizon", async ()
 
 // --- Process lifetime ---
 
-Deno.test("an undisposed rate limiter does not keep the process alive", async () => {
+Deno.test("createRateLimiter() does not keep the process alive when undisposed", async () => {
   const script = `
     import { createRateLimiter } from ${
     JSON.stringify(new URL("./rate_limiter.ts", import.meta.url).href)
