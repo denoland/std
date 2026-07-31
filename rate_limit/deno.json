@@ -7,6 +7,7 @@
     "./fixed-window": "./fixed_window.ts",
     "./sliding-window": "./sliding_window.ts",
     "./types": "./types.ts",
+    "./gcra": "./gcra.ts",
     "./rate-limiter": "./rate_limiter.ts",
     "./store-types": "./store_types.ts",
     "./memory-store": "./memory_store.ts"

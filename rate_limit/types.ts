@@ -37,6 +37,7 @@
  * @see {@linkcode createTokenBucket} for token bucket rate limiting.
  * @see {@linkcode createFixedWindow} for fixed window rate limiting.
  * @see {@linkcode createSlidingWindow} for sliding window rate limiting.
+ * @see {@linkcode createGcra} for GCRA rate limiting.
  */
 export interface RateLimiter extends Disposable {
   /**

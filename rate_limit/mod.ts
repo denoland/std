@@ -10,8 +10,8 @@
  * a pluggable {@linkcode RateLimitStore} backend (in-memory by default).
  *
  * For single-resource limiting, use the primitives:
- * {@linkcode createTokenBucket}, {@linkcode createFixedWindow}, and
- * {@linkcode createSlidingWindow}.
+ * {@linkcode createTokenBucket}, {@linkcode createFixedWindow},
+ * {@linkcode createSlidingWindow}, and {@linkcode createGcra}.
  *
  * ```ts
  * import { createRateLimiter } from "@std/rate-limit";
@@ -27,6 +27,7 @@
  */
 
 export * from "./fixed_window.ts";
+export * from "./gcra.ts";
 export * from "./memory_store.ts";
 export * from "./rate_limiter.ts";
 export * from "./sliding_window.ts";
