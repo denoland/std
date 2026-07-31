@@ -37,7 +37,7 @@ Deno.test("(unstable) stringify", async (t) => {
         const options = { columns: true };
         const data = [{ a: 1 }];
         assertThrows(
-          // @ts-ignore: for test
+          // @ts-expect-error: for test
           () => stringify(data, options),
           "Cannot stringify data as the columns option is invalid: columns must be an array or undefined",
         );
@@ -52,7 +52,7 @@ Deno.test("(unstable) stringify", async (t) => {
         const options = { columns: { v: true } };
         const data = [{ a: 1 }];
         assertThrows(
-          // @ts-ignore: for test
+          // @ts-expect-error: for test
           () => stringify(data, options),
           "Cannot stringify data as the columns option is invalid: columns must be an array or undefined",
         );
@@ -67,7 +67,7 @@ Deno.test("(unstable) stringify", async (t) => {
         const options = { columns: 127 };
         const data = [{ a: 1 }];
         assertThrows(
-          // @ts-ignore: for test
+          // @ts-expect-error: for test
           () => stringify(data, options),
           "Cannot stringify data as the columns option is invalid: columns must be an array or undefined",
         );
@@ -82,7 +82,7 @@ Deno.test("(unstable) stringify", async (t) => {
         const options = { columns: "i am a string" };
         const data = [{ a: 1 }];
         assertThrows(
-          // @ts-ignore: for test
+          // @ts-expect-error: for test
           () => stringify(data, options),
           "Cannot stringify data as the columns option is invalid: columns must be an array or undefined",
         );

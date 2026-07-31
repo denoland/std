@@ -1769,7 +1769,7 @@ Deno.test("digest() throws on invalid algorithm", async () => {
   // runtime and its wording differs across versions (e.g. "Unrecognized
   // algorithm name" vs. "Algorithm 'invalid' is not supported").
   await assertRejects(
-    // @ts-ignore Algorithm name is invalid on purpose
+    // @ts-expect-error Algorithm name is invalid on purpose
     async () => await stdCrypto.subtle.digest("invalid", new Uint8Array(0)),
     DOMException,
   );

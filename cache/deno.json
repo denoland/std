@@ -1,6 +1,6 @@
 {
   "name": "@std/cache",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "exports": {
     ".": "./mod.ts",
     "./cache": "./cache.ts",
