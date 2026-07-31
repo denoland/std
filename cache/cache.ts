@@ -66,6 +66,13 @@ export interface CacheOptionsShared<K, V> {
    * fires. The cache is not re-entrant during this callback: calling
    * `set`, `delete`, or `clear` will throw.
    *
+   * Exceptions thrown by this callback propagate to the caller of the
+   * synchronous operation that removed the entry (such as
+   * {@linkcode Cache.prototype.delete | delete()} or
+   * {@linkcode Cache.prototype.clear | clear()}). Exceptions thrown during
+   * timer-driven expiration or a background refresh have no caller to
+   * propagate to and are discarded.
+   *
    * @param key The key of the removed entry.
    * @param value The value of the removed entry.
    * @param reason Why the entry was removed.
@@ -306,7 +313,14 @@ interface CacheEntry<K, V> {
  *
  * The cache does **not** extend `Map`. It owns a `Map` internally and
  * delegates to {@linkcode IndexedHeap} from `@std/data-structures` for
- * deadline scheduling with a single `setTimeout`.
+ * deadline scheduling with a single `setTimeout`. The timer is unref'd on
+ * runtimes that support it (Deno, Node.js), so an idle cache never keeps
+ * the process alive; expired entries are also removed lazily on access.
+ *
+ * This class is unrelated to the global
+ * {@link https://developer.mozilla.org/en-US/docs/Web/API/Cache | Cache}
+ * of the web Cache API. In a module that uses both, import this one under
+ * an alias, e.g. `import { Cache as MemoryCache } from "@std/cache"`.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -445,6 +459,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
   /**
    * The maximum number of entries, or `undefined` if unbounded.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @returns The maximum number of entries, or `undefined`.
    *
    * @example Usage
@@ -461,13 +477,15 @@ export class Cache<K, V> implements CacheLike<K, V> {
   }
 
   /**
-   * The number of entries currently in the cache. This count may include
-   * expired entries that have not yet been lazily removed. Use the
-   * iterators ({@linkcode Cache.prototype.keys},
-   * {@linkcode Cache.prototype.values}, {@linkcode Cache.prototype.entries})
-   * if an accurate live-entry count is needed.
+   * The number of live (non-expired) entries currently in the cache.
+   * Always agrees with the iterators ({@linkcode Cache.prototype.keys},
+   * {@linkcode Cache.prototype.values},
+   * {@linkcode Cache.prototype.entries}): entries that have expired but
+   * have not yet been swept are not counted. Computed in O(n) time.
    *
-   * @returns The number of entries.
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
+   * @returns The number of live entries.
    *
    * @example Usage
    * ```ts
@@ -480,12 +498,19 @@ export class Cache<K, V> implements CacheLike<K, V> {
    * ```
    */
   get size(): number {
-    return this.#data.size;
+    const now = Date.now();
+    let size = 0;
+    for (let node = this.#head; node !== undefined; node = node.next) {
+      if (!this.#isExpired(node, now)) size++;
+    }
+    return size;
   }
 
   /**
    * Performance counters. The returned object is a snapshot copy;
    * mutations have no effect on the cache.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns A snapshot of the cache's performance counters.
    *
@@ -508,6 +533,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
 
   /**
    * Reset all performance counters to zero.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns {void}
    *
@@ -548,7 +575,7 @@ export class Cache<K, V> implements CacheLike<K, V> {
   ): void {
     this.#data.delete(key);
     this.#unlink(entry);
-    this.#heap?.delete(key);
+    if (this.#heap?.delete(key)) this.#scheduleTimer();
     if (this.#onRemove) {
       this.#removingDepth++;
       try {
@@ -599,12 +626,28 @@ export class Cache<K, V> implements CacheLike<K, V> {
 
   #scheduleTimer(): void {
     const nextDeadline = this.#heap?.peekPriority();
-    if (nextDeadline === undefined) return;
+    if (nextDeadline === undefined) {
+      if (this.#timerId !== undefined) {
+        clearTimeout(this.#timerId);
+        this.#timerId = undefined;
+        this.#scheduledDeadline = undefined;
+      }
+      return;
+    }
     if (nextDeadline === this.#scheduledDeadline) return;
     if (this.#timerId !== undefined) clearTimeout(this.#timerId);
     this.#scheduledDeadline = nextDeadline;
     const delay = Math.min(Math.max(0, nextDeadline - Date.now()), 0x7FFFFFFF);
-    this.#timerId = setTimeout(() => this.#onTimer(), delay);
+    const id = setTimeout(() => this.#onTimer(), delay);
+    this.#timerId = id;
+    // Unref so an idle cache never holds the event loop open: expiration is
+    // also enforced lazily on access, so an unfired sweep only delays
+    // memory reclamation and onRemove callbacks.
+    if (typeof id === "object") {
+      (id as unknown as { unref?: () => void }).unref?.();
+    } else {
+      globalThis.Deno?.unrefTimer?.(id);
+    }
   }
 
   #onTimer(): void {
@@ -612,7 +655,6 @@ export class Cache<K, V> implements CacheLike<K, V> {
     this.#scheduledDeadline = undefined;
     const now = Date.now();
     const heap = this.#heap!;
-    const errors: unknown[] = [];
     while (!heap.isEmpty()) {
       if (heap.peekPriority()! > now) break;
       const top = heap.pop()!;
@@ -627,15 +669,14 @@ export class Cache<K, V> implements CacheLike<K, V> {
       this.#removingDepth++;
       try {
         this.#onRemove(top.key, entry.value, "expired");
-      } catch (e) {
-        errors.push(e);
+      } catch {
+        // Timer context: a throw here would be uncatchable by the user and
+        // crash the process, so onRemove errors are discarded.
       } finally {
         this.#removingDepth--;
       }
     }
     this.#scheduleTimer();
-    if (errors.length === 1) throw errors[0];
-    if (errors.length > 1) throw new AggregateError(errors);
   }
 
   #setHeapDeadline(key: K, deadline: number): void {
@@ -714,7 +755,12 @@ export class Cache<K, V> implements CacheLike<K, V> {
           if (absDeadline !== Infinity) {
             options.absoluteExpiration = Math.max(0, absDeadline - Date.now());
           }
-          this.set(key, newValue, options);
+          try {
+            this.set(key, newValue, options);
+          } catch {
+            // Microtask context: a throw here (e.g. from an onRemove fired
+            // by eviction) would surface as an unhandled rejection.
+          }
         }
       },
       (error) => {
@@ -733,6 +779,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
    * most-recently-used. When
    * {@linkcode CacheOptionsTtl.slidingExpiration | slidingExpiration} is
    * enabled, resets the entry's TTL.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param key The key to look up.
    * @returns The value, or `undefined` if not present or expired.
@@ -806,6 +854,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
    * Checks whether a live (non-expired) entry exists for the given key.
    * Does **not** promote the entry or reset its TTL.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @param key The key to check.
    * @returns `true` if a live entry exists, `false` otherwise.
    *
@@ -838,6 +888,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
    * If the cache exceeds {@linkcode Cache.prototype.maxSize | maxSize},
    * the least-recently-used entry is evicted. Overwriting an existing key
    * does **not** fire {@linkcode CacheOptionsBase.onRemove | onRemove}.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param key The key to set.
    * @param value The value to set.
@@ -913,8 +965,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
 
     if (deadline !== Infinity) {
       this.#setHeapDeadline(key, deadline);
-    } else {
-      this.#heap?.delete(key);
+    } else if (this.#heap?.delete(key)) {
+      this.#scheduleTimer();
     }
 
     this.#stats.sets++;
@@ -1120,6 +1172,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
   /**
    * Iterate over all live (non-expired) keys.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @returns An iterator over keys.
    *
    * @example Usage
@@ -1149,6 +1203,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
   /**
    * Iterate over all live (non-expired) values.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @returns An iterator over values.
    *
    * @example Usage
@@ -1174,6 +1230,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
   /**
    * Iterate over all live (non-expired) entries as `[key, value]` pairs.
    *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
+   *
    * @returns An iterator over `[key, value]` pairs.
    *
    * @example Usage
@@ -1198,6 +1256,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
 
   /**
    * Calls the given function for each live (non-expired) entry.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param callback The function to call for each entry.
    * @returns {void}
@@ -1225,6 +1285,8 @@ export class Cache<K, V> implements CacheLike<K, V> {
 
   /**
    * Iterate over all live (non-expired) entries as `[key, value]` pairs.
+   *
+   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @returns An iterator over `[key, value]` pairs.
    *

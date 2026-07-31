@@ -23,4 +23,6 @@
  */
 
 export * from "./cache.ts";
+export * from "./lru_cache.ts";
 export * from "./memoize.ts";
+export * from "./ttl_cache.ts";

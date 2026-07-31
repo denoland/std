@@ -5,6 +5,18 @@ import type { CacheLike } from "./cache.ts";
 import { _serializeArgList } from "./_serialize_arg_list.ts";
 
 /**
+ * A cache suitable for use with {@linkcode memoize}.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @deprecated This will be removed in 1.0.0. Use {@linkcode CacheLike} instead.
+ *
+ * @typeParam K The type of the cache keys.
+ * @typeParam V The type of the cache values.
+ */
+export type MemoizationCache<K, V> = CacheLike<K, V>;
+
+/**
  * The result of a memoized function, as stored in its cache.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.

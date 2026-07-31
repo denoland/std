@@ -4,6 +4,8 @@
   "exports": {
     ".": "./mod.ts",
     "./cache": "./cache.ts",
-    "./memoize": "./memoize.ts"
+    "./lru-cache": "./lru_cache.ts",
+    "./memoize": "./memoize.ts",
+    "./ttl-cache": "./ttl_cache.ts"
   }
 }

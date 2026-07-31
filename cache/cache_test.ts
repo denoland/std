@@ -380,19 +380,15 @@ Deno.test("Cache is not re-entrant during onRemove", () => {
   cache.delete("a");
 });
 
-Deno.test("Cache onRemove throwing during timer does not break future expirations", () => {
+Deno.test("Cache onRemove errors during timer-driven expiration are discarded", () => {
   using time = new FakeTime(0);
-  let throwCount = 0;
   const expired: string[] = [];
   using cache = new Cache<string, number>({
     ttl: 1000,
     onRemove: (k, _v, r) => {
       if (r === "expired") {
         expired.push(k);
-        if (k === "a") {
-          throwCount++;
-          throw new Error("onRemove error");
-        }
+        if (k === "a") throw new Error("onRemove error");
       }
     },
   });
@@ -401,60 +397,14 @@ Deno.test("Cache onRemove throwing during timer does not break future expiration
   cache.set("b", 2, { ttl: 100 });
   cache.set("c", 3, { ttl: 200 });
 
-  try {
-    time.tick(101);
-  } catch {
-    // expected throw from onRemove
-  }
-  assertEquals(throwCount, 1);
-  assert(expired.includes("a"));
-  assert(expired.includes("b"));
+  // A throw from a timer callback would be uncatchable by the user, so the
+  // sweep must swallow it: tick() throwing here fails the test.
+  time.tick(101);
+  assertEquals(expired, ["a", "b"]);
+  assertEquals(cache.stats.expirations, 2);
 
   time.tick(100);
-  assert(expired.includes("c"));
-});
-
-Deno.test("Cache onRemove errors from multiple entries are all surfaced via AggregateError", () => {
-  using time = new FakeTime(0);
-  using cache = new Cache<string, number>({
-    ttl: 100,
-    onRemove: (k, _v, r) => {
-      if (r === "expired") throw new Error(`fail:${k}`);
-    },
-  });
-
-  cache.set("a", 1);
-  cache.set("b", 2);
-
-  let caught: unknown;
-  try {
-    time.tick(101);
-  } catch (e) {
-    caught = e;
-  }
-  assert(caught instanceof AggregateError);
-  assertEquals(caught.errors.length, 2);
-});
-
-Deno.test("Cache onRemove single error is thrown directly, not wrapped", () => {
-  using time = new FakeTime(0);
-  const err = new Error("solo");
-  using cache = new Cache<string, number>({
-    ttl: 100,
-    onRemove: (_k, _v, r) => {
-      if (r === "expired") throw err;
-    },
-  });
-
-  cache.set("a", 1);
-
-  let caught: unknown;
-  try {
-    time.tick(101);
-  } catch (e) {
-    caught = e;
-  }
-  assert(caught === err);
+  assertEquals(expired, ["a", "b", "c"]);
 });
 
 Deno.test("Cache clear() onRemove errors surfaced via AggregateError", () => {
@@ -476,6 +426,36 @@ Deno.test("Cache clear() onRemove errors surfaced via AggregateError", () => {
   }
   assert(caught instanceof AggregateError);
   assertEquals(caught.errors.length, 2);
+});
+
+// ─── size ────────────────────────────────────────────
+
+Deno.test("Cache size excludes expired entries that have not been swept yet", () => {
+  using _time = new FakeTime(0);
+  using cache = new Cache<string, number>({ maxSize: 10 });
+
+  cache.set("a", 1, { ttl: 0 });
+  cache.set("b", 2);
+
+  // The 0ms sweep timer has not fired yet, but "a" is already expired:
+  // size must agree with the iterators.
+  assertEquals(cache.size, 1);
+  assertEquals([...cache.keys()], ["b"]);
+});
+
+// ─── Timer hygiene ───────────────────────────────────
+
+Deno.test("Cache delete() of the last pending deadline cancels the sweep timer", () => {
+  // No FakeTime and no `using`: a timer left behind fails the leak sanitizer.
+  const cache = new Cache<string, number>({ ttl: 60_000 });
+  cache.set("a", 1);
+  cache.delete("a");
+});
+
+Deno.test("Cache set() clearing the last deadline cancels the sweep timer", () => {
+  const cache = new Cache<string, number>({ maxSize: 10 });
+  cache.set("a", 1, { ttl: 60_000 });
+  cache.set("a", 2);
 });
 
 // ─── Stats ───────────────────────────────────────────
@@ -1994,7 +1974,7 @@ Deno.test("Cache getOrLoad() eagerly removes expired entry and reloads", async (
   });
 
   cache.set("a", 1, { ttl: 0 });
-  assertEquals(cache.size, 1);
+  assertEquals(cache.size, 0);
 
   const val = await cache.getOrLoad("a", () => Promise.resolve(42));
   assertEquals(val, 42);
