@@ -4,12 +4,13 @@ type SimpleSpecialValues = [[number, number], [number, number]][];
 
 export const simpleSpecialValues = {
   exp: [
-    [[0, 0], [0, 0]],
-    [[0, Infinity], [0, NaN]], // Unspecified real output sign
-    [[0, NaN], [0, NaN]], // Unspecified real output sign
+    [[0, 0], [1, 0]],
+    [[-0, 0], [1, 0]],
     [[Infinity, 0], [Infinity, 0]],
+    [[-Infinity, Infinity], [0, 0]], // Unspecified real & imag output sign
     [[Infinity, Infinity], [Infinity, NaN]], // Unspecified real output sign
-    [[Infinity, NaN], [Infinity, NaN]], // Unspecified real output sign
+    [[-Infinity, NaN], [0, 0]], // Unspecified real & imag output sign
+    [[Infinity, NaN], [-Infinity, NaN]], // Unspecified real & imag output sign
     [[NaN, 0], [NaN, 0]],
     [[NaN, NaN], [NaN, NaN]],
   ],

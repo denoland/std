@@ -458,20 +458,29 @@ Deno.test("Complex", async (t) => {
         1e-15,
       );
 
-      const nums = [1, 2, 3, 4];
-      for (const real of nums) {
-        for (const imag of nums) {
-          assertAlmostEqualComplex(
-            new Complex(real, imag).log().exp(),
-            new Complex(real, imag),
-            1e-15,
-          );
-        }
+      // ISO/IEC required
+      for (
+        const [[realInput, imagInput], [realOutput, imagOutput]]
+          of simpleSpecialValues.exp
+      ) {
+        assertEquals(
+          new Complex(realInput, imagInput).exp(),
+          new Complex(realOutput, imagOutput),
+        );
       }
 
-      assertEquals(Complex.zero.exp(), Complex.one);
-      assertEquals(Complex.NaN.exp(), Complex.NaN);
-      assertEquals(Complex.Infinity.exp(), Complex.NaN);
+      for (const num of finiteNumbers) {
+        assertEquals(new Complex(num, Infinity).exp(), Complex.NaN);
+        assertEquals(new Complex(num, NaN).exp(), Complex.NaN);
+        assertEquals(new Complex(-Infinity, num).exp(), Complex.cis(num).mul(0));
+      }
+      for (const num of finiteNonZeroNumbers) {
+        assertEquals(
+          new Complex(Infinity, num).exp(),
+          Complex.cis(num).mul(Infinity),
+        );
+        assertEquals(new Complex(NaN, num).exp(), Complex.NaN);
+      }
     });
 
     await t.step("pow()", () => {

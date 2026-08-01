@@ -96,7 +96,7 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   // deno-lint-ignore deno-style-guide/naming-convention
-  static NaN = new Complex(NaN);
+  static NaN = new Complex(NaN, NaN);
   /**
    * The complex infinity
    *
@@ -669,14 +669,35 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   exp(): Complex {
-    if (this.isReal()) return new Complex(Math.exp(this.real));
+    if (isNegativeSigned(this.imag)) return this.conj().exp().conj();
 
-    const expReal = Math.exp(this.real);
+    for (
+      const [[realInput, imagInput], [realOutput, imagOutput]]
+        of simpleSpecialValues.exp
+    ) {
+      if (
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
+      ) return new Complex(realOutput, imagOutput);
+    }
 
-    return new Complex(
-      expReal * Math.cos(this.imag),
-      expReal * Math.sin(this.imag),
-    );
+    return Number.isFinite(this.real) && this.imag === Infinity
+      ? Complex.NaN
+      : Number.isFinite(this.real) && Number.isNaN(this.imag)
+      ? Complex.NaN
+      : this.real === -Infinity && Number.isFinite(this.imag)
+      ? Complex.cis(this.imag).mul(0)
+      : this.real === Infinity && Number.isFinite(this.imag)
+      ? Complex.cis(this.imag).mul(Infinity)
+      : Number.isNaN(this.real) && this.imag !== 0
+      ? Complex.NaN
+      : (() => {
+        const expReal = Math.exp(this.real);
+
+        return new Complex(
+          expReal * Math.cos(this.imag),
+          expReal * Math.sin(this.imag),
+        );
+      })();
   }
 
   static cis(arg: number): Complex {
