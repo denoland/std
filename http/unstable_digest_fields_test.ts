@@ -3,6 +3,7 @@ import {
   computeDigest,
   createContentDigest,
   createReprDigest,
+  DigestMismatchError,
   verifyContentDigest,
   verifyReprDigest,
 } from "./unstable_digest_fields.ts";
@@ -188,7 +189,7 @@ Deno.test("verifyContentDigest() throws on tampered body", async () => {
   });
   await assertRejects(
     () => verifyContentDigest(response),
-    Error,
+    DigestMismatchError,
     "does not match",
   );
 });
@@ -247,7 +248,7 @@ Deno.test("verifyContentDigest() with multi-algo header where one mismatches", a
   });
   await assertRejects(
     () => verifyContentDigest(response),
-    Error,
+    DigestMismatchError,
     'digest for algorithm "sha-512" does not match',
   );
 });
@@ -490,7 +491,7 @@ Deno.test("verifyContentDigest() throws on negative maxBodySize", async () => {
   });
   await assertRejects(
     () => verifyContentDigest(response, { maxBodySize: -1 }),
-    TypeError,
+    RangeError,
     '"maxBodySize" must be a non-negative integer',
   );
 });
@@ -503,7 +504,7 @@ Deno.test("verifyContentDigest() throws on non-integer (NaN) maxBodySize", async
   });
   await assertRejects(
     () => verifyContentDigest(response, { maxBodySize: NaN }),
-    TypeError,
+    RangeError,
     '"maxBodySize" must be a non-negative integer',
   );
 });
@@ -522,9 +523,42 @@ Deno.test("verifyContentDigest() validates maxBodySize before reading body", asy
   });
   await assertRejects(
     () => verifyContentDigest(request, { maxBodySize: -5 }),
-    TypeError,
+    RangeError,
     '"maxBodySize" must be a non-negative integer',
   );
+});
+
+// RFC 9530 Appendix D test vectors for the content `{"hello": "world"}`.
+const RFC9530_CONTENT = `{"hello": "world"}`;
+const RFC9530_SHA256 = "sha-256=:X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE=:";
+const RFC9530_SHA512 =
+  "sha-512=:WZDPaVn/7XgHaAy8pmojAkGWoRx2UFChF41A2svX+TaPm+AbwAgBWnrIiYllu7BNNyealdVLvRwEmTHWXvJwew==:";
+
+Deno.test("createContentDigest() matches RFC 9530 Appendix D sha-256 vector", async () => {
+  const digest = await createContentDigest(RFC9530_CONTENT);
+  assertEquals(digest, RFC9530_SHA256);
+});
+
+Deno.test("createContentDigest() matches RFC 9530 Appendix D sha-512 vector", async () => {
+  const digest = await createContentDigest(RFC9530_CONTENT, {
+    algorithms: ["sha-512"],
+  });
+  assertEquals(digest, RFC9530_SHA512);
+});
+
+Deno.test("createReprDigest() matches RFC 9530 Appendix D vectors with both algorithms", async () => {
+  const digest = await createReprDigest(RFC9530_CONTENT, {
+    algorithms: ["sha-256", "sha-512"],
+  });
+  assertEquals(digest, `${RFC9530_SHA256}, ${RFC9530_SHA512}`);
+});
+
+Deno.test("verifyContentDigest() accepts RFC 9530 Appendix D vectors", async () => {
+  const response = new Response(RFC9530_CONTENT, {
+    headers: { "Content-Digest": `${RFC9530_SHA256}, ${RFC9530_SHA512}` },
+  });
+  const verified = await verifyContentDigest(response);
+  assertEquals(await verified.text(), RFC9530_CONTENT);
 });
 
 Deno.test("verifyReprDigest() rejects body exceeding maxBodySize", async () => {

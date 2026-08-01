@@ -9,6 +9,10 @@
  * Digest fields provide end-to-end integrity of HTTP message bodies. Values are
  * serialized as Structured Fields Dictionaries (RFC 9651).
  *
+ * The `Want-Content-Digest` and `Want-Repr-Digest` fields (RFC 9530 §4) for
+ * negotiating digest algorithms are deliberately out of scope for now; see
+ * {@link https://github.com/denoland/std/issues/7266 | issue #7266}.
+ *
  * @example Creating a Content-Digest header
  * ```ts
  * import { createContentDigest } from "@std/http/unstable-digest-fields";
@@ -52,10 +56,15 @@ import {
 
 const UTF8_ENCODER = new TextEncoder();
 
-const DIGEST_ALGORITHMS = ["sha-256", "sha-512"] as const;
+/**
+ * Digest algorithms supported by this module, per RFC 9530 §5.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ */
+export const DIGEST_ALGORITHMS = ["sha-256", "sha-512"] as const;
 
 /** Supported digest algorithms per RFC 9530 §5. */
-export type DigestAlgorithm = "sha-256" | "sha-512";
+export type DigestAlgorithm = typeof DIGEST_ALGORITHMS[number];
 
 const WEB_CRYPTO_NAMES: Record<DigestAlgorithm, string> = {
   "sha-256": "SHA-256",
@@ -69,6 +78,42 @@ const DIGEST_BYTE_LENGTHS: Record<DigestAlgorithm, number> = {
 
 function isSupportedAlgorithm(value: string): value is DigestAlgorithm {
   return DIGEST_ALGORITHMS.includes(value as DigestAlgorithm);
+}
+
+/**
+ * Error thrown by {@linkcode verifyContentDigest} and
+ * {@linkcode verifyReprDigest} when a stated digest does not match the digest
+ * computed over the message body.
+ *
+ * This is an integrity failure (the body does not match what the sender
+ * declared), as opposed to the {@linkcode TypeError} and {@linkcode RangeError}
+ * failures thrown for invalid headers or options.
+ *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * @example Usage
+ * ```ts
+ * import { createContentDigest, DigestMismatchError, verifyContentDigest } from "@std/http/unstable-digest-fields";
+ * import { assertRejects } from "@std/assert";
+ *
+ * const digest = await createContentDigest("original");
+ * const response = new Response("tampered", {
+ *   headers: { "Content-Digest": digest },
+ * });
+ *
+ * await assertRejects(() => verifyContentDigest(response), DigestMismatchError);
+ * ```
+ */
+export class DigestMismatchError extends Error {
+  /**
+   * Constructs a new {@linkcode DigestMismatchError} instance.
+   *
+   * @param message The error message.
+   */
+  constructor(message: string) {
+    super(message);
+    this.name = "DigestMismatchError";
+  }
 }
 
 /** Options for creating a Content-Digest or Repr-Digest header. */
@@ -240,6 +285,10 @@ function parseDigestHeaderValue(
   } catch (cause) {
     throw new TypeError(`"${headerName}" header is malformed`, { cause });
   }
+  // Deliberate asymmetry: an unsupported algorithm is skipped (RFC 9530 §2
+  // allows ignoring individual digests), but a malformed value under a
+  // supported algorithm rejects the whole header — failing closed rather than
+  // verifying via whichever members happen to parse.
   for (const [key, member] of dict) {
     if (!isSupportedAlgorithm(key)) continue;
     if (!isItem(member) || member.value.type !== "binary") {
@@ -270,7 +319,9 @@ export interface VerifyDigestOptions {
    * arbitrarily large body to exhaust memory (a denial-of-service vector). When
    * set, the body is read incrementally and verification rejects with a
    * {@linkcode TypeError} as soon as the body exceeds this many bytes, before
-   * the whole payload is buffered. When omitted, the entire body is read.
+   * the whole payload is buffered. The limit is checked after each chunk is
+   * read, so peak memory use is bounded by `maxBodySize` plus one chunk, not
+   * `maxBodySize` exactly. When omitted, the entire body is read.
    *
    * Must be a non-negative integer.
    */
@@ -327,7 +378,7 @@ async function verifyDigestHeader<T extends Request | Response>(
     maxBodySize !== undefined &&
     (!Number.isInteger(maxBodySize) || maxBodySize < 0)
   ) {
-    throw new TypeError(`"maxBodySize" must be a non-negative integer`);
+    throw new RangeError(`"maxBodySize" must be a non-negative integer`);
   }
 
   const headerValue = message.headers.get(headerName);
@@ -347,7 +398,7 @@ async function verifyDigestHeader<T extends Request | Response>(
   for (const [alg, statedDigest] of stated) {
     const computed = await computeDigest(bodyBytes, alg);
     if (!timingSafeEqual(statedDigest, computed)) {
-      throw new Error(
+      throw new DigestMismatchError(
         `"${headerName}" digest for algorithm "${alg}" does not match`,
       );
     }
@@ -423,9 +474,9 @@ async function verifyDigestHeader<T extends Request | Response>(
  * @param options Verification options, such as a body size cap.
  * @returns The same message (body still consumable).
  * @throws {TypeError} If the header is missing, malformed, or contains no
- * supported algorithms, if `maxBodySize` is not a non-negative integer, or if
- * the body exceeds `maxBodySize`.
- * @throws {Error} If the digest does not match.
+ * supported algorithms, or if the body exceeds `maxBodySize`.
+ * @throws {RangeError} If `maxBodySize` is not a non-negative integer.
+ * @throws {DigestMismatchError} If the digest does not match.
  */
 export function verifyContentDigest<T extends Request | Response>(
   message: T,
@@ -480,9 +531,9 @@ export function verifyContentDigest<T extends Request | Response>(
  * @param options Verification options, such as a body size cap.
  * @returns The same message (body still consumable).
  * @throws {TypeError} If the header is missing, malformed, or contains no
- * supported algorithms, if `maxBodySize` is not a non-negative integer, or if
- * the body exceeds `maxBodySize`.
- * @throws {Error} If the digest does not match.
+ * supported algorithms, or if the body exceeds `maxBodySize`.
+ * @throws {RangeError} If `maxBodySize` is not a non-negative integer.
+ * @throws {DigestMismatchError} If the digest does not match.
  */
 export function verifyReprDigest<T extends Request | Response>(
   message: T,
