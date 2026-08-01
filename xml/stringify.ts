@@ -9,7 +9,7 @@
 
 import type {
   StringifyOptions,
-  XmlDeclarationEvent,
+  XmlDeclaration,
   XmlDocument,
   XmlElement,
   XmlNode,
@@ -64,7 +64,7 @@ export function stringify(
 }
 
 /** Serializes an XML declaration to a string. */
-function serializeDeclaration(decl: XmlDeclarationEvent): string {
+function serializeDeclaration(decl: XmlDeclaration): string {
   const encoding = decl.encoding !== undefined
     ? ` encoding="${decl.encoding}"`
     : "";

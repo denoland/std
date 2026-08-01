@@ -1194,3 +1194,60 @@ Deno.test("promptSelect() handles fitToRemainingHeight option", () => {
   assertEquals(expectedOutput, actualOutput);
   restore();
 });
+
+Deno.test("promptSelect() always shows at least one item when height is too small", () => {
+  stub(Deno.stdin, "setRaw");
+  stub(Deno.stdin, "isTerminal", () => true);
+  // rows(4) - SAFE_PADDING(4) = 0 available height, which previously collapsed
+  // visibleLines to 0 and rendered only a scroll indicator with no content.
+  stub(Deno, "consoleSize", () => ({ columns: 80, rows: 4 }));
+
+  const expectedOutput = [
+    "\x1b[?25l",
+    "Please select a browser:\r\n",
+    "❯ safari\r\n",
+    "  ...\r\n",
+    "\x1b[?25h",
+  ];
+
+  const actualOutput: string[] = [];
+
+  stub(
+    Deno.stdout,
+    "writeSync",
+    (data: Uint8Array) => {
+      const output = decoder.decode(data);
+      actualOutput.push(output);
+      return data.length;
+    },
+  );
+
+  let readIndex = 0;
+
+  const inputs = [
+    "\r",
+  ];
+
+  stub(
+    Deno.stdin,
+    "readSync",
+    (data: Uint8Array) => {
+      const input = inputs[readIndex++];
+      const bytes = encoder.encode(input);
+      data.set(bytes);
+      return bytes.length;
+    },
+  );
+
+  const browser = promptSelect("Please select a browser:", [
+    "safari",
+    "chrome",
+    "firefox",
+    "brave",
+    "edge",
+  ]);
+
+  assertEquals(browser, "safari");
+  assertEquals(expectedOutput, actualOutput);
+  restore();
+});

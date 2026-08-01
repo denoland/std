@@ -1,10 +1,11 @@
 {
   "name": "@std/yaml",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "exports": {
     ".": "./mod.ts",
     "./parse": "./parse.ts",
     "./stringify": "./stringify.ts",
+    "./types": "./types.ts",
     "./unstable-stringify": "./unstable_stringify.ts",
     "./unstable-parse": "./unstable_parse.ts"
   }

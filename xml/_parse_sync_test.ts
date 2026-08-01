@@ -415,6 +415,18 @@ Deno.test("parseSync() with trackPosition false reports zero positions", () => {
   throw new Error("Expected XmlSyntaxError");
 });
 
+Deno.test("parseSync() with trackPosition false omits position from error message", () => {
+  try {
+    parseSync("<root><unclosed>", { trackPosition: false });
+  } catch (e) {
+    if (e instanceof XmlSyntaxError) {
+      assertEquals(e.message, "Unclosed element <unclosed>");
+      return;
+    }
+  }
+  throw new Error("Expected XmlSyntaxError");
+});
+
 Deno.test("parseSync() extracts standalone yes from declaration", () => {
   // Tests standalone attribute extraction
   const doc = parseSync('<?xml version="1.0" standalone="yes"?><root/>');

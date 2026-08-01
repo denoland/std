@@ -2,7 +2,6 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ESNext"]
   },
-  "importMap": "./import_map.json",
   "workspace": [
     "./assert",
     "./async",

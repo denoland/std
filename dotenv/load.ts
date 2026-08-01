@@ -1,5 +1,24 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
+/**
+ * Loads environment variables from a `.env` file into the process environment
+ * as a side effect of importing this module.
+ *
+ * ```ts ignore
+ * import "@std/dotenv/load";
+ *
+ * Deno.env.get("GREETING"); // "hello world"
+ * ```
+ *
+ * @deprecated This will be removed in 0.227.0. Use the
+ * {@link https://docs.deno.com/runtime/reference/env_variables/ | --env-file}
+ * flag instead. See the
+ * {@link https://jsr.io/@std/dotenv | module documentation} for migration
+ * notes.
+ *
+ * @module
+ */
+
 import { loadSync } from "./mod.ts";
 
 if (!(Deno.readTextFileSync instanceof Function)) {
