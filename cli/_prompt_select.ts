@@ -70,9 +70,9 @@ export function handlePromptSelect<V>(
     }
   }
 
-  let visibleLines = visibleLinesInit ?? Math.min(
-    availableHeight,
-    values.length,
+  let visibleLines = visibleLinesInit ?? Math.max(
+    1,
+    Math.min(availableHeight, values.length),
   );
 
   while (true) {
@@ -186,7 +186,7 @@ export function handlePromptSelect<V>(
     } else {
       availableHeight = Deno.consoleSize().rows - SAFE_PADDING;
     }
-    visibleLines = Math.min(availableHeight, visibleLines);
+    visibleLines = Math.max(1, Math.min(availableHeight, visibleLines));
 
     clearLength = 1 + // message
       (hasUpArrow ? 1 : 0) +

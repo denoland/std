@@ -429,6 +429,24 @@ Deno.test("RedBlackTree.from() handles default ascend comparator", () => {
   assertEquals([...tree.lvlValues()], [-3, 3, -30, 30, 0, -27, -300, 300, 27]);
 });
 
+Deno.test("RedBlackTree.from() deep-copies nodes so mutating the copy leaves the original intact", () => {
+  const values = [3, 10, 13, 4, 6, 7, 1, 14];
+  const original = RedBlackTree.from(values);
+  const copy = RedBlackTree.from(original);
+
+  // Removing from the copy must not affect the original.
+  assertStrictEquals(copy.remove(7), true);
+  assertStrictEquals(original.find(7), 7);
+  assertEquals([...original], [1, 3, 4, 6, 7, 10, 13, 14]);
+  assertEquals([...copy], [1, 3, 4, 6, 10, 13, 14]);
+
+  // Removing from the original must not affect the copy.
+  assertStrictEquals(original.remove(1), true);
+  assertStrictEquals(copy.find(1), 1);
+  assertEquals([...original], [3, 4, 6, 7, 10, 13, 14]);
+  assertEquals([...copy], [1, 3, 4, 6, 10, 13, 14]);
+});
+
 Deno.test("RedBlackTree.from() handles descend comparator", () => {
   const values: number[] = [-10, 9, -1, 100, 9, 1, 0, 9, -100, 10, -9];
   const expected: number[] = [100, 10, 9, 1, 0, -1, -9, -10, -100];

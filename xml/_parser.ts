@@ -16,9 +16,9 @@ import type {
   ParseStreamOptions,
   XmlAttributeIterator,
   XmlEventCallbacks,
-  XmlTokenCallbacks,
 } from "./types.ts";
 import { XmlSyntaxError } from "./types.ts";
+import type { XmlTokenCallbacks } from "./_tokenizer.ts";
 import { decodeEntities } from "./_entities.ts";
 import {
   validateNamespaceBinding,
