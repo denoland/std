@@ -71,6 +71,9 @@ export type BareItem =
 /**
  * Parameters attached to an Item or Inner List.
  *
+ * Named `ParameterMap` rather than RFC 9651's "Parameters" to avoid clashing
+ * with TypeScript's built-in `Parameters<T>` utility type.
+ *
  * Returned parameters are immutable. When building parameters for serialization,
  * you can pass a mutable `Map` as it is assignable to `ReadonlyMap`.
  *
@@ -97,7 +100,7 @@ export interface Item {
  */
 export interface InnerList {
   /** The items in the inner list. */
-  items: Item[];
+  items: readonly Item[];
   /** Parameters associated with the inner list. */
   parameters: ParameterMap;
 }
@@ -105,9 +108,12 @@ export interface InnerList {
 /**
  * A List Structured Field value.
  *
+ * Returned lists are immutable. When building lists for serialization,
+ * you can pass a mutable array as it is assignable to `ReadonlyArray`.
+ *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9651#section-3.1}
  */
-export type List = Array<Item | InnerList>;
+export type List = ReadonlyArray<Item | InnerList>;
 
 /**
  * A Dictionary Structured Field value.
@@ -329,7 +335,7 @@ export function item(
  * ```
  */
 export function innerList(
-  items: Item[],
+  items: readonly Item[],
   parameters?: Iterable<[string, BareItem]>,
 ): InnerList {
   return { items, parameters: new Map(parameters) };
@@ -541,7 +547,7 @@ export function parseList(input: string): List {
 }
 
 function parseListInternal(state: ParserState): List {
-  const members: List = [];
+  const members: (Item | InnerList)[] = [];
 
   while (!isEof(state)) {
     const member = parseItemOrInnerList(state);
