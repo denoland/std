@@ -8,16 +8,18 @@ const ERROR_WHILE_MAPPING_MESSAGE =
 /** Options for {@linkcode pooledMap}. */
 export interface PooledMapOptions {
   /**
-   * The maximum count of items being processed concurrently.
-   * Must be a positive integer.
+   * The maximum count of items being processed concurrently. Must be a
+   * positive integer.
    */
   poolLimit: number;
   /**
    * An AbortSignal to cancel the pooled mapping operation.
    *
-   * If the signal is aborted, no new items will begin processing. All currently
-   * executing items are allowed to finish. The iterator then rejects with the
-   * signal's reason.
+   * If the signal is aborted, no new items will begin processing and the
+   * source iterator is closed. All currently executing items are allowed to
+   * finish and are still yielded on success. The iterator then rejects with
+   * the signal's reason, or with an `AggregateError` collecting the rejections
+   * if any of those in-flight items failed.
    *
    * @default {undefined}
    */
@@ -36,15 +38,18 @@ export interface PooledMapOptions {
  * yielded on success. After that, the rejections among them are gathered and
  * thrown by the iterator in an `AggregateError`.
  *
+ * Unlike the stable `pooledMap` from `@std/async/pool`, the pool limit is
+ * passed last, consistent with `pooledMapSettled`.
+ *
  * @example Usage
  * ```ts
  * import { pooledMap } from "@std/async/unstable-pool";
  * import { assertEquals } from "@std/assert";
  *
  * const results = pooledMap(
- *   2,
  *   [1, 2, 3],
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+ *   2,
  * );
  *
  * assertEquals(await Array.fromAsync(results), [1, 2, 3]);
@@ -52,16 +57,16 @@ export interface PooledMapOptions {
  *
  * @typeParam T the input type.
  * @typeParam R the output type.
- * @param poolLimit The maximum count of items being processed concurrently.
  * @param array The input array for mapping.
  * @param iteratorFn The function to call for every item of the array.
+ * @param poolLimit The maximum count of items being processed concurrently.
  * @returns The async iterator with the transformed values.
  * @throws {RangeError} If `poolLimit` is not a positive integer.
  */
 export function pooledMap<T, R>(
-  poolLimit: number,
   array: Iterable<T> | AsyncIterable<T>,
   iteratorFn: (data: T) => Promise<R>,
+  poolLimit: number,
 ): AsyncIterableIterator<R>;
 
 /**
@@ -82,9 +87,9 @@ export function pooledMap<T, R>(
  * import { assertEquals } from "@std/assert";
  *
  * const results = pooledMap(
- *   { poolLimit: 2 },
  *   [1, 2, 3],
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+ *   { poolLimit: 2 },
  * );
  *
  * assertEquals(await Array.fromAsync(results), [1, 2, 3]);
@@ -97,9 +102,9 @@ export function pooledMap<T, R>(
  *
  * const controller = new AbortController();
  * const results = pooledMap(
- *   { poolLimit: 2, signal: controller.signal },
  *   [1, 2, 3, 4, 5],
  *   (i) => new Promise((r) => setTimeout(() => r(i), 1000)),
+ *   { poolLimit: 2, signal: controller.signal },
  * );
  *
  * controller.abort(new Error("cancelled"));
@@ -113,101 +118,133 @@ export function pooledMap<T, R>(
  *
  * @typeParam T the input type.
  * @typeParam R the output type.
- * @param options Options including pool limit and abort signal.
  * @param array The input array for mapping.
  * @param iteratorFn The function to call for every item of the array.
+ * @param options Configuration for concurrency and cancellation.
  * @returns The async iterator with the transformed values.
  * @throws {RangeError} If `poolLimit` is not a positive integer.
- *
- * The returned iterator rejects with `options.signal.reason` if the signal is
- * aborted, or with an `AggregateError` collecting all `iteratorFn` rejections.
+ * @throws The signal's `reason` if the signal is aborted and no item failed.
+ *         In-flight items are allowed to settle first, and the source
+ *         iterator is closed.
+ * @throws {AggregateError} If any `iteratorFn` call rejects, collecting all
+ *         rejections — including rejections from items that were in flight
+ *         when the signal was aborted.
  */
 export function pooledMap<T, R>(
-  options: PooledMapOptions,
   array: Iterable<T> | AsyncIterable<T>,
   iteratorFn: (data: T) => Promise<R>,
+  options: PooledMapOptions,
 ): AsyncIterableIterator<R>;
 
 export function pooledMap<T, R>(
-  poolLimitOrOptions: number | PooledMapOptions,
   array: Iterable<T> | AsyncIterable<T>,
   iteratorFn: (data: T) => Promise<R>,
+  options: number | PooledMapOptions,
 ): AsyncIterableIterator<R> {
-  let poolLimit: number;
-  let signal: AbortSignal | undefined;
-
-  if (typeof poolLimitOrOptions === "number") {
-    poolLimit = poolLimitOrOptions;
-  } else {
-    poolLimit = poolLimitOrOptions.poolLimit;
-    signal = poolLimitOrOptions.signal;
-  }
+  const { poolLimit, signal } = typeof options === "number"
+    ? { poolLimit: options, signal: undefined }
+    : options;
 
   if (!Number.isInteger(poolLimit) || poolLimit < 1) {
-    throw new RangeError("'poolLimit' must be a positive integer");
+    throw new RangeError(
+      `Cannot pool as 'poolLimit' must be a positive integer: received ${poolLimit}`,
+    );
   }
 
-  const res = new TransformStream<Promise<R>, R>({
+  const ABORT_SENTINEL = Symbol("abort");
+
+  const res = new TransformStream<Promise<R | typeof ABORT_SENTINEL>, R>({
     async transform(
-      p: Promise<R>,
+      p: Promise<R | typeof ABORT_SENTINEL>,
       controller: TransformStreamDefaultController<R>,
     ) {
       try {
-        const s = await p;
-        controller.enqueue(s);
+        const result = await p;
+        if (result === ABORT_SENTINEL) {
+          controller.error(signal?.reason);
+          return;
+        }
+        controller.enqueue(result);
       } catch (e) {
-        if (signal?.aborted) {
-          controller.error(signal.reason);
-        } else if (
+        if (
           e instanceof AggregateError &&
           e.message === ERROR_WHILE_MAPPING_MESSAGE
         ) {
           controller.error(e);
         }
+        // Individual item rejections are reported via the AggregateError.
       }
     },
   });
 
   (async () => {
     const writer = res.writable.getWriter();
-    const executing: Array<Promise<unknown>> = [];
+    const executing = new Set<Promise<unknown>>();
 
-    function raceWithSignal(
-      promises: Array<Promise<unknown>>,
-    ): Promise<unknown> {
-      if (!signal) return Promise.race(promises);
-      const { promise, resolve, reject } = Promise.withResolvers<never>();
-      const onAbort = () => reject(signal!.reason);
+    let abortDeferred: PromiseWithResolvers<never> | undefined;
+    let removeAbortListener: (() => void) | undefined;
+    if (signal) {
+      abortDeferred = Promise.withResolvers<never>();
+      const onAbort = () => abortDeferred!.reject(signal.reason);
       signal.addEventListener("abort", onAbort, { once: true });
-      return Promise.race([...promises, promise]).finally(() => {
-        signal!.removeEventListener("abort", onAbort);
-        resolve(undefined as never);
+      removeAbortListener = () => signal.removeEventListener("abort", onAbort);
+      abortDeferred.promise.catch(() => {});
+    }
+
+    function raceWithSignal(): Promise<unknown> {
+      if (!abortDeferred) return Promise.race(executing);
+      executing.add(abortDeferred.promise);
+      return Promise.race(executing).finally(() => {
+        executing.delete(abortDeferred!.promise);
       });
     }
 
     try {
       signal?.throwIfAborted();
 
-      for await (const item of array) {
-        signal?.throwIfAborted();
+      const it = (Symbol.asyncIterator in Object(array))
+        ? (array as AsyncIterable<T>)[Symbol.asyncIterator]()
+        : (array as Iterable<T>)[Symbol.iterator]();
 
-        const p = Promise.resolve().then(() => iteratorFn(item));
-        // Only write on success. If we `writer.write()` a rejected promise,
-        // that will end the iteration. We don't want that yet. Instead let it
-        // fail the race, taking us to the catch block where all currently
-        // executing jobs are allowed to finish and all rejections among them
-        // can be reported together.
-        writer.write(p);
-        const e: Promise<unknown> = p.then(() =>
-          executing.splice(executing.indexOf(e), 1)
-        );
-        executing.push(e);
-        if (executing.length >= poolLimit) {
-          await raceWithSignal(executing);
+      try {
+        while (true) {
+          const nextPromise = Promise.resolve(it.next());
+          if (abortDeferred) nextPromise.catch(() => {});
+          const next = abortDeferred
+            ? await Promise.race([nextPromise, abortDeferred.promise])
+            : await nextPromise;
+
+          if (next.done) break;
+          signal?.throwIfAborted();
+
+          const item = next.value;
+          const p = Promise.resolve().then(() => iteratorFn(item));
+          // Only write on success. If we `writer.write()` a rejected promise,
+          // that will end the iteration. We don't want that yet. Instead let it
+          // fail the race, taking us to the catch block where all currently
+          // executing jobs are allowed to finish and all rejections among them
+          // can be reported together.
+          writer.write(p).catch(() => {});
+          const e: Promise<unknown> = p.then(() => executing.delete(e));
+          executing.add(e);
+          if (executing.size >= poolLimit) {
+            await raceWithSignal();
+          }
+        }
+      } finally {
+        if (signal?.aborted) {
+          Promise.resolve(it.return?.()).catch(() => {});
+        } else {
+          await it.return?.();
         }
       }
-      await Promise.all(executing);
-      writer.close();
+
+      if (abortDeferred) {
+        await Promise.race([Promise.all(executing), abortDeferred.promise]);
+      } else {
+        await Promise.all(executing);
+      }
+      writer.close().catch(() => {});
     } catch {
       const errors = [];
       for (const result of await Promise.allSettled(executing)) {
@@ -215,13 +252,15 @@ export function pooledMap<T, R>(
           errors.push(result.reason);
         }
       }
-      if (signal?.aborted) {
-        writer.write(Promise.reject(signal.reason)).catch(() => {});
+      if (errors.length === 0 && signal?.aborted) {
+        writer.write(Promise.resolve(ABORT_SENTINEL)).catch(() => {});
       } else {
         writer.write(Promise.reject(
           new AggregateError(errors, ERROR_WHILE_MAPPING_MESSAGE),
         )).catch(() => {});
       }
+    } finally {
+      removeAbortListener?.();
     }
   })();
 
@@ -231,11 +270,15 @@ export function pooledMap<T, R>(
     ? (res.readable[Symbol.asyncIterator] as () => AsyncIterableIterator<R>)()
     : (async function* () {
       const reader = res.readable.getReader();
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        yield value;
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          yield value;
+        }
+      } finally {
+        reader.cancel().catch(() => {});
+        reader.releaseLock();
       }
-      reader.releaseLock();
     })();
 }
