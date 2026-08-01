@@ -5,6 +5,7 @@
 
 import { parse, parseAll } from "./parse.ts";
 import { type ImplicitType, parse as unstableParse } from "./unstable_parse.ts";
+import { YamlSyntaxError } from "./types.ts";
 import {
   assert,
   assertEquals,
@@ -914,6 +915,31 @@ Deno.test("parse() throws if there are more than one document in the yaml", () =
     SyntaxError,
     "Found more than 1 document in the stream: expected a single document",
   );
+});
+
+Deno.test("parse() throws YamlSyntaxError with structured position info", () => {
+  const error = assertThrows(
+    () => parse("foo: bar\n  baz: qux"),
+    YamlSyntaxError,
+  );
+  assertInstanceOf(error, YamlSyntaxError);
+  assertEquals(typeof error.line, "number");
+  assertEquals(typeof error.column, "number");
+  assertEquals(typeof error.offset, "number");
+  assertEquals(error.line >= 1, true);
+  assertEquals(error.column >= 1, true);
+  assertEquals(error.offset >= 0, true);
+  assertEquals(typeof error.snippet, "string");
+});
+
+Deno.test("parse() multi-document error points at the second document marker", () => {
+  const error = assertThrows(
+    () => parse("hello: world\n---\nfoo: bar"),
+    YamlSyntaxError,
+  );
+  assertEquals(error.line, 2);
+  assertEquals(error.column, 1);
+  assertEquals(error.offset, 13);
 });
 
 Deno.test("parse() throws when the directive name is empty", () => {
