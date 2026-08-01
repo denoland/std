@@ -1241,9 +1241,15 @@ function serializeDecimal(value: number): string {
     throw new TypeError("Decimal must be finite");
   }
 
-  // Round to MAX_DECIMAL_FRACTIONAL_DIGITS decimal places
+  // Round to MAX_DECIMAL_FRACTIONAL_DIGITS decimal places, rounding
+  // half to even per RFC 9651 Section 4.1.5
   const scale = 10 ** MAX_DECIMAL_FRACTIONAL_DIGITS;
-  const rounded = Math.round(value * scale) / scale;
+  const scaled = value * scale;
+  const floor = Math.floor(scaled);
+  const roundedScaled = scaled - floor === 0.5
+    ? (floor % 2 === 0 ? floor : floor + 1)
+    : Math.round(scaled);
+  const rounded = roundedScaled / scale;
 
   // Check integer part (max MAX_DECIMAL_INTEGER_DIGITS digits)
   const intPart = Math.trunc(Math.abs(rounded));
