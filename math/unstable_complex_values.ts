@@ -3,6 +3,16 @@
 type SimpleSpecialValues = [[number, number], [number, number]][];
 
 export const simpleSpecialValues = {
+  exp: [
+    [[0, 0], [0, 0]],
+    [[0, Infinity], [0, NaN]], // Unspecified real output sign
+    [[0, NaN], [0, NaN]], // Unspecified real output sign
+    [[Infinity, 0], [Infinity, 0]],
+    [[Infinity, Infinity], [Infinity, NaN]], // Unspecified real output sign
+    [[Infinity, NaN], [Infinity, NaN]], // Unspecified real output sign
+    [[NaN, 0], [NaN, 0]],
+    [[NaN, NaN], [NaN, NaN]],
+  ],
   sinh: [
     [[0, 0], [0, 0]],
     [[0, Infinity], [0, NaN]], // Unspecified real output sign

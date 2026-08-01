@@ -736,6 +736,7 @@ export class Complex {
     }
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the hyperbolic sine of a complex number.
    *
@@ -794,6 +795,7 @@ export class Complex {
       );
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the hyperbolic cosine of a complex number.
    *
@@ -853,6 +855,7 @@ export class Complex {
       );
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the hyperbolic tangent of a complex number.
    *
@@ -973,6 +976,7 @@ export class Complex {
     return this.sinh().recip();
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the hyperbolic arcsine (inverse hyperbolic sine) of a complex number.
    *
@@ -1029,6 +1033,7 @@ export class Complex {
       : this.pow(2).add(1).sqrt().add(this).log();
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the hyperbolic arccosine (inverse hyperbolic cosine) of a complex number.
    *
@@ -1077,6 +1082,7 @@ export class Complex {
       : this.sub(1).sqrt().mul(this.add(1).sqrt()).add(this).log();
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the hyperbolic arctangent (inverse hyperbolic tangent) of a complex number.
    *
@@ -1133,6 +1139,7 @@ export class Complex {
       : this.add(1).log().sub(Complex.one.sub(this).log()).div(2);
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the sine of a complex number.
    *
@@ -1158,6 +1165,7 @@ export class Complex {
     return this.mul(new Complex(0, 1)).sinh().mul(new Complex(0, -1));
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the cosine of a complex number.
    *
@@ -1183,6 +1191,7 @@ export class Complex {
     return this.mul(new Complex(0, 1)).cosh();
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the tangent of a complex number.
    *
@@ -1280,6 +1289,7 @@ export class Complex {
     return this.sin().recip();
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the arcsine (inverse sine) of a complex number.
    *
@@ -1305,6 +1315,7 @@ export class Complex {
     return this.mul(new Complex(0, 1)).asinh().mul(new Complex(0, -1));
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the arccosine (inverse cosine) of a complex number.
    *
@@ -1355,6 +1366,7 @@ export class Complex {
       : new Complex(Math.PI / 2).sub(this.asin());
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the arctangent (inverse tangent) of a complex number.
    *

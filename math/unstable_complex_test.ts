@@ -21,7 +21,24 @@ function isPositiveSigned(num: number): boolean {
   return Object.is(num, 0) || 0 < num;
 }
 
-const finiteNumbers = [-5, -4, -3, -2, -1, -0, 0, 1, 2, 3, 4, 5];
+const numbers = [
+  -Infinity,
+  -5,
+  -4,
+  -3,
+  -2,
+  -1,
+  -0,
+  0,
+  1,
+  2,
+  3,
+  4,
+  5,
+  Infinity,
+  NaN,
+];
+const finiteNumbers = numbers.filter((num) => Number.isFinite(num));
 const finiteNonZeroNumbers = finiteNumbers.filter((num) => num !== 0);
 const nonZeroNumbers = [...finiteNonZeroNumbers, Infinity, -Infinity];
 const finitePositiveNumbers = finiteNumbers.filter((num) => 0 < num);
@@ -621,71 +638,37 @@ Deno.test("Complex", async (t) => {
       }
     });
 
-    await t.step("coth()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).coth(),
-        new Complex(.8213297974, .1713836129),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).coth(),
-        new Complex(-.8213297974, .1713836129),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).coth(),
-        new Complex(.8213297974, -.1713836129),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).coth(),
-        new Complex(-.8213297974, -.1713836129),
-      );
-      assertEquals(Complex.zero.coth(), Complex.Infinity);
-      assertEquals(Complex.NaN.coth(), Complex.NaN);
-      assertEquals(Complex.Infinity.coth(), Complex.NaN);
-    });
+    const hyperTrigFunctions = [
+      {
+        name: "coth",
+        functionBody: (num: Complex) => num.coth(),
+        testBody: (num: Complex) => num.tanh().recip(),
+      },
+      {
+        name: "sech",
+        functionBody: (num: Complex) => num.sech(),
+        testBody: (num: Complex) => num.cosh().recip(),
+      },
+      {
+        name: "csch",
+        functionBody: (num: Complex) => num.csch(),
+        testBody: (num: Complex) => num.sinh().recip(),
+      },
+    ];
 
-    await t.step("sech()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).sech(),
-        new Complex(-.4131493442, -.6875274386),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).sech(),
-        new Complex(-.4131493442, .6875274386),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).sech(),
-        new Complex(-.4131493442, .6875274386),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).sech(),
-        new Complex(-.4131493442, -.6875274386),
-      );
-      assertEquals(Complex.zero.sech(), Complex.one);
-      assertEquals(Complex.NaN.sech(), Complex.NaN);
-      assertEquals(Complex.Infinity.sech(), Complex.NaN);
-    });
-
-    await t.step("csch()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).csch(),
-        new Complex(-.2215009308, -.6354937992),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).csch(),
-        new Complex(.2215009308, -.6354937992),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).csch(),
-        new Complex(-.2215009308, .6354937992),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).csch(),
-        new Complex(.2215009308, .6354937992),
-      );
-      assertEquals(Complex.zero.csch(), Complex.Infinity);
-      assertEquals(Complex.NaN.csch(), Complex.NaN);
-      assertEquals(Complex.Infinity.csch(), Complex.NaN);
-    });
+    for (const { name, functionBody, testBody } of hyperTrigFunctions) {
+      await t.step(`${name}()`, () => {
+        for (const re of numbers) {
+          for (const im of numbers) {
+            const num = new Complex(re, im);
+            assertEquals(
+              functionBody(num),
+              testBody(num),
+            );
+          }
+        }
+      });
+    }
   });
 
   await t.step("Inverse hyperbolic trigonometric functions", async (t) => {
@@ -850,161 +833,85 @@ Deno.test("Complex", async (t) => {
   });
 
   await t.step("Trigonometric functions", async (t) => {
-    await t.step("sin()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).sin(),
-        new Complex(3.16577851, 1.95960104),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).sin(),
-        new Complex(-3.16577851, 1.95960104),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).sin(),
-        new Complex(3.16577851, -1.95960104),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).sin(),
-        new Complex(-3.16577851, -1.95960104),
-      );
-      assertEquals(Complex.zero.sin(), Complex.zero);
-      assertEquals(Complex.NaN.sin(), Complex.NaN);
-      assertEquals(Complex.Infinity.sin(), Complex.NaN);
-    });
+    const trigFunctions = [
+      {
+        name: "sin",
+        functionBody: (num: Complex) => num.sin(),
+        testBody: (num: Complex) =>
+          num.mul(new Complex(0, 1)).sinh().mul(new Complex(0, -1)),
+      },
+      {
+        name: "cos",
+        functionBody: (num: Complex) => num.cos(),
+        testBody: (num: Complex) => num.mul(new Complex(0, 1)).cosh(),
+      },
+      {
+        name: "tan",
+        functionBody: (num: Complex) => num.tan(),
+        testBody: (num: Complex) =>
+          num.mul(new Complex(0, 1)).tanh().mul(new Complex(0, -1)),
+      },
+      {
+        name: "cot",
+        functionBody: (num: Complex) => num.cot(),
+        testBody: (num: Complex) => num.tan().recip(),
+      },
+      {
+        name: "sec",
+        functionBody: (num: Complex) => num.sec(),
+        testBody: (num: Complex) => num.cos().recip(),
+      },
+      {
+        name: "csc",
+        functionBody: (num: Complex) => num.csc(),
+        testBody: (num: Complex) => num.sin().recip(),
+      },
+    ];
 
-    await t.step("cos()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).cos(),
-        new Complex(2.03272301, -3.0518978),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).cos(),
-        new Complex(2.03272301, 3.0518978),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).cos(),
-        new Complex(2.03272301, 3.0518978),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).cos(),
-        new Complex(2.03272301, -3.0518978),
-      );
-      assertEquals(Complex.zero.cos(), Complex.one);
-      assertEquals(Complex.NaN.cos(), Complex.NaN);
-      assertEquals(Complex.Infinity.cos(), Complex.NaN);
-    });
-
-    await t.step("tan()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).tan(),
-        new Complex(.0338128260, 1.0147936161),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).tan(),
-        new Complex(-.0338128260, 1.0147936161),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).tan(),
-        new Complex(.0338128260, -1.0147936161),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).tan(),
-        new Complex(-.0338128260, -1.0147936161),
-      );
-      assertEquals(Complex.zero.tan(), Complex.zero);
-      assertEquals(Complex.NaN.tan(), Complex.NaN);
-      assertEquals(Complex.Infinity.tan(), Complex.NaN);
-    });
-
-    await t.step("cot()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).cot(),
-        new Complex(0.0327977555, -0.984329226),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).cot(),
-        new Complex(-0.0327977555, -0.984329226),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).cot(),
-        new Complex(0.0327977555, 0.984329226),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).cot(),
-        new Complex(-0.0327977555, 0.984329226),
-      );
-      assertEquals(Complex.zero.cot(), Complex.Infinity);
-      assertEquals(Complex.NaN.cot(), Complex.NaN);
-      assertEquals(Complex.Infinity.cot(), Complex.NaN);
-    });
-
-    await t.step("sec()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).sec(),
-        new Complex(.1511762982, .2269736753),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).sec(),
-        new Complex(.1511762982, -.2269736753),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).sec(),
-        new Complex(.1511762982, -.2269736753),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).sec(),
-        new Complex(.1511762982, .2269736753),
-      );
-      assertEquals(Complex.zero.sec(), Complex.one);
-      assertEquals(Complex.NaN.sec(), Complex.NaN);
-      assertEquals(Complex.Infinity.sec(), Complex.NaN);
-    });
-
-    await t.step("csc()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).csc(),
-        new Complex(.2283750655, -.1413630216),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).csc(),
-        new Complex(-.2283750655, -.1413630216),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).csc(),
-        new Complex(.2283750655, .1413630216),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).csc(),
-        new Complex(-.2283750655, .1413630216),
-      );
-      assertEquals(Complex.zero.csc(), Complex.Infinity);
-      assertEquals(Complex.NaN.csc(), Complex.NaN);
-      assertEquals(Complex.Infinity.csc(), Complex.NaN);
-    });
+    for (const { name, functionBody, testBody } of trigFunctions) {
+      await t.step(`${name}()`, () => {
+        for (const re of numbers) {
+          for (const im of numbers) {
+            const num = new Complex(re, im);
+            assertEquals(
+              functionBody(num),
+              testBody(num),
+            );
+          }
+        }
+      });
+    }
   });
 
   await t.step("Inverse trigonometric functions", async (t) => {
-    await t.step("asin()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).asin(),
-        new Complex(.42707859, 1.52857092),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).asin(),
-        new Complex(-.42707859, 1.52857092),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).asin(),
-        new Complex(.42707859, -1.52857092),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).asin(),
-        new Complex(-.42707859, -1.52857092),
-      );
-      assertEquals(Complex.zero.asin(), Complex.zero);
-      assertEquals(Complex.NaN.asin(), Complex.NaN);
-      assertEquals(Complex.Infinity.asin(), Complex.NaN);
-    });
+    const inverseTrigFunctions = [
+      {
+        name: "asin",
+        functionBody: (num: Complex) => num.asin(),
+        testBody: (num: Complex) =>
+          num.mul(new Complex(0, 1)).asinh().mul(new Complex(0, -1)),
+      },
+      {
+        name: "atan",
+        functionBody: (num: Complex) => num.atan(),
+        testBody: (num: Complex) =>
+          num.mul(new Complex(0, 1)).atanh().mul(new Complex(0, -1)),
+      },
+    ];
+
+    for (const { name, functionBody, testBody } of inverseTrigFunctions) {
+      await t.step(`${name}()`, () => {
+        for (const re of numbers) {
+          for (const im of numbers) {
+            const num = new Complex(re, im);
+            assertEquals(
+              functionBody(num),
+              testBody(num),
+            );
+          }
+        }
+      });
+    }
 
     await t.step("acos()", () => {
       assertAlmostEqualComplex(
@@ -1061,28 +968,6 @@ Deno.test("Complex", async (t) => {
           new Complex(0, -Infinity),
         );
       }
-    });
-
-    await t.step("atan()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).atan(),
-        new Complex(1.3389725222, .4023594781),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).atan(),
-        new Complex(-1.33897252, .40235948),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).atan(),
-        new Complex(1.33897252, -.40235948),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).atan(),
-        new Complex(-1.33897252, -.40235948),
-      );
-      assertEquals(Complex.zero.atan(), Complex.zero);
-      assertEquals(Complex.NaN.atan(), Complex.NaN);
-      assertEquals(Complex.Infinity.atan(), Complex.NaN);
     });
   });
 });
