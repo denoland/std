@@ -16,17 +16,18 @@ import { mapError } from "./_map_error.ts";
  * ```
  *
  * @example Truncate part of a file
- * ```ts ignore
+ * ```ts
  * import { makeTempFile } from "@std/fs/unstable-make-temp-file";
  * import { readFile } from "@std/fs/unstable-read-file";
  * import { truncate } from "@std/fs/unstable-truncate";
  * import { writeTextFile } from "@std/fs/unstable-write-text-file";
+ * import { assertEquals } from "@std/assert";
  *
  * const file = await makeTempFile();
  * await writeTextFile(file, "Hello World");
  * await truncate(file, 7);
  * const data = await readFile(file);
- * console.log(new TextDecoder().decode(data));  // "Hello W"
+ * assertEquals(new TextDecoder().decode(data), "Hello W");
  * ```
  *
  * @tags allow-write
@@ -60,17 +61,18 @@ export async function truncate(name: string, len?: number): Promise<void> {
  * ```
  *
  * @example Truncate part of a file
- * ```ts ignore
+ * ```ts
  * import { makeTempFileSync } from "@std/fs/unstable-make-temp-file";
  * import { readFileSync } from "@std/fs/unstable-read-file";
  * import { truncateSync } from "@std/fs/unstable-truncate";
  * import { writeFileSync } from "@std/fs/unstable-write-file";
+ * import { assertEquals } from "@std/assert";
  *
  * const file = makeTempFileSync();
  * writeFileSync(file, new TextEncoder().encode("Hello World"));
  * truncateSync(file, 7);
  * const data = readFileSync(file);
- * console.log(new TextDecoder().decode(data));
+ * assertEquals(new TextDecoder().decode(data), "Hello W");
  * ```
  *
  * @tags allow-write

@@ -3,8 +3,8 @@
 
 /**
  * A {@linkcode TransformStream} that groups input chunks into fixed-size
- * batches. Emits a `T[]` every `size` input chunks and flushes any final
- * non-empty partial batch when the input closes.
+ * batches. Emits a `T[]` once `size` input chunks have been collected and
+ * flushes any final non-empty partial batch when the input closes.
  *
  * Input order is preserved.
  *
@@ -13,13 +13,11 @@
  * For resizing `Uint8Array` chunks at the byte level, see
  * {@linkcode FixedChunkStream}.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of the input chunks.
  *
  * @example Batch records for bulk upload
  * ```ts
- * import { BatchStream } from "@std/streams/unstable-batch-stream";
+ * import { BatchStream } from "@std/streams/batch-stream";
  * import { assertEquals } from "@std/assert";
  *
  * const records = ReadableStream.from([1, 2, 3, 4, 5])
@@ -30,7 +28,7 @@
  *
  * @example Type inference inside a pipeline
  * ```ts
- * import { BatchStream } from "@std/streams/unstable-batch-stream";
+ * import { BatchStream } from "@std/streams/batch-stream";
  * import { assertEquals } from "@std/assert";
  *
  * interface User {
