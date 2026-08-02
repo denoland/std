@@ -440,6 +440,21 @@ Deno.test("encodeCbor() encoding objects", () => {
   // Can't test the next two bracket up due to JavaScript limitations.
 });
 
+Deno.test("encodeCbor() ignores inherited enumerable properties", () => {
+  const input: { [k: string]: CborType } = Object.assign(
+    Object.create({ inherited: 1 }),
+    { own: 2 },
+  );
+  assertEquals(
+    encodeCbor(input),
+    new Uint8Array([
+      0b101_00001,
+      ...encodeCbor("own"),
+      ...encodeCbor(2),
+    ]),
+  );
+});
+
 Deno.test("encodeCbor() encoding CborTag()", () => {
   const bytes = new Uint8Array(random(0, 24)).map((_) => random(0, 256));
   assertEquals(
