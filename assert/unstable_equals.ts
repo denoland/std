@@ -31,7 +31,7 @@ import type { DIFF_CONTEXT_LENGTH } from "@std/internal/truncate-build-message";
  * assertEquals("hello", "world"); // Throws
  * ```
  * @example Compare `Blob` objects
- * ```ts ignore
+ * ```ts
  * import { assertEquals } from "@std/assert";
  *
  * const bytes1 = await new Blob(["foo"]).bytes();

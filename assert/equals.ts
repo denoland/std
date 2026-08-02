@@ -29,7 +29,7 @@ import { AssertionError } from "./assertion_error.ts";
  * assertEquals("hello", "world"); // Throws
  * ```
  * @example Compare `Blob` objects
- * ```ts ignore
+ * ```ts
  * import { assertEquals } from "@std/assert";
  *
  * const bytes1 = await new Blob(["foo"]).bytes();
