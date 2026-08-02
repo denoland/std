@@ -3,23 +3,36 @@
 
 /** Options for {@linkcode abortable}. */
 export interface AbortableOptions {
-  /** The signal to abort the promise with. */
+  /**
+   * The signal to abort the promise or iteration with. When `undefined`, the
+   * input is never aborted.
+   *
+   * @default {undefined}
+   */
   signal?: AbortSignal | undefined;
 }
 
 /**
  * Make a {@linkcode Promise} abortable with the given signal.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * The signal can also be passed inside an {@linkcode AbortableOptions}
+ * object. When `options.signal` is `undefined`, the promise is returned
+ * unchanged and never aborts.
+ *
  * @throws {DOMException} If the signal is already aborted and `signal.reason`
  * is undefined. Otherwise, throws `signal.reason`.
  * @typeParam T The type of the provided and returned promise.
  * @param p The promise to make abortable.
- * @param signal The signal to abort the promise with.
+ * @param signal The signal to abort the promise with, or an
+ * {@linkcode AbortableOptions} object carrying an optional signal.
  * @returns A promise that can be aborted.
  *
  * @example Error-handling a timeout
  * ```ts
- * import { abortable, delay } from "@std/async";
+ * import { abortable } from "@std/async/unstable-abortable";
+ * import { delay } from "@std/async/delay";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
  * const promise = delay(1_000);
@@ -34,7 +47,8 @@ export interface AbortableOptions {
  *
  * @example Error-handling an abort
  * ```ts
- * import { abortable, delay } from "@std/async";
+ * import { abortable } from "@std/async/unstable-abortable";
+ * import { delay } from "@std/async/delay";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
  * const promise = delay(1_000);
@@ -48,6 +62,19 @@ export interface AbortableOptions {
  *   "This is my reason"
  * );
  * ```
+ *
+ * @example Passing an optional signal through options
+ * ```ts
+ * import { abortable } from "@std/async/unstable-abortable";
+ * import { assertEquals } from "@std/assert";
+ *
+ * async function process(options: { signal?: AbortSignal } = {}) {
+ *   return await abortable(Promise.resolve("Hello"), options);
+ * }
+ *
+ * // Without a signal, the promise resolves as usual
+ * assertEquals(await process(), "Hello");
+ * ```
  */
 export function abortable<T>(
   p: Promise<T>,
@@ -56,16 +83,24 @@ export function abortable<T>(
 /**
  * Make an {@linkcode AsyncIterable} abortable with the given signal.
  *
+ * @experimental **UNSTABLE**: New API, yet to be vetted.
+ *
+ * The signal can also be passed inside an {@linkcode AbortableOptions}
+ * object. When `options.signal` is `undefined`, the returned generator
+ * mirrors the input and never aborts.
+ *
  * @throws {DOMException} If the signal is already aborted and `signal.reason`
  * is undefined. Otherwise, throws `signal.reason`.
  * @typeParam T The type of the provided and returned async iterable.
  * @param p The async iterable to make abortable.
- * @param signal The signal to abort the promise with.
+ * @param signal The signal to abort the iteration with, or an
+ * {@linkcode AbortableOptions} object carrying an optional signal.
  * @returns An async iterable that can be aborted.
  *
  * @example Error-handling a timeout
  * ```ts
- * import { abortable, delay } from "@std/async";
+ * import { abortable } from "@std/async/unstable-abortable";
+ * import { delay } from "@std/async/delay";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
  * const asyncIter = async function* () {
@@ -91,7 +126,8 @@ export function abortable<T>(
  *
  * @example Error-handling an abort
  * ```ts
- * import { abortable, delay } from "@std/async";
+ * import { abortable } from "@std/async/unstable-abortable";
+ * import { delay } from "@std/async/delay";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
  * const asyncIter = async function* () {
@@ -115,6 +151,21 @@ export function abortable<T>(
  * );
  * assertEquals(items, []);
  * ```
+ *
+ * @example Passing an optional signal through options
+ * ```ts
+ * import { abortable } from "@std/async/unstable-abortable";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const asyncIter = async function* () {
+ *   yield "Hello";
+ *   yield "World";
+ * };
+ *
+ * // Without a signal, iteration proceeds as usual
+ * const items = await Array.fromAsync(abortable(asyncIter(), {}));
+ * assertEquals(items, ["Hello", "World"]);
+ * ```
  */
 
 export function abortable<T>(
@@ -124,10 +175,12 @@ export function abortable<T>(
 export function abortable<T>(
   p: Promise<T> | AsyncIterable<T>,
   signal: AbortSignal | AbortableOptions,
-): Promise<T> | AsyncIterable<T> {
+): Promise<T> | AsyncGenerator<T> {
   if (!(signal instanceof AbortSignal)) {
     if (!signal.signal) {
-      return p;
+      // The iterable overload promises an AsyncGenerator, so a plain
+      // iterable still needs wrapping to gain next/return/throw.
+      return p instanceof Promise ? p : passthroughAsyncIterable(p);
     }
     signal = signal.signal;
   }
@@ -136,6 +189,12 @@ export function abortable<T>(
   } else {
     return abortableAsyncIterable(p, signal);
   }
+}
+
+async function* passthroughAsyncIterable<T>(
+  p: AsyncIterable<T>,
+): AsyncGenerator<T> {
+  return yield* p;
 }
 
 function abortablePromise<T>(
