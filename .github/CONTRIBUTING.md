@@ -41,9 +41,10 @@ receiving sufficient feedback from the community and the core team.
 ### New features in stable packages (version >= 1.0.0)
 
 If you suggest new APIs in stable packages, which have the version above 1.0.0,
-you need to implment that API in the file paths of the pattern
-`./unstable_<api_name>`, and the API shouldn't exported from the root module
-(`mod.ts`). This is to make it clear which API is stable and which is not.
+you need to implement that API in the file paths of the pattern
+`./unstable_<api_name>.ts`, and the API shouldn't be exported from the root
+module (`mod.ts`). This is to make it clear which API is stable and which is
+not.
 
 Example:
 
@@ -66,8 +67,8 @@ and send a pull request.
 
 ## Deprecations
 
-1. See the [deprecation policy](/README.md#deprecation-policy) for how
-   deprecations work.
+1. See the [FAQ](./FAQ.md#why-would-an-api-be-deprecated) for why and when APIs
+   are deprecated.
 1. Start creating a pull request by adding a deprecation notice to the given
    symbol with the following format, including the removal version and links to
    any relevant replacement symbols or documentation:
@@ -127,12 +128,12 @@ Where applicable, documentation for public symbols should contain, in order:
 See the source code within
 [`@std/bytes`](https://github.com/denoland/std/tree/main/bytes) for examples.
 
-Once the documentation for a given package is written, add the package's entry
-point(s) (usually just `mod.ts`) to the `ENTRY_POINTS` array in the
-[documentation checker tool](../_tools/check_docs.ts).
+The [documentation checker tool](../_tools/check_docs.ts) checks all entry
+points listed in the `exports` field of each package's `deno.json`, so ensure
+new entry points are listed there.
 
-Once done, run `deno task lint:docs` which checks that documentation is complete
-in the given entry points.
+Once the documentation is written, run `deno task lint:docs` which checks that
+documentation is complete in the given entry points.
 
 ### Module documentation
 
