@@ -7,7 +7,6 @@ export interface AbortableOptions {
   signal?: AbortSignal | undefined;
 }
 
-// TODO(iuioiua): Remove `ignore` directives from following snippets
 /**
  * Make a {@linkcode Promise} abortable with the given signal.
  *
@@ -19,7 +18,7 @@ export interface AbortableOptions {
  * @returns A promise that can be aborted.
  *
  * @example Error-handling a timeout
- * ```ts ignore
+ * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
@@ -34,7 +33,7 @@ export interface AbortableOptions {
  * ```
  *
  * @example Error-handling an abort
- * ```ts ignore
+ * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
  *

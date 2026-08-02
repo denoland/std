@@ -25,7 +25,7 @@ function isPrimitive(value: unknown): boolean {
  * ```
  *
  * @example Usage with objects (deep equality)
- * ```ts ignore
+ * ```ts
  * import { assertArrayIncludes } from "@std/assert";
  *
  * assertArrayIncludes([{ a: 1 }, { b: 2 }], [{ a: 1 }]); // Passes

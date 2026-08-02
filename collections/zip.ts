@@ -2,14 +2,22 @@
 // This module is browser compatible.
 
 /**
- * Builds N-tuples of elements from the given N arrays with matching indices,
- * stopping when the smallest array's end is reached.
+ * Builds N-tuples of elements from the given N iterables with matching
+ * indices, stopping when the shortest iterable is exhausted.
  *
- * @typeParam T The type of the tuples produced by this function.
+ * Notes:
+ * - Inputs are consumed eagerly. Non-array iterables are materialized via
+ *   `Array.from` before zipping, so passing an infinite iterable (such as an
+ *   unbounded generator) will hang.
+ * - Strings are iterables of code points. Passing a string zips it
+ *   character-by-character rather than treating it as a single scalar value.
  *
- * @param arrays The arrays to zip.
+ * @typeParam T The tuple of element types in the input iterables.
  *
- * @returns A new array containing N-tuples of elements from the given arrays.
+ * @param iterables The iterables to zip.
+ *
+ * @returns A new array containing N-tuples of elements from the given
+ * iterables.
  *
  * @example Basic usage
  * ```ts
@@ -30,24 +38,59 @@
  *   ],
  * );
  * ```
+ *
+ * @example With iterables
+ * ```ts
+ * import { zip } from "@std/collections/zip";
+ * import { assertEquals } from "@std/assert";
+ *
+ * assertEquals(
+ *   zip(new Set([1, 2, 3]), ["a", "b", "c"]),
+ *   [[1, "a"], [2, "b"], [3, "c"]],
+ * );
+ * ```
+ *
+ * @example Strings are iterables
+ * ```ts
+ * import { zip } from "@std/collections/zip";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // A string is zipped character-by-character, not as a single value.
+ * assertEquals(
+ *   zip("abc", [1, 2, 3]),
+ *   [["a", 1], ["b", 2], ["c", 3]],
+ * );
+ * ```
  */
 export function zip<T extends unknown[]>(
-  ...arrays: { [K in keyof T]: ReadonlyArray<T[K]> }
+  ...iterables: { [K in keyof T]: Iterable<T[K]> }
 ): T[] {
-  const { length } = arrays;
-  if (length === 0) return [];
+  const arrayCount = iterables.length;
+  if (arrayCount === 0) return [];
+
+  const arrays = iterables.map((it) => Array.isArray(it) ? it : Array.from(it));
 
   let minLength = arrays[0]!.length;
-  for (let i = 1; i < length; ++i) {
-    if (arrays[i]!.length < minLength) {
-      minLength = arrays[i]!.length;
-    }
+  for (let i = 1; i < arrayCount; ++i) {
+    const len = arrays[i]!.length;
+    if (len < minLength) minLength = len;
   }
 
   const result: T[] = new Array(minLength);
+
+  // Fast path for two iterables
+  if (arrayCount === 2) {
+    const a = arrays[0]!;
+    const b = arrays[1]!;
+    for (let i = 0; i < minLength; ++i) {
+      result[i] = [a[i], b[i]] as T;
+    }
+    return result;
+  }
+
   for (let i = 0; i < minLength; ++i) {
-    const tuple: unknown[] = new Array(length);
-    for (let j = 0; j < length; ++j) {
+    const tuple: unknown[] = new Array(arrayCount);
+    for (let j = 0; j < arrayCount; ++j) {
       tuple[j] = arrays[j]![i];
     }
     result[i] = tuple as T;
