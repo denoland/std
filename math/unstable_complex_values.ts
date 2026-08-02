@@ -14,6 +14,23 @@ export const simpleSpecialValues = {
     [[NaN, 0], [NaN, 0]],
     [[NaN, NaN], [NaN, NaN]],
   ],
+  log: [
+    [[-0, 0], [-Infinity, Math.PI]],
+    [[0, 0], [-Infinity, 0]],
+    [[-Infinity, Infinity], [Infinity, 3 / 4 * Math.PI]],
+    [[Infinity, Infinity], [Infinity, Math.PI / 4]],
+    [[Infinity, NaN], [Infinity, NaN]],
+    [[-Infinity, NaN], [Infinity, NaN]],
+    [[NaN, Infinity], [Infinity, NaN]],
+    [[NaN, NaN], [NaN, NaN]],
+  ],
+  sqrt: [
+    [[0, 0], [0, 0]],
+    [[-0, 0], [0, 0]],
+    [[-Infinity, NaN], [NaN, Infinity]], // Unspecified imag output sign
+    [[Infinity, NaN], [Infinity, NaN]],
+    [[NaN, NaN], [NaN, NaN]],
+  ],
   sinh: [
     [[0, 0], [0, 0]],
     [[0, Infinity], [0, NaN]], // Unspecified real output sign

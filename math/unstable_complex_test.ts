@@ -40,7 +40,7 @@ const numbers = [
 ];
 const finiteNumbers = numbers.filter((num) => Number.isFinite(num));
 const finiteNonZeroNumbers = finiteNumbers.filter((num) => num !== 0);
-const nonZeroNumbers = [...finiteNonZeroNumbers, Infinity, -Infinity];
+const nonZeroNumbers = numbers.filter((num) => num !== 0);
 const finitePositiveNumbers = finiteNumbers.filter((num) => 0 < num);
 const finitePositiveSignedNumbers = finiteNumbers.filter((num) =>
   isPositiveSigned(num)
@@ -290,37 +290,32 @@ Deno.test("Complex", async (t) => {
         new Complex(.78615138, -1.27201965),
       );
 
-      assertEquals(
-        Complex.one.sqrt(),
-        Complex.one,
-      );
-      assertEquals(
-        Complex.i.sqrt(),
-        new Complex(Math.SQRT1_2, Math.SQRT1_2),
-      );
-      assertEquals(
-        Complex.negOne.sqrt(),
-        new Complex(0, 1),
-      );
-      assertEquals(
-        Complex.negI.sqrt(),
-        new Complex(Math.SQRT1_2, -Math.SQRT1_2),
-      );
-
-      const nums = [0, 1, 2, 3];
-      for (const real of nums) {
-        for (const imag of nums) {
-          assertAlmostEqualComplex(
-            new Complex(real, imag).sqrt().pow(2),
-            new Complex(real, imag),
-            1e-15,
-          );
-        }
+      for (const num of numbers) {
+        assertAlmostEqualComplex(
+          new Complex(num, Infinity).sqrt(),
+          new Complex(Infinity, Infinity),
+        );
       }
-
-      assertEquals(Complex.zero.sqrt(), Complex.zero);
-      assertEquals(Complex.NaN.sqrt(), Complex.NaN);
-      assertEquals(Complex.Infinity.sqrt(), Complex.Infinity);
+      for (const num of finiteNumbers) {
+        assertAlmostEqualComplex(
+          new Complex(num, NaN).sqrt(),
+          new Complex(NaN, NaN),
+        );
+        assertAlmostEqualComplex(
+          new Complex(NaN, num).sqrt(),
+          new Complex(NaN, NaN),
+        );
+      }
+      for (const num of finitePositiveSignedNumbers) {
+        assertAlmostEqualComplex(
+          new Complex(-Infinity, num).sqrt(),
+          new Complex(0, Infinity),
+        );
+        assertAlmostEqualComplex(
+          new Complex(Infinity, num).sqrt(),
+          new Complex(Infinity, 0),
+        );
+      }
     });
 
     await t.step("cbrt()", () => {
@@ -379,54 +374,59 @@ Deno.test("Complex", async (t) => {
         new Complex(0, Math.PI),
       );
 
-      assertEquals(Complex.zero.log(), Complex.NaN);
-      assertEquals(Complex.NaN.log(), Complex.NaN);
-      assertEquals(Complex.Infinity.log(), Complex.Infinity);
+      // ISO/IEC required
+      for (
+        const [[realInput, imagInput], [realOutput, imagOutput]]
+          of simpleSpecialValues.log
+      ) {
+        assertEquals(
+          new Complex(realInput, imagInput).log(),
+          new Complex(realOutput, imagOutput),
+        );
+      }
+
+      for (const num of finiteNumbers) {
+        assertEquals(
+          new Complex(num, Infinity).log(),
+          new Complex(Infinity, Math.PI / 2),
+        );
+        assertEquals(
+          new Complex(num, NaN).log(),
+          Complex.NaN,
+        );
+      }
+      for (const num of finitePositiveSignedNumbers) {
+        assertEquals(
+          new Complex(-Infinity, num).log(),
+          new Complex(Infinity, Math.PI),
+        );
+        assertEquals(
+          new Complex(Infinity, num).log(),
+          new Complex(Infinity, 0),
+        );
+      }
     });
 
     await t.step("log10()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).log10(),
-        new Complex(.349485, .48082858),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).log10(),
-        new Complex(.349485, .88354778),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).log10(),
-        new Complex(.349485, -.48082858),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).log10(),
-        new Complex(.349485, -.88354778),
-      );
-      assertEquals(Complex.zero.log10(), Complex.NaN);
-      assertEquals(Complex.NaN.log10(), Complex.NaN);
-      assertEquals(Complex.Infinity.log10(), Complex.Infinity);
+      for (const re of numbers) {
+        for (const im of numbers) {
+          const num = new Complex(re, im);
+          assertAlmostEqualComplex(num.log10(), num.log().div(Math.log(10)));
+        }
+      }
     });
 
     await t.step("logn()", () => {
-      assertAlmostEqualComplex(
-        new Complex(1, 2).logn(2),
-        new Complex(1.16096405, 1.59727796),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, 2).logn(3),
-        new Complex(.73248676, 1.85183067),
-      );
-      assertAlmostEqualComplex(
-        new Complex(1, -2).logn(4),
-        new Complex(.58048202, -.79863898),
-      );
-      assertAlmostEqualComplex(
-        new Complex(-1, -2).logn(5),
-        new Complex(.5, -1.26407109),
-      );
       for (const base of [2, 3, 4, 5, 6]) {
-        assertEquals(Complex.zero.logn(base), Complex.NaN);
-        assertEquals(Complex.NaN.logn(base), Complex.NaN);
-        assertEquals(Complex.Infinity.logn(base), Complex.Infinity);
+        for (const re of numbers) {
+          for (const im of numbers) {
+            const num = new Complex(re, im);
+            assertAlmostEqualComplex(
+              num.log10(),
+              num.log().div(Math.log(base)),
+            );
+          }
+        }
       }
     });
 
@@ -472,7 +472,10 @@ Deno.test("Complex", async (t) => {
       for (const num of finiteNumbers) {
         assertEquals(new Complex(num, Infinity).exp(), Complex.NaN);
         assertEquals(new Complex(num, NaN).exp(), Complex.NaN);
-        assertEquals(new Complex(-Infinity, num).exp(), Complex.cis(num).mul(0));
+        assertEquals(
+          new Complex(-Infinity, num).exp(),
+          Complex.cis(num).mul(0),
+        );
       }
       for (const num of finiteNonZeroNumbers) {
         assertEquals(

@@ -16,6 +16,10 @@ function isNegativeSigned(num: number): boolean {
   return Object.is(num, -0) || num < 0;
 }
 
+function sign(num: number): -1 | 1 {
+  return isPositiveSigned(num) ? 1 : -1;
+}
+
 function strictEqualsComplex(z0: Complex, z1: Complex): boolean {
   return Object.is(z0.real, z1.real) && Object.is(z0.imag, z1.imag);
 }
@@ -540,19 +544,26 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   sqrt(): Complex {
-    if (this.isReal() && 0 <= this.real) {
-      return new Complex(Math.sqrt(this.real));
-    }
-    if (this.isReal()) {
-      return new Complex(0, Math.sqrt(-this.real));
-    }
+    if (isNegativeSigned(this.imag)) return this.conj().sqrt().conj();
 
-    const absThis = this.abs();
+    return this.imag === Infinity
+      ? new Complex(Infinity, Infinity)
+      : isPositiveSigned(this.real) && Number.isNaN(this.imag)
+      ? new Complex(NaN, NaN)
+      : this.real === -Infinity && isPositiveSigned(this.imag)
+      ? new Complex(0, Infinity)
+      : this.real === Infinity && isPositiveSigned(this.imag)
+      ? new Complex(Infinity, 0)
+      : Number.isNaN(this.real) && Number.isFinite(this.imag)
+      ? new Complex(NaN, NaN)
+      : (() => {
+        const absThis = this.abs();
 
-    return new Complex(
-      Math.sqrt((absThis + this.real) / 2),
-      (this.imag < 0 ? -1 : 1) * Math.sqrt((absThis - this.real) / 2),
-    );
+        return new Complex(
+          Math.sqrt((absThis + this.real) / 2),
+          sign(this.imag) * Math.sqrt((absThis - this.real) / 2),
+        );
+      })();
   }
 
   /**
@@ -586,6 +597,7 @@ export class Complex {
     );
   }
 
+  // ISO/IEC compliant
   /**
    * Takes the natural logarithm of a complex number.
    *
@@ -604,7 +616,26 @@ export class Complex {
    * @experimental **UNSTABLE**: New API, yet to be vetted.
    */
   log(): Complex {
-    return this.isZero()
+    if (isNegativeSigned(this.imag)) return this.conj().log().conj();
+
+    for (
+      const [[realInput, imagInput], [realOutput, imagOutput]]
+        of simpleSpecialValues.log
+    ) {
+      if (
+        strictEqualsComplex(this, new Complex(realInput, imagInput))
+      ) return new Complex(realOutput, imagOutput);
+    }
+
+    return Number.isFinite(this.real) && this.imag === Infinity
+      ? new Complex(Infinity, Math.PI / 2)
+      : Number.isFinite(this.real) && Number.isNaN(this.imag)
+      ? Complex.NaN
+      : this.real === -Infinity && isPositiveSigned(this.imag)
+      ? new Complex(Infinity, Math.PI)
+      : this.real === Infinity && isPositiveSigned(this.imag)
+      ? new Complex(Infinity, 0)
+      : Number.isNaN(this.real) && Number.isFinite(this.imag)
       ? Complex.NaN
       : new Complex(Math.log(this.absSquared()) / 2, this.arg());
   }
@@ -651,6 +682,7 @@ export class Complex {
     return this.log().div(Math.log(n));
   }
 
+  // ISO/IEC compliant
   /**
    * Raises e (Euler's number) to the power of a complex number.
    *
