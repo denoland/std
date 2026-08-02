@@ -32,6 +32,22 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 > request that precedes the pull request that implements the new package.
 <!--deno-fmt-ignore-end-->
 
+### PR titles and version bumps
+
+Pull requests are squash-merged: the PR title becomes the commit subject on
+`main`, and the release tooling derives each package's next version from those
+subjects. The title alone decides the bump.
+
+A scope with the `/unstable` suffix always releases as a patch, even for `feat`
+(normally a minor bump) and `BREAKING` (normally a major bump). For example,
+`BREAKING(http/unstable): rename an option` releases a patch of `@std/http`.
+Unstable APIs are not covered by the semver contract, so changes to them never
+raise a version beyond a patch.
+
+A change confined to unstable APIs must carry the `/unstable` suffix in its
+scope. Without it, the title reads as a change to stable APIs and inflates the
+package's version bump.
+
 ## Suggesting a new feature
 
 When new features are accepted, they are initially accepted as 'unstable'
