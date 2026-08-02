@@ -51,7 +51,7 @@ export interface FormatOptions {
  * @return The formatted date string.
  *
  * @example Basic usage
- * ```ts ignore
+ * ```ts
  * import { format } from "@std/datetime/format";
  * import { assertEquals } from "@std/assert";
  *
