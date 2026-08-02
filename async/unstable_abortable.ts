@@ -191,9 +191,11 @@ export function abortable<T>(
   }
 }
 
+// TNext is `undefined` to satisfy pre-5.6 TypeScript (Deno v1.x), where
+// AsyncIterator defaults TNext to `undefined` instead of `any` (TS2766).
 async function* passthroughAsyncIterable<T>(
   p: AsyncIterable<T>,
-): AsyncGenerator<T> {
+): AsyncGenerator<T, unknown, undefined> {
   return yield* p;
 }
 
