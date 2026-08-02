@@ -43,7 +43,7 @@ export interface GetAvailablePortOptions {
  * ```
  *
  * Good:
- * ```ts ignore no-assert
+ * ```ts no-assert
  * import { getAvailablePort } from "@std/net/get-available-port";
  *
  * const command = new Deno.Command(Deno.execPath(), {
