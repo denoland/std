@@ -1,7 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-// TODO(iuioiua): Remove `ignore` directives from following snippets
 /**
  * Make a {@linkcode Promise} abortable with the given signal.
  *
@@ -13,7 +12,7 @@
  * @returns A promise that can be aborted.
  *
  * @example Error-handling a timeout
- * ```ts ignore
+ * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
@@ -28,7 +27,7 @@
  * ```
  *
  * @example Error-handling an abort
- * ```ts ignore
+ * ```ts
  * import { abortable, delay } from "@std/async";
  * import { assertRejects, assertEquals } from "@std/assert";
  *
