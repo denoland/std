@@ -334,6 +334,69 @@ Deno.test({
   sanitizeResources: false,
 });
 
+Deno.test("pooledMapSettled() rejects with abort reason after source is exhausted", async () => {
+  const controller = new AbortController();
+  const gates = [Promise.withResolvers<void>(), Promise.withResolvers<void>()];
+  const collected: PromiseSettledResult<number>[] = [];
+
+  const iteration = assertRejects(
+    async () => {
+      for await (
+        const result of pooledMapSettled(
+          [1, 2],
+          (i) => gates[i - 1]!.promise.then(() => i),
+          // poolLimit exceeds the item count so the producer drains the
+          // source and reaches its final wait while items are in flight
+          { poolLimit: 3, signal: controller.signal },
+        )
+      ) {
+        collected.push(result);
+      }
+    },
+    Error,
+    "late abort",
+  );
+
+  await delay(10);
+  controller.abort(new Error("late abort"));
+  for (const gate of gates) gate.resolve();
+
+  await iteration;
+  assertEquals(collected, [
+    { status: "fulfilled", value: 1 },
+    { status: "fulfilled", value: 2 },
+  ]);
+});
+
+Deno.test("pooledMapSettled() does not start new items after sync abort from source", async () => {
+  const controller = new AbortController();
+  const started: number[] = [];
+
+  function* source() {
+    yield 1;
+    controller.abort(new Error("aborted"));
+    yield 2;
+  }
+
+  await assertRejects(
+    () =>
+      Array.fromAsync(
+        pooledMapSettled(
+          source(),
+          (i) => {
+            started.push(i);
+            return i;
+          },
+          { poolLimit: 2, signal: controller.signal },
+        ),
+      ),
+    Error,
+    "aborted",
+  );
+
+  assertEquals(started, [1]);
+});
+
 Deno.test("pooledMapSettled() checks browser compat", async () => {
   const asyncIterFunc = ReadableStream.prototype[Symbol.asyncIterator];
   // deno-lint-ignore no-explicit-any
