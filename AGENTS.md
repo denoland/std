@@ -9,8 +9,8 @@ Node.js, Bun, browsers, and Cloudflare Workers.
 - Each top-level directory is a package (e.g., `async/`, `http/`,
   `collections/`)
 - `_tools/` contains internal CI/dev tooling (lint plugins, doc checkers, etc.)
-- Root `deno.json` defines the workspace, tasks, and compiler options
-- `import_map.json` maps all `@std/*` packages and dev dependencies
+- Root `deno.json` defines the workspace, tasks, compiler options, and imports
+  (mapping all `@std/*` packages and dev dependencies)
 
 ### Package Layout
 
@@ -35,20 +35,20 @@ Every package follows this structure:
 
 Run `deno task ok` before submitting. This runs:
 
-- `deno lint` (includes custom style-guide plugin at `_tools/lint_plugin.ts`)
+- `deno task lint` — `deno lint` (includes the custom style-guide plugin at
+  `_tools/lint_plugin.ts`) plus:
+  - `lint:circular` — circular dependency detection
+  - `lint:tools-types` — type-checks `_tools/`
+  - `lint:mod-exports` — validates `mod.ts` exports
+  - `lint:export-names` — verifies export naming
+  - `lint:docs` — validates JSDoc completeness
+  - `lint:unstable-deps` — ensures stable entrypoints don't import unstable
+    modules
 - `deno fmt --check`
 - `deno task test:browser` (browser compatibility check)
 - `deno task test` (full test suite with coverage and doc tests)
 
-Additional lint tasks available:
-
-- `deno task lint:circular` — circular dependency detection
-- `deno task lint:mod-exports` — validates `mod.ts` exports
-- `deno task lint:docs` — validates JSDoc completeness
-- `deno task lint:import-map` — validates import map
-- `deno task lint:export-names` — verifies export naming
-- `deno task lint:unstable-deps` — tracks unstable feature usage
-- `deno task typos` — spell checking
+Spell checking (`deno task typos`) runs separately in CI.
 
 ## PR Conventions
 
@@ -91,7 +91,7 @@ All public symbols must have JSDoc with:
 
 Example snippets must be reproducible and use `@std/assert` assertions. Use
 `ignore` directive to skip running a snippet, `expect-error` for expected
-failures.
+failures, `no-assert` to exempt a snippet from requiring assertions.
 
 Module files (`mod.ts`) need a `@module` tag.
 
@@ -108,9 +108,10 @@ Exception: `@std/assert` uses periods in error messages (downstream compat).
 
 ## CI Pipeline
 
-Tests run on Ubuntu, Windows, and macOS against Deno v1.x, v2.x, and canary.
-Cross-runtime testing includes Node.js and Bun. Timezone-sensitive tests run
-across Sydney, London, and Toronto.
+Tests run on Ubuntu, Windows, and macOS against Deno v1.x and v2.x. Canary is
+covered by a scheduled nightly workflow, not PR CI. Cross-runtime testing
+includes Node.js and Bun. Timezone-sensitive tests run across Sydney, London,
+and Toronto.
 
 ## Versioning and Releases
 

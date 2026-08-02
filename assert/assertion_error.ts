@@ -5,7 +5,7 @@
  * Error thrown when an assertion fails.
  *
  * @example Usage
- * ```ts ignore
+ * ```ts
  * import { AssertionError } from "@std/assert";
  *
  * try {

@@ -12,7 +12,12 @@ function zip1Test<T>(
   assertEquals(actual, expected, message);
 }
 
-assertEquals(zip([]), []);
+Deno.test({
+  name: "zip() handles a single empty array",
+  fn() {
+    assertEquals(zip([]), []);
+  },
+});
 
 Deno.test({
   name: "zip() handles one array",
@@ -178,5 +183,62 @@ Deno.test({
       [undefined, "b"],
       [3, "c"],
     ]);
+  },
+});
+
+Deno.test({
+  name: "zip() handles non-array iterables",
+  fn() {
+    function* numbers() {
+      yield 1;
+      yield 2;
+      yield 3;
+    }
+    assertEquals(
+      zip(numbers(), ["a", "b", "c"]),
+      [[1, "a"], [2, "b"], [3, "c"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles Set iterables",
+  fn() {
+    assertEquals(
+      zip(new Set([1, 2, 3]), ["a", "b", "c"]),
+      [[1, "a"], [2, "b"], [3, "c"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles a single non-array iterable",
+  fn() {
+    assertEquals(
+      zip(new Set([1, 2, 3])),
+      [[1], [2], [3]],
+    );
+    function* gen() {
+      yield "a";
+      yield "b";
+    }
+    assertEquals(
+      zip(gen()),
+      [["a"], ["b"]],
+    );
+  },
+});
+
+Deno.test({
+  name: "zip() handles iterables of different lengths",
+  fn() {
+    function* numbers() {
+      yield 1;
+      yield 2;
+    }
+    assertEquals(
+      zip(numbers(), ["a", "b", "c"]),
+      [[1, "a"], [2, "b"]],
+    );
   },
 });
