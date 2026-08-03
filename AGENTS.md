@@ -106,6 +106,16 @@ Module files (`mod.ts`) need a `@module` tag.
 
 Exception: `@std/assert` uses periods in error messages (downstream compat).
 
+## Error Classes
+
+- `TypeError` for wrong argument type or shape, `RangeError` for out-of-range
+  values, `SyntaxError` for unparsable textual input
+- Subclass a built-in to carry structured data: `YamlSyntaxError` extends
+  `SyntaxError` and adds position info
+- New `Error` subclasses only for domain conditions callers catch (`RetryError`,
+  `ChannelClosedError`)
+- Plain `Error` and `EvalError` are legacy; do not use in new code
+
 ## CI Pipeline
 
 Tests run on Ubuntu, Windows, and macOS against Deno v1.x and v2.x. Canary is
