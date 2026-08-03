@@ -31,6 +31,10 @@ export interface PooledMapSettledOptions {
  * allowed to finish and their settled results are yielded, then the iterator
  * rejects with the original error from the input iterable.
  *
+ * The pool applies no backpressure: items are processed at full concurrency
+ * regardless of how quickly results are read, and completed results are
+ * buffered until consumed.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
@@ -173,6 +177,7 @@ export function pooledMapSettled<T, R>(
             : await nextPromise;
 
           if (next.done) break;
+          signal?.throwIfAborted();
 
           const item = next.value;
           const p = settle(() => iteratorFn(item));
@@ -191,7 +196,11 @@ export function pooledMapSettled<T, R>(
         }
       }
 
-      await Promise.all(executing);
+      if (abortDeferred) {
+        await Promise.race([Promise.all(executing), abortDeferred.promise]);
+      } else {
+        await Promise.all(executing);
+      }
       writer.close().catch(() => {});
     } catch (caughtError) {
       const wasAborted = signal?.aborted ?? false;
