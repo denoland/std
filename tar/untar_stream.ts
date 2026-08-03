@@ -148,6 +148,15 @@ export interface TarStreamEntry {
    *   // ...consume entry.readable as usual...
    * }
    * ```
+   *
+   * Because disposal cancels {@linkcode TarStreamEntry.readable}, it can reject
+   * in two cases that are easy to miss under implicit `await using` disposal:
+   *
+   * - If `readable` has already **errored**, `cancel()` rejects. Leaving the
+   *   loop body via a thrown error then surfaces a `SuppressedError` wrapping
+   *   both the original error and the cancellation rejection.
+   * - If `readable` is **locked** (a reader was acquired without releasing it,
+   *   or a `pipeTo()` is in progress), `cancel()` throws a `TypeError`.
    */
   [Symbol.asyncDispose](): Promise<void>;
 }
@@ -168,7 +177,10 @@ export interface TarStreamEntry {
  * When expanding the archive, as demonstrated in the example, one must decide
  * to either consume the ReadableStream property, if present, or cancel it. The
  * next entry won't be resolved until the previous ReadableStream is either
- * consumed or cancelled.
+ * consumed or cancelled. Each entry also implements
+ * {@linkcode Symbol.asyncDispose}, so binding it with `await using` cancels an
+ * unconsumed `readable` automatically — handy for skipping entries with
+ * `continue` without hanging the loop.
  *
  * ### Understanding Compressed
  * A tar archive may be compressed, often identified by an additional file
