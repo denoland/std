@@ -73,9 +73,7 @@ class Dumper {
         value instanceof Array
       ) {
         const arrayType = this.#getTypeOfArray(value);
-        if (arrayType === "ONLY_PRIMITIVE") {
-          out.push(this.#arrayDeclaration([prop], value));
-        } else if (arrayType === "ONLY_OBJECT_EXCLUDING_ARRAY") {
+        if (arrayType === "ONLY_OBJECT_EXCLUDING_ARRAY") {
           // array of objects
           for (let i = 0; i < value.length; i++) {
             out.push("");
@@ -83,7 +81,7 @@ class Dumper {
             out.push(...this.#printObject(value[i], [...keys, prop]));
           }
         } else {
-          // this is a complex array, use the inline format.
+          // this is a primitive or mixed array, use the inline format.
           const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
           out.push(`${this.#declaration([prop])}[${str}]`);
         }
@@ -120,12 +118,17 @@ class Dumper {
     }
 
     const onlyPrimitive = this.#isPrimitive(arr[0]);
-    if (arr[0] instanceof Array) {
+    if (
+      arr[0] === null || arr[0] === undefined || arr[0] instanceof Array
+    ) {
       return "MIXED";
     }
     for (let i = 1; i < arr.length; i++) {
       if (
-        onlyPrimitive !== this.#isPrimitive(arr[i]) || arr[i] instanceof Array
+        onlyPrimitive !== this.#isPrimitive(arr[i]) ||
+        arr[i] === null ||
+        arr[i] === undefined ||
+        arr[i] instanceof Array
       ) {
         return "MIXED";
       }
@@ -133,11 +136,23 @@ class Dumper {
     return onlyPrimitive ? "ONLY_PRIMITIVE" : "ONLY_OBJECT_EXCLUDING_ARRAY";
   }
   #printAsInlineValue(value: unknown): string | number {
+    if (value === null || value === undefined) {
+      throw new Error("Cannot stringify null or undefined values");
+    }
     if (value instanceof Date) {
-      return `"${this.#printDate(value)}"`;
+      return this.#printDate(value);
     } else if (typeof value === "string" || value instanceof RegExp) {
       return JSON.stringify(value.toString());
     } else if (typeof value === "number") {
+      if (Number.isNaN(value)) {
+        return "nan";
+      }
+      if (value === Infinity) {
+        return "inf";
+      }
+      if (value === -Infinity) {
+        return "-inf";
+      }
       return value;
     } else if (typeof value === "boolean") {
       return value.toString();
@@ -147,9 +162,6 @@ class Dumper {
       const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
       return `[${str}]`;
     } else if (typeof value === "object") {
-      if (!value) {
-        throw new Error("Should never reach");
-      }
       const str = Object.keys(value).map((key) => {
         return `${joinKeys([key])} = ${
           // deno-lint-ignore no-explicit-any
@@ -183,9 +195,6 @@ class Dumper {
       this.maxPad = title.length;
     }
     return `${title} = `;
-  }
-  #arrayDeclaration(keys: string[], value: unknown[]): string {
-    return `${this.#declaration(keys)}${JSON.stringify(value)}`;
   }
   #strDeclaration(keys: string[], value: string): string {
     return `${this.#declaration(keys)}${JSON.stringify(value)}`;

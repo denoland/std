@@ -92,13 +92,44 @@ Deno.test({
     assertThrows(
       () => stringify({ a: [[null]] }),
       Error,
-      "Should never reach",
+      "Cannot stringify null or undefined values",
     );
     assertThrows(
       () => stringify({ a: [[undefined]] }),
       Error,
-      "Should never reach",
+      "Cannot stringify null or undefined values",
     );
+    assertThrows(
+      () => stringify({ x: [null] }),
+      Error,
+      "Cannot stringify null or undefined values",
+    );
+    assertThrows(
+      () => stringify({ x: [1, null] }),
+      Error,
+      "Cannot stringify null or undefined values",
+    );
+  },
+});
+
+Deno.test({
+  name: "stringify() handles special values in inline arrays",
+  fn() {
+    const src = {
+      inf: [Infinity, -Infinity, NaN],
+      dates: [new Date(0)],
+      mixed: [Infinity, -Infinity, NaN, {}],
+      mixedDates: [new Date(0), {}],
+      regex: [/foo[bar]/],
+    };
+    const actual = stringify(src);
+    const expected = `inf = [inf,-inf,nan]
+dates = [1970-01-01T00:00:00.000]
+mixed = [inf,-inf,nan,{}]
+mixedDates = [1970-01-01T00:00:00.000,{}]
+regex = ["/foo[bar]/"]
+`;
+    assertEquals(actual, expected);
   },
 });
 
@@ -240,7 +271,7 @@ Deno.test({
     const expected = `emptyArray = []
 mixedArray1 = [1,{b = 2}]
 mixedArray2 = [{b = 2},1]
-nestedArray1 = [[{b = 1,date = "2022-05-13T00:00:00.000"}]]
+nestedArray1 = [[{b = 1,date = 2022-05-13T00:00:00.000}]]
 nestedArray2 = [[[{b = 1}]]]
 nestedArray3 = [[],[{b = 1}]]
 
