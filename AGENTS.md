@@ -106,6 +106,12 @@ Module files (`mod.ts`) need a `@module` tag.
 
 Exception: `@std/assert` uses periods in error messages (downstream compat).
 
+## Error Classes
+
+Follow
+[Error Classes in CONTRIBUTING.md](./.github/CONTRIBUTING.md#error-classes) when
+choosing which error class to throw.
+
 ## CI Pipeline
 
 Tests run on Ubuntu, Windows, and macOS against Deno v1.x and v2.x. Canary is

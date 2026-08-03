@@ -229,6 +229,29 @@ the starting description.
  */
 ```
 
+### Error Classes
+
+Throw the built-in error class whose meaning matches the failure:
+
+- `TypeError` when an argument has the wrong type or shape.
+- `RangeError` when a value is outside its allowed range.
+- `SyntaxError` when textual input cannot be parsed. This keeps `parse()`
+  functions consistent with `JSON.parse()`.
+
+```
+Bad: throw new Error("Cannot parse input x: value is empty")
+Good: throw new SyntaxError("Cannot parse input x: value is empty")
+```
+
+When an error carries structured data, subclass the closest built-in class so
+`instanceof` checks against the built-in keep working. For example,
+`XmlSyntaxError` and `YamlSyntaxError` extend `SyntaxError` and add `line`,
+`column`, and `offset` properties.
+
+Define a new class extending `Error` only for a domain condition callers are
+expected to catch, such as `RetryError` in `@std/async`. Plain `Error` and
+`EvalError` still appear in older packages; do not imitate them in new code.
+
 ### Error Messages
 
 User-facing error messages should be clear, concise, and consistent. Error
