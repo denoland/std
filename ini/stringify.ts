@@ -43,6 +43,20 @@ function sort([_a, valA]: [string, unknown], [_b, valB]: [string, unknown]) {
 }
 
 function defaultReplacer(_key: string, value: unknown, _section?: string) {
+  if (typeof value === "string") {
+    // Quote strings that would be misread by the parser as a different type.
+    // parseValue converts "true"/"false" to boolean, "null" to null, and
+    // bare numeric strings to number. Wrap those in double quotes so a
+    // parse(stringify(obj)) round-trip preserves the original string value.
+    if (
+      value === "true" ||
+      value === "false" ||
+      value === "null" ||
+      (!isNaN(+value) && value !== "")
+    ) {
+      return `"${value}"`;
+    }
+  }
   return `${value}`;
 }
 
