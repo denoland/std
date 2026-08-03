@@ -184,6 +184,52 @@ Deno.test("format", async () => {
   }
 });
 
+Deno.test(
+  "assertInlineSnapshot() reports a descriptive error when update fails",
+  async () => {
+    if (!LINT_SUPPORTED) return;
+
+    const fileContents =
+      `import { assertInlineSnapshot } from "${SNAPSHOT_MODULE_URL}";
+Deno.test("update test", () => {
+  assertInlineSnapshot(1, \`2\`);
+});`;
+
+    const tempDir = await Deno.makeTempDir();
+    const testFile = join(tempDir, "update_test.ts");
+    try {
+      await Deno.writeTextFile(testFile, fileContents);
+
+      // Missing --allow-run makes the post-update `deno fmt` subprocess fail.
+      // The error must surface with a descriptive message and a non-zero exit
+      // code instead of the test runner reporting `error: null`.
+      const command = new Deno.Command(Deno.execPath(), {
+        args: [
+          "test",
+          "--no-lock",
+          "--allow-read",
+          "--allow-write",
+          testFile,
+          "--",
+          "--update",
+        ],
+      });
+      const { code, stderr, stdout } = await command.output();
+      const output = new TextDecoder().decode(stderr) +
+        new TextDecoder().decode(stdout);
+
+      assertEquals(code !== 0, true);
+      assertEquals(
+        output.includes("assertInlineSnapshot: failed to update snapshots"),
+        true,
+      );
+      assertEquals(output.includes("error: null"), false);
+    } finally {
+      await Deno.remove(tempDir, { recursive: true });
+    }
+  },
+);
+
 Deno.test("createAssertInlineSnapshot()", () => {
   const assertMonochromeInlineSnapshot = createAssertInlineSnapshot<string>({
     serializer: stripAnsiCode,
