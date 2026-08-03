@@ -208,6 +208,57 @@ Deno.test({
 });
 
 Deno.test({
+  name:
+    "assertEquals() adds a function-by-reference hint when functions are present",
+  fn() {
+    // https://github.com/denoland/std/issues/6878
+    // Identical-looking function properties print as `[Function: y]` on
+    // both sides, which makes the failure confusing. The hint clarifies
+    // that functions compare by reference.
+    const error = assertThrows(
+      () =>
+        assertEquals(
+          { x: 1, y: () => 2 },
+          { x: 1, y: () => 2 },
+        ),
+      AssertionError,
+    );
+    const message = stripAnsiCode((error as AssertionError).message);
+    if (!message.includes("function properties are compared by reference")) {
+      throw new Error(
+        `expected message to include the function-reference hint, got:\n${message}`,
+      );
+    }
+
+    // Also fires for function values nested in arrays and Maps.
+    const arrayError = assertThrows(
+      () => assertEquals([() => 1], [() => 1]),
+      AssertionError,
+    );
+    if (
+      !stripAnsiCode((arrayError as AssertionError).message).includes(
+        "function properties are compared by reference",
+      )
+    ) {
+      throw new Error("expected hint for array of functions");
+    }
+
+    // Does NOT fire when neither side has any function values.
+    const plainError = assertThrows(
+      () => assertEquals({ x: 1 }, { x: 2 }),
+      AssertionError,
+    );
+    if (
+      stripAnsiCode((plainError as AssertionError).message).includes(
+        "function properties are compared by reference",
+      )
+    ) {
+      throw new Error("hint must not appear when there are no functions");
+    }
+  },
+});
+
+Deno.test({
   name: "assertEquals() matches same Set with object keys",
   fn() {
     const data = [
