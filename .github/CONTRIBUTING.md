@@ -48,6 +48,11 @@ A change confined to unstable APIs must carry the `/unstable` suffix in its
 scope. Without it, the title reads as a change to stable APIs and inflates the
 package's version bump.
 
+The full lists of accepted title types and scopes live in the
+[`title` workflow](./workflows/title.yml). Note that scopes are kebab-case
+(`data-structures`) even though package directories are snake_case
+(`data_structures`).
+
 ## Suggesting a new feature
 
 When new features are accepted, they are initially accepted as 'unstable'
@@ -209,6 +214,19 @@ So concrete examples are:
  *
  * // Fails at runtime
  * assert(false);
+ * ```
+ */
+````
+
+The documentation checker requires each `ts` snippet to import an assertion from
+`@std/assert`, `@std/expect` or `@std/testing`. When an assertion adds nothing
+to an example, add `no-assert` to the starting delimiter to exempt it. Unlike
+`ignore`, the snippet still runs:
+
+````ts
+/**
+ * ```ts no-assert
+ * (code snippet that runs, but asserts nothing)
  * ```
  */
 ````
