@@ -228,6 +228,33 @@ Deno.test("abortable() does not throw when the signal is already aborted and the
   );
 });
 
+Deno.test("abortable.AsyncIterable() yields all items when no signal is provided", async () => {
+  const a = async function* () {
+    yield "Hello";
+    yield "World";
+  };
+  const items = await Array.fromAsync(abortable(a(), {}));
+  assertEquals(items, ["Hello", "World"]);
+});
+
+Deno.test("abortable.AsyncIterable() returns a proper async generator when no signal is provided", async () => {
+  let finallyRan = false;
+  const iterable: AsyncIterable<number> = {
+    async *[Symbol.asyncIterator]() {
+      try {
+        yield 1;
+        yield 2;
+      } finally {
+        finallyRan = true;
+      }
+    },
+  };
+  const gen = abortable(iterable, {});
+  assertEquals(await gen.next(), { value: 1, done: false });
+  assertEquals(await gen.return(undefined), { value: undefined, done: true });
+  assertEquals(finallyRan, true);
+});
+
 Deno.test("abortable() is a no-op when no signal is provided", async () => {
   const signal: AbortSignal | undefined = undefined;
   const { promise, resolve } = Promise.withResolvers<string>();
