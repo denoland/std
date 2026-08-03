@@ -108,13 +108,9 @@ Exception: `@std/assert` uses periods in error messages (downstream compat).
 
 ## Error Classes
 
-- `TypeError` for wrong argument type or shape, `RangeError` for out-of-range
-  values, `SyntaxError` for unparsable textual input
-- Subclass a built-in to carry structured data: `YamlSyntaxError` extends
-  `SyntaxError` and adds position info
-- New `Error` subclasses only for domain conditions callers catch (`RetryError`,
-  `ChannelClosedError`)
-- Plain `Error` and `EvalError` are legacy; do not use in new code
+Follow
+[Error Classes in CONTRIBUTING.md](./.github/CONTRIBUTING.md#error-classes) when
+choosing which error class to throw.
 
 ## CI Pipeline
 
