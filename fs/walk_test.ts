@@ -113,24 +113,48 @@ Deno.test("walkSync() accepts includeFiles option set to false", () =>
     includeFiles: false,
   }));
 
+// https://github.com/denoland/std/issues/6736
+// Directories should not be filtered out by the exts option because they have
+// no file extension. Only files are subject to the exts filter.
 Deno.test("walk() accepts ext option as strings", async () =>
-  await assertWalkPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  await assertWalkPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));
 
 Deno.test("walk() accepts ext option as strings (excluding period prefix)", async () =>
-  await assertWalkPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  await assertWalkPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: ["rs", "ts"],
   }));
 
 Deno.test("walkSync() accepts ext option as strings", () =>
-  assertWalkSyncPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  assertWalkSyncPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
   }));
 
 Deno.test("walkSync() accepts ext option as strings (excluding period prefix)", () =>
-  assertWalkSyncPaths(testdataDir, "ext", ["y.rs", "x.ts"], {
+  assertWalkSyncPaths(testdataDir, "ext", [".", "y.rs", "x.ts"], {
     exts: [".rs", ".ts"],
+  }));
+
+// https://github.com/denoland/std/issues/6736
+// Subdirectories are included even when exts is set, and files within them
+// are still filtered by exts.
+Deno.test("walk() includes subdirs when using exts option", async () =>
+  await assertWalkPaths(testdataDir, "ext_with_subdir", [
+    ".",
+    "x.ts",
+    "subdir",
+  ], {
+    exts: [".ts"],
+  }));
+
+Deno.test("walkSync() includes subdirs when using exts option", () =>
+  assertWalkSyncPaths(testdataDir, "ext_with_subdir", [
+    ".",
+    "x.ts",
+    "subdir",
+  ], {
+    exts: [".ts"],
   }));
 
 Deno.test("walk() accepts ext option as regExps", async () =>
