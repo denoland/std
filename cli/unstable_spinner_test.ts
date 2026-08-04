@@ -623,6 +623,95 @@ Deno.test("Spinner.message can be updated", async () => {
   }
 });
 
+Deno.test(
+  "Spinner brackets each TTY frame with DECAWM off/on so the terminal truncates overflow (#6975)",
+  async () => {
+    try {
+      // The message is no longer truncated in user space; we emit \x1b[?7l
+      // before the frame and \x1b[?7h after, and the terminal silently drops
+      // anything past the right edge instead of wrapping.
+      const message = "x".repeat(50);
+      const expectedOutput = [
+        `\r\x1b[K\x1b[?7l⠋\x1b[0m ${message}\x1b[?7h`,
+        `\r\x1b[K\x1b[?7l⠙\x1b[0m ${message}\x1b[?7h`,
+        `\r\x1b[K\x1b[?7l⠹\x1b[0m ${message}\x1b[?7h`,
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(Deno.stdout, "isTerminal", () => true);
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ message });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  },
+);
+
+Deno.test(
+  "Spinner does not emit DECAWM toggles when output is not a TTY (#6975)",
+  async () => {
+    try {
+      // On a piped/redirected stream the literal escape bytes would just
+      // clutter the output, so isTerminal()=false → skip the toggles and
+      // write the message as-is.
+      const message = "x".repeat(50);
+      const expectedOutput = [
+        `\r\x1b[K⠋\x1b[0m ${message}`,
+        `\r\x1b[K⠙\x1b[0m ${message}`,
+        "\r\x1b[K",
+      ];
+
+      const actualOutput: string[] = [];
+
+      let resolvePromise: (value: void | PromiseLike<void>) => void;
+      const promise = new Promise<void>((resolve) => resolvePromise = resolve);
+
+      stub(Deno.stdout, "isTerminal", () => false);
+      stub(
+        Deno.stdout,
+        "writeSync",
+        (data: Uint8Array) => {
+          const output = decoder.decode(data);
+          actualOutput.push(output);
+          if (actualOutput.length === expectedOutput.length - 1) {
+            resolvePromise();
+          }
+          return data.length;
+        },
+      );
+
+      const spinner = new Spinner({ message });
+      spinner.start();
+      await promise;
+      spinner.stop();
+      assertEquals(actualOutput, expectedOutput);
+    } finally {
+      restore();
+    }
+  },
+);
+
 Deno.test("Spinner handles multiple start() calls", () => {
   const spinner = new Spinner();
 
