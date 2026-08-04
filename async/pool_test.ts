@@ -2,6 +2,7 @@
 import { delay } from "./delay.ts";
 import { pooledMap } from "./pool.ts";
 import {
+  assert,
   assertEquals,
   assertGreaterOrEqual,
   assertLess,
@@ -77,6 +78,40 @@ Deno.test("pooledMap() returns ordered items", async () => {
   const returned = await Array.fromAsync(results);
   assertEquals(returned, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
 });
+
+Deno.test(
+  "pooledMap() surfaces errors thrown by the input iterable (#6716)",
+  async () => {
+    const sentinel = new Error("Iterator failed on first step!");
+    // deno-lint-ignore require-yield
+    async function* errorThrowing(): AsyncGenerator<number> {
+      throw sentinel;
+    }
+    const results = pooledMap(
+      2,
+      errorThrowing(),
+      (i: number) => Promise.resolve(i),
+    );
+    let caught: unknown;
+    try {
+      for await (const _ of results) {
+        // drain
+      }
+    } catch (e) {
+      caught = e;
+    }
+    assert(caught instanceof AggregateError);
+    const ag = caught as AggregateError;
+    assertEquals(
+      ag.message,
+      "Cannot complete the mapping as an error was thrown from an item",
+    );
+    // The previous behavior left `errors` empty; the iterable's error was
+    // swallowed. Now it must be present so callers can introspect it.
+    assertEquals(ag.errors.length, 1);
+    assertEquals(ag.errors[0], sentinel);
+  },
+);
 
 Deno.test("pooledMap() checks browser compat", async () => {
   // Simulates the environment where Symbol.asyncIterator is not available
