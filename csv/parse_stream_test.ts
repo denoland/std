@@ -580,3 +580,29 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: "CsvParseStream strips leading byte-order mark from first field",
+  permissions: "none",
+  fn: async () => {
+    const BOM = "﻿";
+    const source = ReadableStream.from([`${BOM}a,b\n`, "1,2\n"]);
+    const records = await Array.fromAsync(
+      source.pipeThrough(new CsvParseStream()),
+    );
+    assertEquals(records, [["a", "b"], ["1", "2"]]);
+  },
+});
+
+Deno.test({
+  name: "CsvParseStream strips leading byte-order mark when using skipFirstRow",
+  permissions: "none",
+  fn: async () => {
+    const BOM = "﻿";
+    const source = ReadableStream.from([`${BOM}name,age\n`, "Alice,34\n"]);
+    const records = await Array.fromAsync(
+      source.pipeThrough(new CsvParseStream({ skipFirstRow: true })),
+    );
+    assertEquals(records, [{ name: "Alice", age: "34" }]);
+  },
+});
