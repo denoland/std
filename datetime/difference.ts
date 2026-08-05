@@ -6,6 +6,9 @@ import { DAY, HOUR, MINUTE, SECOND, WEEK } from "./constants.ts";
 /**
  * Duration units for {@linkcode DifferenceFormat} and
  * {@linkcode DifferenceOptions}.
+ *
+ * @deprecated Use {@linkcode Temporal.Duration} unit strings instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
  */
 export type Unit =
   | "milliseconds"
@@ -18,10 +21,20 @@ export type Unit =
   | "quarters"
   | "years";
 
-/** Return type for {@linkcode difference}. */
+/**
+ * Return type for {@linkcode difference}.
+ *
+ * @deprecated Use {@linkcode Temporal.Duration} instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
+ */
 export type DifferenceFormat = Partial<Record<Unit, number>>;
 
-/** Options for {@linkcode difference}. */
+/**
+ * Options for {@linkcode difference}.
+ *
+ * @deprecated Use the options of {@linkcode Temporal.PlainDate.prototype.until}
+ * instead. See https://github.com/denoland/std/issues/7262 for details.
+ */
 export type DifferenceOptions = {
   /**
    * Units to calculate difference in. Defaults to all units.
@@ -87,6 +100,27 @@ function calculateMonthsDifference(from: Date, to: Date): number {
  *   years: 1
  * });
  * ```
+ *
+ * @example Migration to Temporal
+ * ```ts
+ * import { difference } from "@std/datetime/difference";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // Before
+ * const date0 = new Date("2018-05-14");
+ * const date1 = new Date("2020-05-13");
+ * assertEquals(difference(date0, date1).years, 1);
+ *
+ * // After
+ * const start = Temporal.PlainDate.from("2018-05-14");
+ * const end = Temporal.PlainDate.from("2020-05-13");
+ * assertEquals(start.until(end, { largestUnit: "years" }).years, 1);
+ * assertEquals(start.until(end, { largestUnit: "days" }).days, 730);
+ * ```
+ *
+ * @deprecated Use {@linkcode Temporal.PlainDate.prototype.until} or
+ * {@linkcode Temporal.PlainDate.prototype.since} instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
  */
 export function difference(
   from: Date,

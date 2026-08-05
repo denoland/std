@@ -43,6 +43,27 @@ import { DateTimeFormatter } from "./_date_time_formatter.ts";
  *
  * assertEquals(parse("01-03-2019 16:33:23.123", "MM-dd-yyyy HH:mm:ss.SSS"), new Date(2019, 0, 3, 16, 33, 23, 123));
  * ```
+ *
+ * @example Migration to Temporal
+ *
+ * Temporal parses ISO 8601 strings only. For other formats, parse the parts
+ * manually or use a userland library.
+ *
+ * ```ts
+ * import { parse } from "@std/datetime/parse";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // Before
+ * assertEquals(parse("01-03-2019 16:30", "MM-dd-yyyy HH:mm"), new Date(2019, 0, 3, 16, 30));
+ *
+ * // After (ISO 8601 input)
+ * const dateTime = Temporal.PlainDateTime.from("2019-01-03T16:30");
+ * assertEquals(dateTime.toString(), "2019-01-03T16:30:00");
+ * ```
+ *
+ * @deprecated Use {@linkcode Temporal.PlainDateTime.from} or
+ * {@linkcode Temporal.Instant.from} for ISO 8601 strings instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
  */
 export function parse(dateString: string, formatString: string): Date {
   const formatter = new DateTimeFormatter(formatString);
