@@ -34,11 +34,7 @@ export function countBy<T, K extends PropertyKey>(
   const result = {} as Record<K, number>;
   for (const element of array) {
     const key = keyFn(element);
-    if (Object.prototype.hasOwnProperty.call(result, key)) {
-      result[key]!++;
-    } else {
-      result[key] = 1;
-    }
+    result[key] = (result[key] ?? 0) + 1;
   }
   return result;
 }
