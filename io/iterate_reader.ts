@@ -36,6 +36,9 @@ export type { Reader, ReaderSync };
  * @param options The options
  * @param options.bufSize The size of the buffer to use
  * @returns The async iterator of Uint8Array chunks
+ *
+ * @deprecated Use {@linkcode ReadableStream} async iteration instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export async function* iterateReader(
   reader: Reader,
@@ -94,6 +97,10 @@ export async function* iterateReader(
  * @param reader The reader to read from
  * @param options The options
  * @returns The iterator of Uint8Array chunks
+ *
+ * @deprecated Web streams have no synchronous equivalent. See
+ * https://github.com/denoland/std/issues/6284 for the replacement discussion
+ * and https://github.com/denoland/std/issues/7258 for details.
  */
 export function* iterateReaderSync(
   reader: ReaderSync,
