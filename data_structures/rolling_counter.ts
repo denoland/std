@@ -6,8 +6,6 @@
  *
  * Obtain one via {@linkcode RollingCounter.prototype.toJSON | `toJSON`} and
  * restore it with {@linkcode RollingCounter.from}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface RollingCounterSnapshot {
   /** Segment counts ordered from oldest to newest. */
@@ -18,8 +16,6 @@ export interface RollingCounterSnapshot {
  * Read-only view of a {@linkcode RollingCounter}. Strips all mutation methods,
  * following the `ReadonlyArray` / `ReadonlyMap` / `ReadonlySet` pattern.
  * A `RollingCounter` is directly assignable to `ReadonlyRollingCounter`.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type ReadonlyRollingCounter = Pick<
   RollingCounter,
@@ -58,11 +54,9 @@ export type ReadonlyRollingCounter = Pick<
  * | RollingCounter()  | Linear in the number of segments       |
  * | RollingCounter.from(source) | Linear in the number of segments |
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+ * import { RollingCounter } from "@std/data-structures/rolling-counter";
  * import { assertEquals } from "@std/assert";
  *
  * // 3 segments, all starting at zero
@@ -94,8 +88,6 @@ export class RollingCounter
   /**
    * Creates a counter with the given number of segments, all starting at zero.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @param segmentCount The number of segments. Must be a positive integer.
    */
   constructor(segmentCount: number) {
@@ -124,15 +116,13 @@ export class RollingCounter
    * current segment at the last position. Mutating the clone does not affect
    * the source.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @param source A `RollingCounter` to clone, or a snapshot previously
    * obtained from `toJSON`.
    * @returns A new `RollingCounter` with the given state.
    *
    * @example Round-trip serialization
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const original = new RollingCounter(3);
@@ -150,7 +140,7 @@ export class RollingCounter
    *
    * @example Cloning from a counter
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const original = new RollingCounter(3);
@@ -210,14 +200,12 @@ export class RollingCounter
   /**
    * Adds `n` to the current segment.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @param n The amount to add. Defaults to `1`. Must be a non-negative integer.
    * @returns The new total across all segments.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -240,15 +228,13 @@ export class RollingCounter
    * Advances the window by `steps`, dropping the oldest segments. If `steps`
    * is at least {@linkcode segmentCount}, all segments are cleared.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @param steps How many steps to advance. Defaults to `1`. Must be a
    * non-negative integer.
    * @returns The sum of the counts that were removed.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(2);
@@ -260,7 +246,7 @@ export class RollingCounter
    *
    * @example Bulk rotation
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -300,13 +286,11 @@ export class RollingCounter
   /**
    * The count in the current (newest) segment.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @returns The count in the current segment.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -327,13 +311,11 @@ export class RollingCounter
   /**
    * The sum of all segment counts.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @returns The sum of all segment counts.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -350,13 +332,11 @@ export class RollingCounter
   /**
    * The number of segments in the window.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @returns The number of segments.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(5);
@@ -374,15 +354,13 @@ export class RollingCounter
    * segment, same as {@linkcode RollingCounter.prototype.current | current}).
    * Returns `undefined` for out-of-range indices.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @param index The zero-based index in oldest-to-newest order. Negative
    * values count from the newest end.
    * @returns The count at the index, or `undefined` if out of range.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -407,11 +385,9 @@ export class RollingCounter
   /**
    * Resets all segments to zero, as if the counter were just created.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -431,13 +407,11 @@ export class RollingCounter
    * (matching iteration order). The returned array is owned by the caller;
    * mutating it does not affect the counter.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @returns A new array of segment counts in oldest-to-newest order.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -468,13 +442,11 @@ export class RollingCounter
    * The snapshot is compatible with `JSON.stringify` and can be restored
    * with {@linkcode RollingCounter.from}.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @returns A plain-object snapshot of the counter.
    *
    * @example JSON round-trip
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -492,13 +464,11 @@ export class RollingCounter
   /**
    * Yields segment counts from oldest to newest.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @returns An iterator over segment counts.
    *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);
@@ -518,11 +488,9 @@ export class RollingCounter
   /**
    * A string tag for the class, used by `Object.prototype.toString()`.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+   * import { RollingCounter } from "@std/data-structures/rolling-counter";
    * import { assertEquals } from "@std/assert";
    *
    * const counter = new RollingCounter(3);

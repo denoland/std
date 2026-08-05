@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { RollingCounter } from "@std/data-structures/unstable-rolling-counter";
+import { RollingCounter } from "@std/data-structures/rolling-counter";
 
 /**
  * Circuit breaker states following the standard pattern.

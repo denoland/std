@@ -30,3 +30,4 @@ export * from "./binary_search_tree.ts";
 export * from "./comparators.ts";
 export * from "./deque.ts";
 export * from "./red_black_tree.ts";
+export * from "./rolling_counter.ts";
