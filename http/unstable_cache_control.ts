@@ -163,13 +163,13 @@ function unquoteArgument(value: string): string {
   return t;
 }
 
-function parseNonNegativeInt(value: string, directive: string): number {
+/** Parses a delta-seconds argument. Returns `undefined` when the argument is
+ * missing or malformed so the caller can ignore the directive (RFC 9111
+ * §4.2.1). */
+function parseNonNegativeInt(value: string | undefined): number | undefined {
+  if (value === undefined) return undefined;
   const trimmed = unquoteArgument(value);
-  if (!DIGITS_REGEXP.test(trimmed)) {
-    throw new SyntaxError(
-      `Cache-Control: invalid value for ${directive}: "${value}"`,
-    );
-  }
+  if (!DIGITS_REGEXP.test(trimmed)) return undefined;
   const n = Number(trimmed);
   return n > MAX_DELTA_SECONDS ? MAX_DELTA_SECONDS : n;
 }
@@ -217,8 +217,16 @@ function parseFieldNames(value: string): string[] {
 /**
  * Parses a `Cache-Control` header value into a typed object. Returns an empty
  * object for `null` or empty string. Directive names are case-insensitive.
- * Unknown directives are ignored per RFC 9111. Throws on malformed values for
- * known directives (e.g. `max-age=abc`).
+ *
+ * Parsing is lenient and never throws: unknown directives are ignored per
+ * RFC 9111 §5.2.3, and known directives with a malformed or missing value
+ * (e.g. `max-age=abc` or bare `max-age`) are ignored as well. The one
+ * exception is bare `max-stale`, which is valid per RFC 9111 §5.2.1.2 and
+ * parses as `true`. When a directive appears more than once, only the first
+ * occurrence counts, even if it is malformed (`max-age=abc, max-age=100`
+ * yields no `maxAge`). Callers implementing a cache may want to treat a
+ * response whose freshness directives do not survive parsing as stale, as
+ * encouraged by RFC 9111 §4.2.1.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
@@ -234,9 +242,6 @@ function parseFieldNames(value: string): string[] {
  * assertEquals(cc.maxAge, 3600);
  * assertEquals(cc.noStore, true);
  * ```
- *
- * @throws {SyntaxError} If a known directive has a malformed value (e.g.
- * `max-age=abc`) or a required value is missing (e.g. bare `max-age`).
  */
 export function parseCacheControl(value: string | null): CacheControl {
   const result: CacheControl = {};
@@ -261,27 +266,25 @@ export function parseCacheControl(value: string | null): CacheControl {
     seen.add(name);
 
     switch (name) {
-      case "max-age":
+      case "max-age": {
+        const n = parseNonNegativeInt(rawValue);
+        if (n !== undefined) result.maxAge = n;
+        break;
+      }
+      case "max-stale": {
         if (rawValue === undefined) {
-          throw new SyntaxError(
-            `Cache-Control: ${name} requires an integer value`,
-          );
+          result.maxStale = true;
+          break;
         }
-        result.maxAge = parseNonNegativeInt(rawValue, name);
+        const n = parseNonNegativeInt(rawValue);
+        if (n !== undefined) result.maxStale = n;
         break;
-      case "max-stale":
-        result.maxStale = rawValue === undefined
-          ? true
-          : parseNonNegativeInt(rawValue, name);
+      }
+      case "min-fresh": {
+        const n = parseNonNegativeInt(rawValue);
+        if (n !== undefined) result.minFresh = n;
         break;
-      case "min-fresh":
-        if (rawValue === undefined) {
-          throw new SyntaxError(
-            `Cache-Control: ${name} requires an integer value`,
-          );
-        }
-        result.minFresh = parseNonNegativeInt(rawValue, name);
-        break;
+      }
       case "no-cache": {
         const noCacheFields = rawValue === undefined
           ? undefined
@@ -313,14 +316,11 @@ export function parseCacheControl(value: string | null): CacheControl {
       case "public":
         result.public = true;
         break;
-      case "s-maxage":
-        if (rawValue === undefined) {
-          throw new SyntaxError(
-            `Cache-Control: ${name} requires an integer value`,
-          );
-        }
-        result.sMaxage = parseNonNegativeInt(rawValue, name);
+      case "s-maxage": {
+        const n = parseNonNegativeInt(rawValue);
+        if (n !== undefined) result.sMaxage = n;
         break;
+      }
       case "private": {
         const privateFields = rawValue === undefined
           ? undefined
@@ -334,22 +334,16 @@ export function parseCacheControl(value: string | null): CacheControl {
       case "immutable":
         result.immutable = true;
         break;
-      case "stale-while-revalidate":
-        if (rawValue === undefined) {
-          throw new SyntaxError(
-            `Cache-Control: ${name} requires an integer value`,
-          );
-        }
-        result.staleWhileRevalidate = parseNonNegativeInt(rawValue, name);
+      case "stale-while-revalidate": {
+        const n = parseNonNegativeInt(rawValue);
+        if (n !== undefined) result.staleWhileRevalidate = n;
         break;
-      case "stale-if-error":
-        if (rawValue === undefined) {
-          throw new SyntaxError(
-            `Cache-Control: ${name} requires an integer value`,
-          );
-        }
-        result.staleIfError = parseNonNegativeInt(rawValue, name);
+      }
+      case "stale-if-error": {
+        const n = parseNonNegativeInt(rawValue);
+        if (n !== undefined) result.staleIfError = n;
         break;
+      }
       default:
         // Unknown directives are ignored per RFC 9111 §5.2.3.
         continue;
@@ -396,6 +390,10 @@ function append(
 /**
  * Serializes a Cache-Control object to a header value string. Output is
  * lowercase and comma-separated. Empty object produces an empty string.
+ *
+ * An empty array for `noCache` or `private` is serialized as the bare
+ * directive (e.g. `no-cache`), which {@linkcode parseCacheControl} parses
+ * back as `true` rather than `[]`.
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
