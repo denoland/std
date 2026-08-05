@@ -132,24 +132,31 @@ class Dumper {
     }
     return onlyPrimitive ? "ONLY_PRIMITIVE" : "ONLY_OBJECT_EXCLUDING_ARRAY";
   }
-  #printAsInlineValue(value: unknown): string | number {
+  #printPrimitive(value: unknown): string {
     if (value instanceof Date) {
-      return `"${this.#printDate(value)}"`;
+      return this.#printDate(value);
     } else if (typeof value === "string" || value instanceof RegExp) {
       return JSON.stringify(value.toString());
     } else if (typeof value === "number") {
-      return value;
+      if (Number.isNaN(value)) return "nan";
+      if (value === Infinity) return "inf";
+      if (value === -Infinity) return "-inf";
+      return String(value);
     } else if (typeof value === "boolean") {
       return value.toString();
-    } else if (
+    }
+    throw new Error("Should never reach");
+  }
+  #printAsInlineValue(value: unknown): string {
+    if (
       value instanceof Array
     ) {
       const str = value.map((x) => this.#printAsInlineValue(x)).join(",");
       return `[${str}]`;
-    } else if (typeof value === "object") {
-      if (!value) {
-        throw new Error("Should never reach");
-      }
+    } else if (
+      value && typeof value === "object" &&
+      !(value instanceof Date) && !(value instanceof RegExp)
+    ) {
       const str = Object.keys(value).map((key) => {
         return `${joinKeys([key])} = ${
           // deno-lint-ignore no-explicit-any
@@ -157,8 +164,7 @@ class Dumper {
       }).join(",");
       return `{${str}}`;
     }
-
-    throw new Error("Should never reach");
+    return this.#printPrimitive(value);
   }
   #isSimplySerializable(value: unknown): boolean {
     return (
@@ -185,7 +191,8 @@ class Dumper {
     return `${title} = `;
   }
   #arrayDeclaration(keys: string[], value: unknown[]): string {
-    return `${this.#declaration(keys)}${JSON.stringify(value)}`;
+    const items = value.map((v) => this.#printPrimitive(v)).join(",");
+    return `${this.#declaration(keys)}[${items}]`;
   }
   #strDeclaration(keys: string[], value: string): string {
     return `${this.#declaration(keys)}${JSON.stringify(value)}`;
