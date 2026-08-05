@@ -40,6 +40,12 @@
  * > {@link https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept-Charset | clients omit and servers should ignore}
  * > therefore is not provided.
  *
+ * ## Problem Details
+ *
+ * Helpers for creating and parsing Problem Details for HTTP APIs
+ * (`application/problem+json`) as defined by
+ * {@link https://www.rfc-editor.org/rfc/rfc9457.html | RFC 9457}.
+ *
  * ## User agent handling
  *
  * The {@linkcode UserAgent} class provides user agent string parsing, allowing
@@ -105,3 +111,4 @@ export * from "./server_sent_event_stream.ts";
 export * from "./server_sent_event_parse_stream.ts";
 export * from "./user_agent.ts";
 export * from "./file_server.ts";
+export * from "./problem_details.ts";

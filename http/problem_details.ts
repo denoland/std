@@ -13,7 +13,7 @@
  *
  * @example Basic 404 response
  * ```ts
- * import { createProblemDetailsResponse } from "@std/http/unstable-problem-details";
+ * import { createProblemDetailsResponse } from "@std/http/problem-details";
  *
  * const response = createProblemDetailsResponse({
  *   status: 404,
@@ -26,7 +26,7 @@
  * import {
  *   isProblemDetailsResponse,
  *   parseProblemDetailsResponse,
- * } from "@std/http/unstable-problem-details";
+ * } from "@std/http/problem-details";
  *
  * const response = await fetch("https://api.example.com/resource");
  * if (isProblemDetailsResponse(response)) {
@@ -37,8 +37,6 @@
  *
  * Only the JSON serialization (`application/problem+json`) is implemented.
  * The XML serialization defined by the RFC is not supported.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @see {@link https://www.rfc-editor.org/rfc/rfc9457.html | RFC 9457}
  *
@@ -52,8 +50,6 @@ const PROBLEM_JSON_MEDIA_TYPE = "application/problem+json";
 /**
  * Keys of the five standard Problem Details members defined by RFC 9457.
  * Used to prevent extension members from shadowing standard fields.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type StandardProblemDetailsMember =
   | "type"
@@ -73,8 +69,6 @@ export type StandardProblemDetailsMember =
  * standard members, so if `T` redeclares any of them with an incompatible
  * type the resulting field collapses to `never` and the value becomes
  * unconstructible.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type ProblemDetailsExtensions = Omit<
   Record<string, unknown>,
@@ -92,8 +86,6 @@ export type ProblemDetailsExtensions = Omit<
  * If `T` declares a property whose name matches one of the five standard
  * members with an incompatible type, the intersection collapses that field
  * to `never`.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export type ProblemDetails<
   T extends ProblemDetailsExtensions = Record<string, never>,
@@ -115,8 +107,6 @@ export type ProblemDetails<
 
 /**
  * Options for {@linkcode createProblemDetailsResponse}.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface ProblemDetailsResponseOptions {
   /** Additional headers to include in the response. */
@@ -147,8 +137,6 @@ export interface ProblemDetailsResponseOptions {
  *   HTTP status text is intentionally not synthesized — the JSON `title`
  *   field already carries that information.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of extension members on the problem details object.
  *
  * @param problemDetails The problem details to serialize into the response body.
@@ -162,7 +150,7 @@ export interface ProblemDetailsResponseOptions {
  *
  * @example Basic 404 response
  * ```ts
- * import { createProblemDetailsResponse } from "@std/http/unstable-problem-details";
+ * import { createProblemDetailsResponse } from "@std/http/problem-details";
  * import { assertEquals } from "@std/assert";
  *
  * const response = createProblemDetailsResponse({
@@ -183,7 +171,7 @@ export interface ProblemDetailsResponseOptions {
  *
  * @example Custom problem type with extensions
  * ```ts
- * import { createProblemDetailsResponse } from "@std/http/unstable-problem-details";
+ * import { createProblemDetailsResponse } from "@std/http/problem-details";
  * import { assertEquals } from "@std/assert";
  *
  * const response = createProblemDetailsResponse({
@@ -297,8 +285,6 @@ function normalizeParsedProblemDetails(
  * Extension member types provided via `T` are asserted at the type level only;
  * values are not validated at runtime.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of extension members expected in the parsed result.
  *
  * @param input A JSON value to parse as problem details.
@@ -311,7 +297,7 @@ function normalizeParsedProblemDetails(
  *
  * @example Parse from a plain object
  * ```ts
- * import { parseProblemDetails } from "@std/http/unstable-problem-details";
+ * import { parseProblemDetails } from "@std/http/problem-details";
  * import { assertEquals } from "@std/assert";
  *
  * const problem = parseProblemDetails({
@@ -350,8 +336,6 @@ export function parseProblemDetails<
  * Note: this consumes the response body. The `Response` cannot be re-read
  * after this call.
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @typeParam T The type of extension members expected in the parsed result.
  *
  * @param input The `Response` whose JSON body will be parsed.
@@ -364,7 +348,7 @@ export function parseProblemDetails<
  *
  * @example Parse from a Response
  * ```ts
- * import { parseProblemDetailsResponse } from "@std/http/unstable-problem-details";
+ * import { parseProblemDetailsResponse } from "@std/http/problem-details";
  * import { assertEquals } from "@std/assert";
  *
  * const response = new Response(
@@ -384,14 +368,12 @@ export async function parseProblemDetailsResponse<
 }
 
 /**
- * Type guard that checks whether a `Response` has an
- * `application/problem+json` content type.
+ * Checks whether a `Response` has an `application/problem+json` content
+ * type.
  *
  * The media type is compared without parameters (e.g. `charset=utf-8` is
  * ignored). Only `application/problem+json` is recognized; any other media
  * type returns `false`.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @param response The `Response` to check.
  *
@@ -403,7 +385,7 @@ export async function parseProblemDetailsResponse<
  * import {
  *   isProblemDetailsResponse,
  *   parseProblemDetailsResponse,
- * } from "@std/http/unstable-problem-details";
+ * } from "@std/http/problem-details";
  *
  * const response = await fetch("https://api.example.com/resource");
  * if (isProblemDetailsResponse(response)) {
