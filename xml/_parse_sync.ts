@@ -18,10 +18,12 @@ import type {
   XmlCDataNode,
   XmlCommentNode,
   XmlDeclaration,
+  XmlDoctype,
   XmlDocument,
   XmlElement,
   XmlName,
   XmlNode,
+  XmlProcessingInstructionNode,
   XmlTextNode,
 } from "./types.ts";
 import { XmlSyntaxError } from "./types.ts";
@@ -88,6 +90,8 @@ type MutableElement = {
 export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const ignoreWhitespace = options?.ignoreWhitespace ?? false;
   const ignoreComments = options?.ignoreComments ?? false;
+  const ignoreProcessingInstructions = options?.ignoreProcessingInstructions ??
+    false;
   const trackPosition = options?.trackPosition ?? true;
   const disallowDoctype = options?.disallowDoctype ?? true;
   const maxDepth = options?.maxDepth ?? Infinity;
@@ -115,7 +119,10 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
   const stack: MutableElement[] = [];
   let root: MutableElement | undefined;
   let declaration: XmlDeclaration | undefined;
+  let doctype: XmlDoctype | undefined;
   let rootClosed = false; // Track whether root element has been closed
+  const prolog: Array<XmlProcessingInstructionNode | XmlCommentNode> = [];
+  const epilog: Array<XmlProcessingInstructionNode | XmlCommentNode> = [];
 
   // Namespace tracking (lazy initialization for performance)
   // Only created when first namespace prefix is encountered
@@ -806,6 +813,20 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
     }
   }
 
+  /**
+   * Add a Misc node (XML 1.0 §2.8): inside an element it becomes a child;
+   * outside the root it goes to the prolog or epilog.
+   */
+  function addMisc(node: XmlProcessingInstructionNode | XmlCommentNode): void {
+    if (stack.length > 0) {
+      stack[stack.length - 1]!.children.push(node);
+    } else if (root) {
+      epilog.push(node);
+    } else {
+      prolog.push(node);
+    }
+  }
+
   // ===========================================================================
   // MAIN PARSING LOOP
   // ===========================================================================
@@ -951,7 +972,7 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         }
 
         if (!ignoreComments) {
-          addNode({ type: "comment", text: content });
+          addMisc({ type: "comment", text: content });
         }
         pos = endIdx + 3;
         continue;
@@ -1001,6 +1022,17 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (disallowDoctype) {
           error("DOCTYPE declarations are not allowed");
         }
+        const doctypeStart = pos - 2; // Offset of '<' in '<!DOCTYPE'
+        if (root) {
+          pos = doctypeStart;
+          error(
+            "Cannot have DOCTYPE declaration after the root element (XML 1.0 §2.8)",
+          );
+        }
+        if (doctype) {
+          pos = doctypeStart;
+          error("Cannot have multiple DOCTYPE declarations (XML 1.0 §2.8)");
+        }
         pos += 7; // Skip 'DOCTYPE'
 
         // Skip whitespace before name (required)
@@ -1020,10 +1052,13 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         if (pos === nameStart) {
           error("Missing name in DOCTYPE declaration");
         }
+        const doctypeName = input.slice(nameStart, pos);
 
         // Skip whitespace and handle PUBLIC/SYSTEM or internal subset
         let expectPubidLiteral = false;
         let sawExternalIdKeyword = false; // Track if we've seen PUBLIC or SYSTEM
+        let doctypePublicId: string | undefined;
+        let doctypeSystemId: string | undefined;
         while (pos < len && input.charCodeAt(pos) !== CC_GT) {
           const dc = input.charCodeAt(pos);
 
@@ -1050,13 +1085,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
             if (pos >= len) {
               error("Unterminated quoted string in DOCTYPE");
             }
+            const literal = input.slice(valueStart, pos);
             if (expectPubidLiteral) {
-              const pubidError = validatePubidLiteral(
-                input.slice(valueStart, pos),
-                quoteChar,
-              );
+              const pubidError = validatePubidLiteral(literal, quoteChar);
               if (pubidError) error(pubidError);
               expectPubidLiteral = false;
+              doctypePublicId = literal;
+            } else if (doctypeSystemId === undefined) {
+              doctypeSystemId = literal;
             }
             pos++;
           } else if (
@@ -1095,6 +1131,14 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
           }
         }
         if (pos < len) pos++;
+
+        doctype = {
+          type: "doctype",
+          name: doctypeName,
+          ...(doctypePublicId !== undefined && { publicId: doctypePublicId }),
+          ...(doctypeSystemId !== undefined && { systemId: doctypeSystemId }),
+          ...computePosition(doctypeStart),
+        };
         continue;
       }
 
@@ -1194,8 +1238,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
         error(
           `Processing instruction target '${target}' is reserved; 'xml' must be lowercase (XML 1.0 §2.6)`,
         );
+      } else if (!ignoreProcessingInstructions) {
+        addMisc({ type: "processing_instruction", target, content });
       }
-      // Other PIs are ignored for tree building
       continue;
     }
 
@@ -1466,6 +1511,9 @@ export function parseSync(xml: string, options?: ParseOptions): XmlDocument {
 
   return {
     ...(declaration !== undefined && { declaration }),
+    ...(doctype !== undefined && { doctype }),
+    ...(prolog.length > 0 && { prolog }),
     root: root as XmlElement,
+    ...(epilog.length > 0 && { epilog }),
   };
 }
