@@ -4,9 +4,12 @@
 /**
  * Calculates the greatest common divisor of two numbers.
  *
- * @param a The first number
- * @param b The second number
+ * Both inputs must be integers; otherwise a `RangeError` is thrown.
+ *
+ * @param a The first integer
+ * @param b The second integer
  * @returns The greatest common divisor
+ * @throws {RangeError} If either input is not an integer
  *
  * @example Usage
  * ```ts
@@ -18,6 +21,11 @@
  * ```
  */
 export function gcd(a: number, b: number): number {
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    throw new RangeError(
+      `\`a\` and \`b\` must be integers: received ${a} and ${b}`,
+    );
+  }
   a = Math.abs(a);
   b = Math.abs(b);
   while (b !== 0) {

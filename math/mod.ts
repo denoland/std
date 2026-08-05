@@ -2,7 +2,16 @@
 // This module is browser compatible.
 
 /**
- * Math functions such as modulo and clamp.
+ * Utility functions for common mathematical and statistical operations.
+ *
+ * Functions that reduce an array to a single statistic require enough elements
+ * for that statistic to be well-defined: `mean`, `median`, and `mode` throw on
+ * an empty array, and `variance` and `stdDev` throw unless the array has at
+ * least two elements (or at least one with `{ population: true }`). `sum` is
+ * the exception and returns the additive identity `0` for an empty array.
+ *
+ * `gcd` and `lcm` throw on non-integer input. In the remaining functions,
+ * non-finite input propagates, so results may be `NaN` or `Infinity`.
  *
  * ```ts
  * import { clamp, modulo } from "@std/math";

@@ -4,10 +4,14 @@
 /**
  * Calculates the mode of an array of numbers.
  *
- * If there are multiple modes (multimodal), all of them are returned.
+ * If there are multiple modes (multimodal), all of them are returned in order
+ * of first appearance in the input. As with `Map` keys, `0` and `-0` are
+ * treated as the same value, and the value reported is whichever appeared
+ * first.
  *
  * @param numbers The numbers to calculate the mode of
  * @returns An array of the most frequent value(s)
+ * @throws {RangeError} If `numbers` is empty
  *
  * @example Usage
  * ```ts

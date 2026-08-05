@@ -25,3 +25,11 @@ Deno.test("mode() throws on empty array", () => {
     "`numbers` must contain at least one element",
   );
 });
+
+Deno.test("mode() returns modes in order of first appearance", () => {
+  assertEquals(mode([2, 2, 1, 1, 3]), [2, 1]);
+});
+
+Deno.test("mode() treats 0 and -0 as the same value", () => {
+  assertEquals(mode([0, -0, 1]), [0]);
+});

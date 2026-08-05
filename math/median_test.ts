@@ -25,3 +25,8 @@ Deno.test("median() throws on empty array", () => {
     "`numbers` must contain at least one element",
   );
 });
+
+Deno.test("median() returns NaN for NaN input", () => {
+  assertEquals(median([1, NaN, 3]), NaN);
+  assertEquals(median([NaN, 1, 2, 3]), NaN);
+});

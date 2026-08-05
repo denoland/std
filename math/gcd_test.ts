@@ -1,5 +1,5 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { gcd } from "./gcd.ts";
 
 Deno.test("gcd() handles basic cases", () => {
@@ -17,4 +17,20 @@ Deno.test("gcd() handles negative numbers", () => {
 
 Deno.test("gcd() handles same numbers", () => {
   assertEquals(gcd(7, 7), 7);
+});
+
+Deno.test("gcd() throws on non-integer input", () => {
+  assertThrows(() => gcd(NaN, 5), RangeError, "`a` and `b` must be integers");
+  assertThrows(() => gcd(5, NaN), RangeError, "`a` and `b` must be integers");
+  assertThrows(
+    () => gcd(Infinity, 5),
+    RangeError,
+    "`a` and `b` must be integers",
+  );
+  assertThrows(
+    () => gcd(5, -Infinity),
+    RangeError,
+    "`a` and `b` must be integers",
+  );
+  assertThrows(() => gcd(1.5, 5), RangeError, "`a` and `b` must be integers");
 });

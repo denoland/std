@@ -15,3 +15,12 @@ Deno.test("sum() handles empty array", () => {
 Deno.test("sum() handles decimals", () => {
   assertEquals(sum([1.5, 2.5, 3]), 7);
 });
+
+Deno.test("sum() is accurate for mixed-magnitude inputs", () => {
+  assertEquals(sum([1e16, 1, -1e16]), 1);
+  assertEquals(sum([1e16, -1e16, 1]), 1);
+});
+
+Deno.test("sum() does not drift on long arrays of small values", () => {
+  assertEquals(sum(Array.from({ length: 1000 }, () => 0.1)), 100);
+});

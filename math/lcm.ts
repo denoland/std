@@ -6,9 +6,14 @@ import { gcd } from "./gcd.ts";
 /**
  * Calculates the least common multiple of two numbers.
  *
- * @param a The first number
- * @param b The second number
+ * Both inputs must be integers; otherwise a `RangeError` is thrown. The result
+ * is exact whenever the true least common multiple is a safe integer, since the
+ * input is divided by the greatest common divisor before multiplying.
+ *
+ * @param a The first integer
+ * @param b The second integer
  * @returns The least common multiple
+ * @throws {RangeError} If either input is not an integer
  *
  * @example Usage
  * ```ts
@@ -20,6 +25,11 @@ import { gcd } from "./gcd.ts";
  * ```
  */
 export function lcm(a: number, b: number): number {
+  if (!Number.isInteger(a) || !Number.isInteger(b)) {
+    throw new RangeError(
+      `\`a\` and \`b\` must be integers: received ${a} and ${b}`,
+    );
+  }
   if (a === 0 || b === 0) return 0;
-  return Math.abs(a * b) / gcd(a, b);
+  return Math.abs(a / gcd(a, b) * b);
 }

@@ -17,6 +17,17 @@
  */
 export function sum(numbers: readonly number[]): number {
   let total = 0;
-  for (const n of numbers) total += n;
-  return total;
+  // Neumaier's compensated summation: keep a running correction for the low
+  // order bits lost by rounding, so mixed-magnitude inputs do not drift.
+  let correction = 0;
+  for (const n of numbers) {
+    const t = total + n;
+    if (Math.abs(total) >= Math.abs(n)) {
+      correction += (total - t) + n;
+    } else {
+      correction += (n - t) + total;
+    }
+    total = t;
+  }
+  return total + correction;
 }

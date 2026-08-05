@@ -20,6 +20,9 @@ export function median(numbers: readonly number[]): number {
   if (numbers.length === 0) {
     throw new RangeError("`numbers` must contain at least one element");
   }
+  // Sorting with a NaN-returning comparator is implementation-defined, so
+  // propagate NaN deterministically instead.
+  if (numbers.some(Number.isNaN)) return NaN;
   const sorted = [...numbers].sort((a, b) => a - b);
   const mid = sorted.length >> 1;
   return sorted.length % 2 === 1
