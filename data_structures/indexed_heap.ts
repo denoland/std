@@ -12,7 +12,7 @@ import { ascend } from "./comparators.ts";
  * @typeParam K The type of the key.
  * @typeParam P The type of the priority. Defaults to `number`.
  */
-export interface HeapEntry<K, P = number> {
+export interface IndexedHeapEntry<K, P = number> {
   /** The key that identifies this entry in the heap. */
   readonly key: K;
   /** The priority of this entry (smaller = higher priority by default). */
@@ -23,8 +23,6 @@ export interface HeapEntry<K, P = number> {
  * Read-only view of an {@linkcode IndexedHeap}. Exposes query and
  * iteration methods, hiding all methods that modify the heap. Follows
  * the same pattern as `ReadonlyMap` and `ReadonlySet`.
- *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @typeParam K The type of the keys in the heap.
  * @typeParam P The type of the priority. Defaults to `number`.
@@ -48,10 +46,13 @@ export type ReadonlyIndexedHeap<K, P = number> = Pick<
  *
  * `Number.isNaN` returns `false` for any non-number, so this is a no-op
  * for non-numeric priorities (e.g., `bigint`, tuples, strings).
+ *
+ * The `operation` describes the calling operation so the error message
+ * names the action that was attempted.
  */
-function checkPriority(priority: unknown): void {
+function checkPriority(priority: unknown, operation: string): void {
   if (typeof priority === "number" && Number.isNaN(priority)) {
-    throw new RangeError("Cannot set priority: value is NaN");
+    throw new RangeError(`Cannot ${operation}: priority is NaN`);
   }
 }
 
@@ -79,9 +80,12 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  * key in logarithmic time.
  *
  * Priorities default to `number` and are sorted smallest-first via
- * {@linkcode ascend}. Pass a different comparator (e.g.,
- * {@linkcode descend} for max-heap order) or a different priority type
- * (e.g., `[number, number]` for stable tie-breaking) via the `compare`
+ * {@linkcode ascend}: a min-heap, matching the usual convention for keyed
+ * priority queues (Dijkstra, schedulers) where a smaller value means higher
+ * priority. Note this is the opposite of {@linkcode BinaryHeap}, whose
+ * default is {@linkcode descend} (max-heap). Pass a different comparator
+ * (e.g., {@linkcode descend} for max-heap order) or a different priority
+ * type (e.g., `[number, number]` for stable tie-breaking) via the `compare`
  * option.
  *
  * | Method              | Time complexity                       |
@@ -121,11 +125,9 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  * distinct object/tuple priority replaces the reference and runs a sift
  * (no observable reorder, but not a no-op).
  *
- * @experimental **UNSTABLE**: New API, yet to be vetted.
- *
  * @example Usage
  * ```ts
- * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+ * import { IndexedHeap } from "@std/data-structures/indexed-heap";
  * import { assertEquals } from "@std/assert";
  *
  * const heap = new IndexedHeap<string>();
@@ -145,7 +147,7 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  *
  * @example Max-heap via `descend`
  * ```ts
- * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+ * import { IndexedHeap } from "@std/data-structures/indexed-heap";
  * import { descend } from "@std/data-structures";
  * import { assertEquals } from "@std/assert";
  *
@@ -159,7 +161,7 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  *
  * @example Tuple priority for stable tie-breaking
  * ```ts
- * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+ * import { IndexedHeap } from "@std/data-structures/indexed-heap";
  * import { assertEquals } from "@std/assert";
  *
  * // Order primarily by score, then by insertion order for ties.
@@ -182,7 +184,8 @@ type IndexedHeapCompareArgs<P> = [P] extends [number | bigint | string]
  * primitives.
  * @typeParam P The type of the priority. Defaults to `number`.
  */
-export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
+export class IndexedHeap<K, P = number>
+  implements Iterable<IndexedHeapEntry<K, P>> {
   #data: { key: K; priority: P }[] = [];
   #index: Map<K, number> = new Map();
   #compare: (a: P, b: P) => number;
@@ -194,8 +197,6 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * Use {@linkcode IndexedHeap.from} for inputs that are array-like instead
    * of iterable, or to copy from another `IndexedHeap`.
-   *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
    *
    * @param entries An optional iterable of `[key, priority]` pairs. Each key
    * must be unique; duplicates throw a `TypeError`. Pass `null` or
@@ -209,7 +210,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example Empty heap
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -218,7 +219,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example With initial entries
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>([["a", 3], ["b", 1], ["c", 2]]);
@@ -227,7 +228,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example From a Map
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const tasks = new Map([["task-a", 3], ["task-b", 1]]);
@@ -237,7 +238,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example Max-heap via `descend`
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { descend } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
@@ -277,11 +278,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * A string tag for the class, used by `Object.prototype.toString()`.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -298,11 +297,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * Because the source already carries a valid comparator, `compare`
    * stays optional regardless of the priority type `P`.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Creating from another IndexedHeap (shallow copy)
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const original = new IndexedHeap<string>();
@@ -317,7 +314,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example Re-ordering an existing heap with a different comparator
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { descend } from "@std/data-structures";
    * import { assertEquals } from "@std/assert";
    *
@@ -354,11 +351,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * Use the {@linkcode IndexedHeap.from} overload that takes an existing
    * {@linkcode IndexedHeap} to copy from another heap instead.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Creating from an array of pairs
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = IndexedHeap.from([["a", 3], ["b", 1], ["c", 2]]);
@@ -368,7 +363,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example Creating from a Map (iterable of [key, value] pairs)
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const map = new Map([["task-a", 3], ["task-b", 1]]);
@@ -378,7 +373,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example Tuple priority requires an explicit comparator
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = IndexedHeap.from<string, [number, number]>(
@@ -469,7 +464,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    */
   #bulkLoad(entries: Iterable<readonly [K, P]>): void {
     for (const [key, priority] of entries) {
-      checkPriority(priority);
+      checkPriority(priority, "push into IndexedHeap");
       if (this.#index.has(key)) {
         throw new TypeError(
           "Cannot push into IndexedHeap: key already exists",
@@ -546,11 +541,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * exists — use {@linkcode IndexedHeap.prototype.set | set} for upsert
    * semantics instead.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -563,7 +556,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * @param priority The priority (smaller = higher priority by default).
    */
   push(key: K, priority: P): void {
-    checkPriority(priority);
+    checkPriority(priority, "push into IndexedHeap");
     if (this.#index.has(key)) {
       throw new TypeError(
         "Cannot push into IndexedHeap: key already exists",
@@ -579,11 +572,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * if the heap is empty. The returned entry is removed from the heap so
    * the caller owns it.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -597,7 +588,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns The front entry, or `undefined` if empty.
    */
-  pop(): HeapEntry<K, P> | undefined {
+  pop(): IndexedHeapEntry<K, P> | undefined {
     const size = this.#data.length;
     if (size === 0) return undefined;
 
@@ -622,11 +613,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * the `priority` field shares its reference with the heap — see the
    * class-level note on treating object priorities as immutable.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -639,7 +628,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns A wrapper around the front entry, or `undefined` if empty.
    */
-  peek(): HeapEntry<K, P> | undefined {
+  peek(): IndexedHeapEntry<K, P> | undefined {
     const entry = this.#data[0];
     if (entry === undefined) return undefined;
     return { key: entry.key, priority: entry.priority };
@@ -651,11 +640,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * {@linkcode IndexedHeap.prototype.peek | peek}, does not allocate a
    * wrapper object.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -678,11 +665,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * {@linkcode IndexedHeap.prototype.peek | peek}, does not allocate a
    * wrapper object.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -702,11 +687,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * Remove the entry with the given key.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -758,11 +741,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * sift (no observable reorder, but not free). See the class-level note
    * on treating object priorities as immutable.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Inserting and updating
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -775,7 +756,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @example Decrease-key reorders the heap
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -790,7 +771,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * @param priority The priority to set.
    */
   set(key: K, priority: P): void {
-    checkPriority(priority);
+    checkPriority(priority, "set priority in IndexedHeap");
     const pos = this.#index.get(key);
     if (pos === undefined) {
       const newPos = this.#data.length;
@@ -812,11 +793,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * Check whether the key is in the heap.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -836,11 +815,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * Return the priority of the given key, or `undefined` if not present.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -862,11 +839,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * The number of entries in the heap.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -884,11 +859,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * Remove all entries from the heap.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -908,11 +881,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
   /**
    * Check whether the heap is empty.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -934,11 +905,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * finishes. If iteration is abandoned early (e.g. via `break`),
    * the heap retains the remaining entries.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -956,9 +925,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns An iterator yielding entries from smallest to largest priority.
    */
-  *drain(): IterableIterator<HeapEntry<K, P>> {
+  *drain(): IterableIterator<IndexedHeapEntry<K, P>> {
     while (!this.isEmpty()) {
-      yield this.pop() as HeapEntry<K, P>;
+      yield this.pop() as IndexedHeapEntry<K, P>;
     }
   }
 
@@ -974,11 +943,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * the `priority` field shares its reference with the heap — see the
    * class-level note on treating object priorities as immutable.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -993,7 +960,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns An array of entries in arbitrary (heap-internal) order.
    */
-  toArray(): HeapEntry<K, P>[] {
+  toArray(): IndexedHeapEntry<K, P>[] {
     return this.#data.map(({ key, priority }) => ({ key, priority }));
   }
 
@@ -1012,11 +979,9 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    * the `priority` field shares its reference with the heap — see the
    * class-level note on treating object priorities as immutable.
    *
-   * @experimental **UNSTABLE**: New API, yet to be vetted.
-   *
    * @example Usage
    * ```ts
-   * import { IndexedHeap } from "@std/data-structures/unstable-indexed-heap";
+   * import { IndexedHeap } from "@std/data-structures/indexed-heap";
    * import { assertEquals } from "@std/assert";
    *
    * const heap = new IndexedHeap<string>();
@@ -1031,7 +996,7 @@ export class IndexedHeap<K, P = number> implements Iterable<HeapEntry<K, P>> {
    *
    * @returns An iterator yielding entries in arbitrary (heap-internal) order.
    */
-  *[Symbol.iterator](): IterableIterator<HeapEntry<K, P>> {
+  *[Symbol.iterator](): IterableIterator<IndexedHeapEntry<K, P>> {
     for (const { key, priority } of this.#data) {
       yield { key, priority };
     }

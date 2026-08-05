@@ -2,10 +2,10 @@
 import { assertEquals, assertThrows } from "@std/assert";
 import { descend } from "./comparators.ts";
 import {
-  type HeapEntry,
   IndexedHeap,
+  type IndexedHeapEntry,
   type ReadonlyIndexedHeap,
-} from "./unstable_indexed_heap.ts";
+} from "./indexed_heap.ts";
 
 Deno.test("IndexedHeap push / pop / peek with ascending priorities", () => {
   const heap = new IndexedHeap<string>();
@@ -28,7 +28,7 @@ Deno.test("IndexedHeap push / pop / peek with ascending priorities", () => {
   assertEquals(heap.isEmpty(), false);
   assertEquals(heap.peek(), { key: "a", priority: 1 });
 
-  const popped: HeapEntry<string>[] = [];
+  const popped: IndexedHeapEntry<string>[] = [];
   while (!heap.isEmpty()) {
     popped.push(heap.pop()!);
   }
@@ -313,7 +313,7 @@ Deno.test("IndexedHeap drain() retains remaining entries on early break", () => 
   heap.push("c", 3);
   heap.push("d", 4);
 
-  const drained: HeapEntry<string>[] = [];
+  const drained: IndexedHeapEntry<string>[] = [];
   for (const entry of heap.drain()) {
     drained.push(entry);
     if (entry.key === "b") break;
@@ -387,7 +387,7 @@ Deno.test("IndexedHeap handles duplicate priorities", () => {
   heap.push("c", 5);
 
   assertEquals(heap.size, 3);
-  const results: HeapEntry<string>[] = [];
+  const results: IndexedHeapEntry<string>[] = [];
   while (!heap.isEmpty()) {
     results.push(heap.pop()!);
   }
@@ -506,7 +506,7 @@ Deno.test("IndexedHeap push throws on NaN priority", () => {
   assertThrows(
     () => heap.push("a", NaN),
     RangeError,
-    "Cannot set priority: value is NaN",
+    "Cannot push into IndexedHeap: priority is NaN",
   );
   assertEquals(heap.size, 0);
 });
@@ -516,7 +516,7 @@ Deno.test("IndexedHeap set throws on NaN priority", () => {
   assertThrows(
     () => heap.set("a", NaN),
     RangeError,
-    "Cannot set priority: value is NaN",
+    "Cannot set priority in IndexedHeap: priority is NaN",
   );
   assertEquals(heap.size, 0, "absent key not inserted on NaN");
 
@@ -524,7 +524,7 @@ Deno.test("IndexedHeap set throws on NaN priority", () => {
   assertThrows(
     () => heap.set("b", NaN),
     RangeError,
-    "Cannot set priority: value is NaN",
+    "Cannot set priority in IndexedHeap: priority is NaN",
   );
   assertEquals(
     heap.getPriority("b"),
@@ -601,7 +601,7 @@ Deno.test("IndexedHeap constructor throws on NaN priority", () => {
   assertThrows(
     () => new IndexedHeap<string>([["a", NaN]]),
     RangeError,
-    "Cannot set priority: value is NaN",
+    "Cannot push into IndexedHeap: priority is NaN",
   );
 });
 
@@ -802,7 +802,7 @@ Deno.test("IndexedHeap iterator works with for-of", () => {
   heap.push("x", 5);
   heap.push("y", 3);
 
-  const collected: HeapEntry<string>[] = [];
+  const collected: IndexedHeapEntry<string>[] = [];
   for (const entry of heap) {
     collected.push(entry);
   }
