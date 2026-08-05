@@ -25,7 +25,7 @@ import {
   serializeList,
   string,
   token,
-} from "./unstable_structured_fields.ts";
+} from "./structured_fields.ts";
 
 // =============================================================================
 // Parsing Tests (edge cases NOT covered by conformance tests)
@@ -1019,101 +1019,109 @@ async function runConformanceTests(
   }
 }
 
+// Interface for serialisation test case from JSON files
+// (no raw input; expected data model is serialized and compared to canonical)
+interface SerialisationTestCase {
+  name: string;
+  // deno-lint-ignore camelcase
+  header_type?: "item" | "list" | "dictionary";
+  // deno-lint-ignore no-explicit-any
+  expected: any;
+  canonical?: string[];
+  // deno-lint-ignore camelcase
+  must_fail?: boolean;
+}
+
+// Load and run serialisation tests from a JSON file
+async function runSerialisationTests(
+  t: Deno.TestContext,
+  filename: string,
+): Promise<void> {
+  const testData = await import(
+    `./testdata/structured_fields/serialisation-tests/${filename}`,
+    { with: { type: "json" } }
+  );
+  const tests: SerialisationTestCase[] = testData.default;
+
+  for (const test of tests) {
+    const headerType = test.header_type ?? "item";
+
+    await t.step(test.name, () => {
+      const serialize = () => {
+        switch (headerType) {
+          case "item":
+            return serializeItem(convertExpectedItem(test.expected));
+          case "list":
+            return serializeList(
+              // deno-lint-ignore no-explicit-any
+              (test.expected as any[]).map(convertExpectedListMember),
+            );
+          case "dictionary":
+            return serializeDictionary(
+              new Map(
+                // deno-lint-ignore no-explicit-any
+                (test.expected as any[]).map((
+                  [key, value]: [string, unknown],
+                ) => [key, convertExpectedListMember(value as unknown[])]),
+              ),
+            );
+        }
+      };
+
+      if (test.must_fail) {
+        assertThrows(serialize, TypeError);
+      } else {
+        assertEquals(serialize(), test.canonical![0] ?? "");
+      }
+    });
+  }
+}
+
 // Run all conformance test files
-Deno.test({
-  name: "HTTPWG Conformance Tests: binary.json",
-  async fn(t) {
-    await runConformanceTests(t, "binary.json");
-  },
-});
+const CONFORMANCE_TEST_FILES = [
+  "binary.json",
+  "boolean.json",
+  "date.json",
+  "dictionary.json",
+  "display-string.json",
+  "examples.json",
+  "item.json",
+  "key-generated.json",
+  "large-generated.json",
+  "list.json",
+  "listlist.json",
+  "number-generated.json",
+  "number.json",
+  "param-dict.json",
+  "param-list.json",
+  "param-listlist.json",
+  "string-generated.json",
+  "string.json",
+  "token-generated.json",
+  "token.json",
+];
 
-Deno.test({
-  name: "HTTPWG Conformance Tests: boolean.json",
-  async fn(t) {
-    await runConformanceTests(t, "boolean.json");
-  },
-});
+for (const filename of CONFORMANCE_TEST_FILES) {
+  Deno.test({
+    name: `HTTPWG Conformance Tests: ${filename}`,
+    async fn(t) {
+      await runConformanceTests(t, filename);
+    },
+  });
+}
 
-Deno.test({
-  name: "HTTPWG Conformance Tests: date.json",
-  async fn(t) {
-    await runConformanceTests(t, "date.json");
-  },
-});
+const SERIALISATION_TEST_FILES = [
+  "key-generated.json",
+  "number.json",
+  "string-generated.json",
+  "token-generated.json",
+];
 
-Deno.test({
-  name: "HTTPWG Conformance Tests: dictionary.json",
-  async fn(t) {
-    await runConformanceTests(t, "dictionary.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: display-string.json",
-  async fn(t) {
-    await runConformanceTests(t, "display-string.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: examples.json",
-  async fn(t) {
-    await runConformanceTests(t, "examples.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: item.json",
-  async fn(t) {
-    await runConformanceTests(t, "item.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: list.json",
-  async fn(t) {
-    await runConformanceTests(t, "list.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: number.json",
-  async fn(t) {
-    await runConformanceTests(t, "number.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: param-dict.json",
-  async fn(t) {
-    await runConformanceTests(t, "param-dict.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: param-list.json",
-  async fn(t) {
-    await runConformanceTests(t, "param-list.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: param-listlist.json",
-  async fn(t) {
-    await runConformanceTests(t, "param-listlist.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: string.json",
-  async fn(t) {
-    await runConformanceTests(t, "string.json");
-  },
-});
-
-Deno.test({
-  name: "HTTPWG Conformance Tests: token.json",
-  async fn(t) {
-    await runConformanceTests(t, "token.json");
-  },
-});
+for (const filename of SERIALISATION_TEST_FILES) {
+  Deno.test({
+    name: `HTTPWG Serialisation Tests: ${filename}`,
+    async fn(t) {
+      await runSerialisationTests(t, filename);
+    },
+  });
+}
