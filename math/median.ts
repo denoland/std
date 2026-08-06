@@ -6,6 +6,10 @@
  *
  * @param numbers The numbers to calculate the median of
  * @returns The median of the numbers
+ * @throws {RangeError} If `numbers` is empty
+ *
+ * If `numbers` contains `NaN`, the result is `NaN`. If `numbers` contains
+ * `Infinity` or `-Infinity`, the result reflects the non-finite value(s).
  *
  * @example Usage
  * ```ts

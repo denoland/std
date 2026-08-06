@@ -29,5 +29,5 @@ export function sum(numbers: readonly number[]): number {
     }
     total = t;
   }
-  return total + correction;
+  return Number.isFinite(total) ? total + correction : total;
 }

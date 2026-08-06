@@ -24,3 +24,9 @@ Deno.test("sum() is accurate for mixed-magnitude inputs", () => {
 Deno.test("sum() does not drift on long arrays of small values", () => {
   assertEquals(sum(Array.from({ length: 1000 }, () => 0.1)), 100);
 });
+
+Deno.test("sum() propagates Infinity without producing NaN", () => {
+  assertEquals(sum([Infinity, 1]), Infinity);
+  assertEquals(sum([-Infinity, 1]), -Infinity);
+  assertEquals(sum([Infinity, -Infinity]), NaN);
+});

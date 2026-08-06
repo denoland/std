@@ -1,6 +1,8 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
+import { sum } from "./sum.ts";
+
 /**
  * Options for {@linkcode variance} and {@linkcode stdDev}.
  */
@@ -56,9 +58,7 @@ export function variance(
   // The mean is computed in a separate pass so squared deviations use a stable
   // center. Computing E[x^2] - E[x]^2 instead suffers from catastrophic
   // cancellation when the mean is large relative to the spread.
-  let total = 0;
-  for (const n of numbers) total += n;
-  const avg = total / numbers.length;
+  const avg = sum(numbers) / numbers.length;
   let sumSquaredDeviation = 0;
   for (const n of numbers) sumSquaredDeviation += (n - avg) ** 2;
   // Sample variance divides by n - 1 (Bessel's correction) to correct for the
