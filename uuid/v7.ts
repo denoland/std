@@ -46,7 +46,8 @@ export function validate(id: string): boolean {
 /**
  * Generates a {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
  *
- * @throws {RangeError} If the timestamp is not a non-negative integer.
+ * @throws {RangeError} If the timestamp is not an integer between 0 and
+ * 2**48 - 1, the maximum value representable in the UUIDv7 timestamp field.
  *
  * @param timestamp Unix Epoch timestamp in milliseconds.
  *
@@ -62,14 +63,16 @@ export function validate(id: string): boolean {
  * ```
  */
 export function generate(timestamp: number = Date.now()): string {
-  const bytes = new Uint8Array(16);
-  const view = new DataView(bytes.buffer);
-  // Unix timestamp in milliseconds (truncated to 48 bits)
-  if (!Number.isInteger(timestamp) || timestamp < 0) {
+  if (
+    !Number.isInteger(timestamp) || timestamp < 0 || timestamp > 2 ** 48 - 1
+  ) {
     throw new RangeError(
-      `Cannot generate UUID as timestamp must be a non-negative integer: timestamp ${timestamp}`,
+      `Cannot generate UUID as timestamp must be an integer between 0 and 2**48 - 1: timestamp ${timestamp}`,
     );
   }
+  const bytes = new Uint8Array(16);
+  const view = new DataView(bytes.buffer);
+  // Unix timestamp in milliseconds occupies the first 48 bits
   view.setBigUint64(0, BigInt(timestamp) << 16n);
   crypto.getRandomValues(bytes.subarray(6));
   // Version (4 bits) Occupies bits 48 through 51 of octet 6.
