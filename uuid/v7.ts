@@ -6,6 +6,10 @@
  *
  * UUID Version 7 is defined in {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | RFC 9562}.
  *
+ * UUIDv7 values sort by creation time at millisecond precision. Values
+ * generated within the same millisecond sort in arbitrary order relative to
+ * each other, see {@linkcode generate} for details.
+ *
  * ```ts
  * import { generate, validate, extractTimestamp } from "@std/uuid/v7";
  * import { assert, assertEquals } from "@std/assert";
@@ -45,6 +49,11 @@ export function validate(id: string): boolean {
 
 /**
  * Generates a {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7 | UUIDv7}.
+ *
+ * All bits after the 48-bit timestamp are random, so UUIDs generated within
+ * the same millisecond do not sort in generation order: this implementation
+ * uses none of the optional monotonicity methods of
+ * {@link https://www.rfc-editor.org/rfc/rfc9562.html#section-6.2 | RFC 9562 section 6.2}.
  *
  * @throws {RangeError} If the timestamp is not a non-negative integer.
  *
