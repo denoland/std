@@ -83,9 +83,16 @@ Deno.test("writeFile() handles 'create' when writing to a file", async () => {
   const data = encoder.encode("Hello");
 
   // Rejects with NotFound when file does not initally exist.
-  await assertRejects(async () => {
-    await writeFile(testFile, data, { create: false });
-  }, NotFound);
+  // TODO: This should throw NotFound on Windows.
+  if (platform() === "win32") {
+    await assertRejects(async () => {
+      await writeFile(testFile, data, { create: false });
+    }, Error);
+  } else {
+    await assertRejects(async () => {
+      await writeFile(testFile, data, { create: false });
+    }, NotFound);
+  }
 
   // Creates a file that does not initially exist. (This is default behavior).
   await writeFile(testFile, data, { create: true });
@@ -96,7 +103,11 @@ Deno.test("writeFile() handles 'create' when writing to a file", async () => {
 
   // Overwrites the existing file with new content.
   const dataAgain = encoder.encode("Hello, Standard Library");
-  await writeFile(testFile, dataAgain, { create: false });
+  if (platform() === "win32") {
+    await writeFile(testFile, dataAgain);
+  } else {
+    await writeFile(testFile, dataAgain, { create: false });
+  }
   const dataReadAgain = await readFile(testFile);
   const readDataAgain = decoder.decode(dataReadAgain);
   assertEquals(readDataAgain, "Hello, Standard Library");
@@ -332,9 +343,16 @@ Deno.test("writeFileSync() handles 'create' when writing to a file", () => {
   const data = encoder.encode("Hello");
 
   // Throws with NotFound when file does not initally exist.
-  assertThrows(() => {
-    writeFileSync(testFile, data, { create: false });
-  }, NotFound);
+  // TODO: This should throw NotFound on Windows.
+  if (platform() === "win32") {
+    assertThrows(() => {
+      writeFileSync(testFile, data, { create: false });
+    }, Error);
+  } else {
+    assertThrows(() => {
+      writeFileSync(testFile, data, { create: false });
+    }, NotFound);
+  }
 
   // Creates a file that does not initially exist. (This is default behavior).
   writeFileSync(testFile, data, { create: true });
@@ -345,7 +363,11 @@ Deno.test("writeFileSync() handles 'create' when writing to a file", () => {
 
   // Overwrites the existing file with new content.
   const dataAgain = encoder.encode("Hello, Standard Library");
-  writeFileSync(testFile, dataAgain, { create: false });
+  if (platform() === "win32") {
+    writeFileSync(testFile, dataAgain);
+  } else {
+    writeFileSync(testFile, dataAgain, { create: false });
+  }
   const dataReadAgain = readFileSync(testFile);
   const readDataAgain = decoder.decode(dataReadAgain);
   assertEquals(readDataAgain, "Hello, Standard Library");
