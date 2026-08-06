@@ -184,6 +184,33 @@ export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
   }
 
   /**
+   * Discards first `n` unread bytes from the buffer.
+   * It throws if `n` is negative or greater than the length of the buffer.
+   *
+   * @example Usage
+   * ```ts
+   * import { Buffer } from "@std/io/buffer";
+   * import { assertEquals } from "@std/assert/equals";
+   *
+   * const buf = new Buffer();
+   * await buf.write(new TextEncoder().encode("Hello, world!"));
+   * buf.discard(3);
+   * assertEquals(buf.length, 10);
+   * ```
+   *
+   * @param n The number of bytes to discard.
+   * @throws {RangeError} If `n` is not an integer, is negative, or exceeds the buffer length.
+   */
+  discard(n: number) {
+    if (!Number.isInteger(n) || n < 0 || n > this.length) {
+      throw new RangeError(
+        `Cannot discard bytes as "n" must be an integer >= 0 and <= ${this.length}: received ${n}`,
+      );
+    }
+    this.#off += n;
+  }
+
+  /**
    * Resets the contents
    *
    * @example Usage
