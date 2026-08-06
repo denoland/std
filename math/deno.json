@@ -4,7 +4,18 @@
   "exports": {
     ".": "./mod.ts",
     "./clamp": "./clamp.ts",
+    "./deg-to-rad": "./deg_to_rad.ts",
+    "./gcd": "./gcd.ts",
+    "./lcm": "./lcm.ts",
+    "./lerp": "./lerp.ts",
+    "./mean": "./mean.ts",
+    "./median": "./median.ts",
+    "./mode": "./mode.ts",
     "./modulo": "./modulo.ts",
-    "./round-to": "./round_to.ts"
+    "./rad-to-deg": "./rad_to_deg.ts",
+    "./round-to": "./round_to.ts",
+    "./std-dev": "./std_dev.ts",
+    "./sum": "./sum.ts",
+    "./variance": "./variance.ts"
   }
 }
