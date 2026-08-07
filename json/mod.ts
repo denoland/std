@@ -1,7 +1,10 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 /**
- * Utilities for parsing streaming JSON data.
+ * Utilities for parsing streaming JSON data (newline-delimited
+ * JSON Lines / NDJSON, or concatenated JSON). Each chunk must
+ * be a complete JSON value. Not suited for streaming elements
+ * within a single large array.
  *
  * ```ts
  * import { JsonStringifyStream } from "@std/json";
