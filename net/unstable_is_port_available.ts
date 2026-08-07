@@ -27,13 +27,23 @@ export interface IsPortAvailableOptions {
  * > system assign an available port, or use
  * > {@linkcode https://jsr.io/@std/net/doc/get-available-port/~/getAvailablePort | getAvailablePort}.
  *
+ * Availability is TCP-only and per-interface, not global:
+ *
+ * - Only the TCP port namespace is checked. UDP uses a separate namespace, so
+ *   `true` says nothing about a UDP service bound to the same number.
+ * - The answer describes `hostname` alone. With the default `0.0.0.0`, a
+ *   process listening on `127.0.0.1` makes this return `false` on Linux and
+ *   macOS, while Windows applies different address-conflict rules and can
+ *   return `true` for the same situation.
+ * - `hostname: "localhost"` resolves to `::1` or `127.0.0.1` depending on the
+ *   system, and the two can give different answers.
+ *
  * This function requires the `--allow-net` permission. Any error other than
  * {@linkcode Deno.errors.AddrInUse} is rethrown, including
  * {@linkcode Deno.errors.PermissionDenied} for privileged ports (below 1024)
  * or when the `net` permission has not been granted.
  *
- * @param port The port to check. Use `0` to check whether the operating system
- * can assign an ephemeral port.
+ * @param port The port to check.
  * @param options Options for checking the port.
  * @returns `true` if the port is available to listen on, `false` if it is
  * already in use.
@@ -47,15 +57,6 @@ export interface IsPortAvailableOptions {
  * const { port } = listener.addr;
  *
  * assert(!isPortAvailable(port));
- * ```
- *
- * @example Check before serving
- * ```ts no-assert ignore
- * import { isPortAvailable } from "@std/net/unstable-is-port-available";
- *
- * if (isPortAvailable(8080)) {
- *   Deno.serve({ port: 8080 }, () => new Response("Hello, world!"));
- * }
  * ```
  */
 export function isPortAvailable(

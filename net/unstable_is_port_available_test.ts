@@ -5,7 +5,11 @@ import { assert, assertFalse, assertThrows } from "@std/assert";
 import { stub } from "@std/testing/mock";
 
 Deno.test("isPortAvailable() returns true for an available port", () => {
-  assert(isPortAvailable(0));
+  const listener = Deno.listen({ port: 0 });
+  const { port } = listener.addr;
+  listener.close();
+
+  assert(isPortAvailable(port));
 });
 
 Deno.test("isPortAvailable() returns false for a port already in use", () => {
@@ -24,5 +28,5 @@ Deno.test("isPortAvailable() rethrows errors other than AddrInUse", () => {
   using _listen = stub(Deno, "listen", () => {
     throw new Error("boom");
   });
-  assertThrows(() => isPortAvailable(0), Error, "boom");
+  assertThrows(() => isPortAvailable(8080), Error, "boom");
 });
