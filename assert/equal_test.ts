@@ -383,6 +383,18 @@ Deno.test("equal() with constructor and prototype", async (t) => {
   });
 });
 
+Deno.test("equal() considers object with prototype Object.prototype not equal to object with no prototype", () => {
+  const a = Object.create(Object.prototype);
+  const b = Object.create(null);
+  assertFalse(equal(a, b));
+  assertFalse(equal(b, a));
+
+  // ensure the only difference is the prototype
+  Object.setPrototypeOf(b, Object.prototype);
+  assert(equal(a, b));
+  assert(equal(b, a));
+});
+
 Deno.test("equal() with dynamic properties defined on the prototype", async (t) => {
   await t.step("built-in web APIs", async (t) => {
     await t.step("URLPattern", () => {
