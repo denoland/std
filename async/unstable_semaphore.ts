@@ -45,6 +45,9 @@ export class Semaphore {
       );
     }
     this.#count = this.#max = max;
+    // Bind methods so they remain safe when passed unbound to higher-order
+    // callbacks such as `.finally(sem.release)` (issue #7195).
+    this.release = this.release.bind(this);
   }
 
   /**

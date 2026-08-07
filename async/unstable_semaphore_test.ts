@@ -97,3 +97,25 @@ Deno.test("Semaphore.release() ignores extra releases beyond max", async () => {
   // Third acquire should block
   await assertBlocks(sem.acquire(), () => sem.release());
 });
+
+Deno.test("Semaphore.release() can be passed unbound to .finally()", async () => {
+  // Regression test for issue #7195.
+  // `release` accesses private fields, so it must not lose its `this`
+  // binding when passed as a bare callback.
+  const sem = new Semaphore(1);
+  await sem.acquire();
+  await assertBlocks(
+    sem.acquire().finally(sem.release),
+    () => {},
+  );
+});
+
+Deno.test("Semaphore.release() can be destructured", async () => {
+  // Regression test for issue #7195.
+  // Destructuring pulls the method off the instance, which would normally
+  // drop the `this` binding without an explicit bind.
+  const sem = new Semaphore(1);
+  const { release } = sem;
+  await sem.acquire();
+  await assertBlocks(sem.acquire(), release);
+});
