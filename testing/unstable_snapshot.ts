@@ -19,7 +19,15 @@ import {
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
 export interface InlineSnapshotOptions<T = unknown>
-  extends Pick<SnapshotOptions<T>, "msg" | "serializer"> {}
+  extends Pick<SnapshotOptions<T>, "msg" | "serializer"> {
+  /**
+   * Function frame to start backtrace from.
+   * The source code location to modify will be decided from the stack that comes after this function.
+   *
+   * This is only relevant if you are wrapping the call to {@linkcode assertInlineSnapshot}.
+   */
+  frame?: typeof assertInlineSnapshot;
+}
 
 interface ErrorLocation {
   lineNumber: number;
@@ -169,6 +177,10 @@ globalThis.addEventListener("unload", () => {
  *
  * Type parameter can be specified to ensure values under comparison have the same type.
  *
+ * This function discovers the caller's source location by doing a stacktrace.
+ * If you wraps this function, make sure to specifiy the correct frame location in
+ * {@linkcode InlineSnapshotOptions.frame}.
+ *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  *
  * @example Usage
@@ -255,7 +267,11 @@ export function assertInlineSnapshot(
         };
       };
       // Capture the stack that comes after this function.
-      Error.captureStackTrace(stackCatcher, assertInlineSnapshot);
+      Error.captureStackTrace(
+        stackCatcher,
+        // Start backtrace from this frame, otherwise the call location will be wrong.
+        options.frame ?? assertInlineSnapshot,
+      );
       // Forcibly access the stack, and note it down
       const request = stackCatcher.stack;
       if (request !== null) {
@@ -303,12 +319,14 @@ export function createAssertInlineSnapshot<T>(
   options: InlineSnapshotOptions<T>,
   baseAssertSnapshot: typeof assertInlineSnapshot = assertInlineSnapshot,
 ): typeof assertInlineSnapshot {
-  return function (
+  return function frame(
     actual: T,
     expectedSnapshot: string,
     messageOrOptions?: string | InlineSnapshotOptions<T>,
   ) {
     const mergedOptions: InlineSnapshotOptions<T> = {
+      // Ordering matters here to allow outer options overriding frame.
+      frame,
       ...options,
       ...(typeof messageOrOptions === "string"
         ? { msg: messageOrOptions }
