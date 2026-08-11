@@ -6,7 +6,7 @@
 
 import { codePointLength } from "./_shared.ts";
 
-/** Options for {@linkcode parseRecord}. */
+/** Options for {@linkcode parseLine} and {@linkcode parseRecord}. */
 export interface ReadOptions {
   /** Character which separates values.
    *
@@ -56,13 +56,31 @@ export interface LineReader {
   isEOF(): boolean;
 }
 
-export async function parseRecord(
+/**
+ * Synchronous CSV record primitive.
+ *
+ * Parses a complete CSV record (one or more lines joined by `\n`, since a
+ * quoted field may legally span lines) into an array of fields. Both
+ * {@linkcode parseRecord} (async, line-pulling) and the top-level
+ * {@linkcode parse} build on top of this function so the field-level rules
+ * live in exactly one place.
+ *
+ * Returns:
+ *  - `string[]` when the input is a complete record
+ *  - `null` when the input ends inside an unclosed quoted field and the
+ *    caller has more input it can append (set `atEof` to `true` to force
+ *    an EOF decision instead of returning `null`)
+ *
+ * Throws {@linkcode SyntaxError} for hard syntax errors (bare quote in a
+ * non-quoted field, extraneous `"` after a closing quote, unclosed quoted
+ * field at EOF without `lazyQuotes`).
+ */
+export function parseLine(
   fullLine: string,
-  reader: LineReader,
   options: ReadOptions,
-  zeroBasedRecordStartLine: number,
-  zeroBasedLine: number = zeroBasedRecordStartLine,
-): Promise<Array<string>> {
+  zeroBasedRecordStartLine: number = 0,
+  atEof: boolean = true,
+): string[] | null {
   // line starting with comment character is ignored
   if (options.comment && fullLine[0] === options.comment) {
     return [];
@@ -78,6 +96,24 @@ export async function parseRecord(
   const separatorLen = options.separator.length;
   let recordBuffer = "";
   const fieldIndexes = [] as number[];
+
+  // Map an absolute position in `fullLine` to the (line, column) where it
+  // lives, accounting for embedded `\n` from joined multi-line records. The
+  // returned line number is offset from the record's first line; column is in
+  // code-points (matches the existing error message format).
+  const locate = (absPos: number): { line: number; col: number } => {
+    let line = zeroBasedRecordStartLine;
+    let lastNewline = -1;
+    for (let i = 0; i < absPos; i++) {
+      if (fullLine[i] === "\n") {
+        line++;
+        lastNewline = i;
+      }
+    }
+    const col = codePointLength(fullLine.slice(lastNewline + 1, absPos));
+    return { line, col };
+  };
+
   parseField: while (true) {
     if (options.trimLeadingSpace) {
       line = line.trimStart();
@@ -94,13 +130,13 @@ export async function parseRecord(
       if (!options.lazyQuotes) {
         const j = field.indexOf(quote);
         if (j >= 0) {
-          const col = codePointLength(
-            fullLine.slice(0, fullLine.length - line.slice(j).length),
+          const { line: errLine, col } = locate(
+            fullLine.length - line.slice(j).length,
           );
           throw new SyntaxError(
             createBareQuoteErrorMessage(
               zeroBasedRecordStartLine,
-              zeroBasedLine,
+              errLine,
               col,
             ),
           );
@@ -140,52 +176,54 @@ export async function parseRecord(
             recordBuffer += quote;
           } else {
             // `"*` sequence (invalid non-escaped quote).
-            const col = codePointLength(
-              fullLine.slice(0, fullLine.length - line.length - quoteLen),
+            const { line: errLine, col } = locate(
+              fullLine.length - line.length - quoteLen,
             );
             throw new SyntaxError(
               createQuoteErrorMessage(
                 zeroBasedRecordStartLine,
-                zeroBasedLine,
+                errLine,
                 col,
               ),
             );
           }
-        } else if (line.length > 0 || !reader.isEOF()) {
-          // Hit end of line (copy all data so far).
-          recordBuffer += line;
-          const r = await reader.readLine();
-          line = r ?? ""; // This is a workaround for making this module behave similarly to the encoding/csv/reader.go.
-          fullLine = line;
-          if (r === null) {
-            // Abrupt end of file (EOF or error).
-            if (!options.lazyQuotes) {
-              const col = codePointLength(fullLine);
+        } else {
+          // No more quotes on this line. Record continues onto the next line
+          // (the caller has already joined them with `\n` so `line` already
+          // contains the rest of the buffered input). If we're not yet at EOF,
+          // signal the caller to feed more input by returning `null`.
+          if (!atEof) {
+            return null;
+          }
+          // At EOF: same as the old reader-based path's "abrupt end of file"
+          // branches. The old code distinguished two cases by whether `line`
+          // (the unprocessed remainder) was empty when EOL hit:
+          //  - `line` empty → "abrupt EOF" branch, column = end of original
+          //    input (the quote opened but the entire body was consumed
+          //    before EOF); applies to inputs with an odd number of quotes
+          //    on a single line.
+          //  - `line` non-empty → would have fallen through to a final
+          //    readLine, which returned null and reset `fullLine` to `""`,
+          //    so column was 0 on the line after the last consumed segment.
+          if (!options.lazyQuotes) {
+            if (line.length === 0) {
               throw new SyntaxError(
                 createQuoteErrorMessage(
                   zeroBasedRecordStartLine,
-                  zeroBasedLine,
-                  col,
+                  zeroBasedRecordStartLine,
+                  codePointLength(fullLine),
                 ),
               );
             }
-            fieldIndexes.push(recordBuffer.length);
-            break parseField;
-          }
-          zeroBasedLine++;
-          recordBuffer += "\n"; // preserve line feed (This is because TextProtoReader removes it.)
-        } else {
-          // Abrupt end of file (EOF on error).
-          if (!options.lazyQuotes) {
-            const col = codePointLength(fullLine);
+            let errLine = zeroBasedRecordStartLine;
+            for (let i = 0; i < fullLine.length; i++) {
+              if (fullLine[i] === "\n") errLine++;
+            }
             throw new SyntaxError(
-              createQuoteErrorMessage(
-                zeroBasedRecordStartLine,
-                zeroBasedLine,
-                col,
-              ),
+              createQuoteErrorMessage(zeroBasedRecordStartLine, errLine, 0),
             );
           }
+          recordBuffer += line;
           fieldIndexes.push(recordBuffer.length);
           break parseField;
         }
@@ -199,6 +237,50 @@ export async function parseRecord(
     preIdx = i;
   }
   return result;
+}
+
+/**
+ * Async wrapper that builds on {@linkcode parseLine}: pulls additional lines
+ * from `reader` whenever the current accumulated line ends inside an unclosed
+ * quoted field, then defers all field-level parsing to `parseLine`.
+ *
+ * This keeps the streaming caller (`CsvParseStream`) on a single shared
+ * primitive without re-implementing any field/quote rules.
+ */
+export async function parseRecord(
+  fullLine: string,
+  reader: LineReader,
+  options: ReadOptions,
+  zeroBasedRecordStartLine: number,
+): Promise<Array<string>> {
+  let accumulated = fullLine;
+  while (true) {
+    const result = parseLine(
+      accumulated,
+      options,
+      zeroBasedRecordStartLine,
+      reader.isEOF(),
+    );
+    if (result !== null) {
+      return result;
+    }
+    // parseLine returned null → record continues onto another line.
+    const next = await reader.readLine();
+    if (next === null) {
+      // Reader claimed it was not at EOF but yielded null — force a final
+      // pass with atEof=true so parseLine throws/handles EOF consistently.
+      const eofResult = parseLine(
+        accumulated,
+        options,
+        zeroBasedRecordStartLine,
+        true,
+      );
+      // parseLine with atEof=true cannot return null; this is a defensive
+      // narrowing for the type system.
+      return eofResult ?? [];
+    }
+    accumulated += "\n" + next;
+  }
 }
 
 export function createBareQuoteErrorMessage(

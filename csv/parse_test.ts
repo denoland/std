@@ -5,7 +5,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assert, assertEquals, assertThrows } from "@std/assert";
-import { parse, type ParseOptions } from "./parse.ts";
+import { parse, parseLine, type ParseOptions } from "./parse.ts";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 
 const BYTE_ORDER_MARK = "\ufeff";
@@ -1021,5 +1021,108 @@ Deno.test({
         IsExact<typeof parsed, Record<"aaa", string>[]>
       >;
     }
+  },
+});
+
+Deno.test({
+  name: "parseLine() splits a simple comma-separated record",
+  fn() {
+    assertEquals(parseLine("a,b,c"), ["a", "b", "c"]);
+  },
+});
+
+Deno.test({
+  name: "parseLine() handles quoted fields with embedded commas",
+  fn() {
+    assertEquals(parseLine(`"a","b,c","d"`), ["a", "b,c", "d"]);
+  },
+});
+
+Deno.test({
+  name: "parseLine() handles escaped quotes inside quoted fields",
+  fn() {
+    assertEquals(parseLine(`"a ""word""","plain"`), [`a "word"`, "plain"]);
+  },
+});
+
+Deno.test({
+  name: "parseLine() supports a custom separator",
+  fn() {
+    assertEquals(
+      parseLine("a\tb\tc", { separator: "\t" }),
+      ["a", "b", "c"],
+    );
+  },
+});
+
+Deno.test({
+  name: "parseLine() trims leading whitespace when trimLeadingSpace is set",
+  fn() {
+    assertEquals(
+      parseLine(" a,  b,    c", { trimLeadingSpace: true }),
+      ["a", "b", "c"],
+    );
+  },
+});
+
+Deno.test({
+  name: "parseLine() strips a leading byte-order mark",
+  fn() {
+    assertEquals(parseLine("﻿a,b,c"), ["a", "b", "c"]);
+  },
+});
+
+Deno.test({
+  name: "parseLine() strips a single trailing newline",
+  fn() {
+    assertEquals(parseLine("a,b,c\n"), ["a", "b", "c"]);
+    assertEquals(parseLine("a,b,c\r\n"), ["a", "b", "c"]);
+    assertEquals(parseLine("a,b,c\r"), ["a", "b", "c"]);
+  },
+});
+
+Deno.test({
+  name: "parseLine() returns embedded newlines from a multi-line quoted field",
+  fn() {
+    assertEquals(parseLine(`"a\nb",c`), ["a\nb", "c"]);
+  },
+});
+
+Deno.test({
+  name: "parseLine() throws on a bare quote in an unquoted field",
+  fn() {
+    assertThrows(
+      () => parseLine(`a,b"c,d`),
+      SyntaxError,
+      `bare " in non-quoted-field`,
+    );
+  },
+});
+
+Deno.test({
+  name: "parseLine() tolerates bare quotes when lazyQuotes is set",
+  fn() {
+    assertEquals(
+      parseLine(`a,b"c,d`, { lazyQuotes: true }),
+      ["a", `b"c`, "d"],
+    );
+  },
+});
+
+Deno.test({
+  name: "parseLine() returns an empty array for a comment line",
+  fn() {
+    assertEquals(parseLine("# header line", { comment: "#" }), []);
+  },
+});
+
+Deno.test({
+  name: "parseLine() throws on an unclosed quoted field",
+  fn() {
+    assertThrows(
+      () => parseLine(`"unclosed`),
+      SyntaxError,
+      `extraneous or missing " in quoted-field`,
+    );
   },
 });
