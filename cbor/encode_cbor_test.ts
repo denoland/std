@@ -198,6 +198,22 @@ Deno.test("encodeCbor() correctly preallocates enough space for strings", () => 
   );
 });
 
+Deno.test("encodeCbor() correctly preallocates enough space for object keys with multi-byte characters", () => {
+  const key = "é☃é☃é☃é☃";
+  const keyBytes = new TextEncoder().encode(key);
+  assert(key.length !== keyBytes.length);
+  // Would throw "RangeError: offset is out of bounds" when the key buffer was
+  // under-allocated as key.length bytes instead of its UTF-8 byte length.
+  assertEquals(
+    encodeCbor({ [key]: 0 }),
+    concat([
+      new Uint8Array([0b101_00001, 0b011_00000 + keyBytes.length]),
+      keyBytes,
+      new Uint8Array([0b000_00000]),
+    ]),
+  );
+});
+
 Deno.test("encodeCbor() encoding Uint8Arrays", () => {
   let bytes = new Uint8Array(random(0, 24));
   assertEquals(
