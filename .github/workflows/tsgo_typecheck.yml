@@ -1,0 +1,40 @@
+name: tsgo_typecheck
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+  workflow_dispatch:
+  # sync-types (deno#35894) is now in canary; nightly can be enabled too:
+  # schedule:
+  #   - cron: "0 7 * * *"
+
+jobs:
+  tsgo:
+    # Only run on the upstream repository, not on forks.
+    if: github.repository == 'denoland/std'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TSGO_VERSION: 7.0.2
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Deno (canary)
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: canary
+          cache: true
+
+      - name: Install dependencies
+        run: deno install
+
+      - name: Sync types for stock TypeScript
+        run: deno sync-types
+
+      - name: Type-check with tsgo (advisory)
+        run: deno run -A npm:typescript@${TSGO_VERSION}/tsc
