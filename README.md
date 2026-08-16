@@ -24,18 +24,24 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 Standard Library packages are published as TypeScript on JSR. Bundle them into
 JavaScript before loading them in a browser. For example, create an entry point:
 
-```ts
+```ts ignore
 // main.ts
-import { encodeBase64 } from "jsr:@std/encoding@^1.0.11/base64";
+import { escape } from "jsr:@std/html@^1.0.4/entities";
 
-document.body.textContent = encodeBase64("Hello from @std!");
+document.body.innerHTML = escape("<Hello from @std!>");
 ```
 
-Then bundle it with
-[`esbuild-deno-loader`](https://jsr.io/@luca/esbuild-deno-loader), which teaches
-esbuild how to resolve Deno, JSR, and import-map specifiers:
+Then bundle it for browsers:
 
-```ts
+```sh
+deno bundle --platform browser -o dist/main.js main.ts
+```
+
+For custom esbuild pipelines, use
+[`esbuild-deno-loader`](https://jsr.io/@luca/esbuild-deno-loader) so esbuild can
+resolve Deno, JSR, and import-map specifiers:
+
+```ts ignore
 // build.ts
 import * as esbuild from "npm:esbuild@^0.28.2";
 import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@^0.11.1";
@@ -48,10 +54,10 @@ await esbuild.build({
   format: "esm",
 });
 
-esbuild.stop();
+await esbuild.stop();
 ```
 
-Run `deno run -A build.ts`, then load `dist/main.js` from an HTML module script:
+Then load `dist/main.js` from an HTML module script:
 
 ```html
 <script type="module" src="./dist/main.js"></script>
@@ -59,9 +65,7 @@ Run `deno run -A build.ts`, then load `dist/main.js` from an HTML module script:
 
 Only use modules whose source contains the
 `// This module is browser compatible.` declaration. Other modules may depend on
-Deno or Node.js APIs that are unavailable in browsers. When using a `deno.json`
-import map, keep it beside the entry point so the loader discovers it, or pass
-its path through the loader's `configPath` option.
+Deno or Node.js APIs that are unavailable in browsers.
 
 ## Releases
 
