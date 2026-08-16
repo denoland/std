@@ -19,6 +19,50 @@ High-quality APIs for [Deno](https://deno.com/) and the web. Use fearlessly.
 - [Contributing guidelines](.github/CONTRIBUTING.md)
 - [Frequently asked questions (FAQ)](./.github/FAQ.md)
 
+## Using the Standard Library in a browser
+
+Standard Library packages are published as TypeScript on JSR. Bundle them into
+JavaScript before loading them in a browser. For example, create an entry point:
+
+```ts
+// main.ts
+import { encodeBase64 } from "jsr:@std/encoding@^1.0.11/base64";
+
+document.body.textContent = encodeBase64("Hello from @std!");
+```
+
+Then bundle it with
+[`esbuild-deno-loader`](https://jsr.io/@luca/esbuild-deno-loader), which teaches
+esbuild how to resolve Deno, JSR, and import-map specifiers:
+
+```ts
+// build.ts
+import * as esbuild from "npm:esbuild@^0.28.2";
+import { denoPlugins } from "jsr:@luca/esbuild-deno-loader@^0.11.1";
+
+await esbuild.build({
+  plugins: [...denoPlugins()],
+  entryPoints: ["main.ts"],
+  outfile: "dist/main.js",
+  bundle: true,
+  format: "esm",
+});
+
+esbuild.stop();
+```
+
+Run `deno run -A build.ts`, then load `dist/main.js` from an HTML module script:
+
+```html
+<script type="module" src="./dist/main.js"></script>
+```
+
+Only use modules whose source contains the
+`// This module is browser compatible.` declaration. Other modules may depend on
+Deno or Node.js APIs that are unavailable in browsers. When using a `deno.json`
+import map, keep it beside the entry point so the loader discovers it, or pass
+its path through the loader's `configPath` option.
+
 ## Releases
 
 Package versions >=1.0.0 follow [Semantic Versioning](https://semver.org/), and
