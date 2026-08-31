@@ -3,6 +3,7 @@ import { assert, assertEquals } from "@std/assert";
 import { isGlob } from "./is_glob.ts";
 import { disposableStack } from "../internal/_testing.ts";
 import { Worker } from "node:worker_threads";
+import process from "node:process";
 
 Deno.test({
   name: "isGlob()",
@@ -115,9 +116,13 @@ Deno.test({
 });
 
 // ref https://github.com/denoland/std/pull/6764
-Deno.test(
-  "isGlob works with the input that includes large number of open brackets",
-  async () => {
+// bun 1.4+ throws in `new Worker()` (node:worker_threads EventEmitter).
+const isBun = "bun" in process.versions;
+Deno.test({
+  name:
+    "isGlob works with the input that includes large number of open brackets",
+  ignore: isBun,
+  async fn() {
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timer = setTimeout(() => {
       reject(new Error("isGlob() did not finish in time"));
@@ -149,4 +154,4 @@ Deno.test(
 
     await promise;
   },
-);
+});
