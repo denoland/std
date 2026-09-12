@@ -104,6 +104,11 @@ Deno.test("parseIPv6() returns the address bytes", () => {
     ["::", bytes()],
     ["::1", bytes(0, 0, 0, 0, 0, 0, 0, 1)],
     ["1::", bytes(1)],
+    // "::" standing for a single zero group at either end. Rejected before
+    // the parsers landed, because expansion keyed off a hextet count that a
+    // trailing or leading "::" inflated to 9.
+    ["1:2:3:4:5:6:7::", bytes(1, 2, 3, 4, 5, 6, 7, 0)],
+    ["::1:2:3:4:5:6:7", bytes(0, 1, 2, 3, 4, 5, 6, 7)],
     // Uppercase hex is accepted, per the URL standard.
     ["2001:DB8::1", bytes(0x2001, 0x0db8, 0, 0, 0, 0, 0, 1)],
     // x:x:x:x:x:x:d.d.d.d, RFC 4291, section 2.2.
@@ -165,6 +170,8 @@ Deno.test("isIPv6()", () => {
     { addr: "2003:3333:4444:5555:6666:7777:192.168.0.1", expected: true },
     { addr: "ab::cd:192.168.0.1", expected: true },
     { addr: "::192.168.0.1", expected: true },
+    { addr: "1:2:3:4:5:6:7::", expected: true },
+    { addr: "::1:2:3:4:5:6:7", expected: true },
 
     { addr: "2001:db8:3333:4444:5555:6666:7777:gggg", expected: false },
     { addr: "2003:3333:4444:5555:6666:7777:192.168.0.256", expected: false },
@@ -245,12 +252,15 @@ Deno.test("matchIPv4Subnet()", () => {
     // No "/" means no prefix length, so nothing matches.
     { addr: "192.168.1.1", subnet: "192.168.1.1", expected: false },
 
-    // Prefix lengths are decimal digits only. `/0x18` must not be read as 0,
-    // which would match every address.
+    // Prefix lengths are decimal digits only. The address has to sit inside
+    // the subnet under the length `parseInt()` used to produce, or the row
+    // passes for the wrong reason: `/0x18` meant 0, `/1e1` meant 1, the rest
+    // meant 24.
     { addr: "1.2.3.4", subnet: "192.168.1.0/0x18", expected: false },
-    { addr: "1.2.3.4", subnet: "192.168.1.0/ 24", expected: false },
-    { addr: "1.2.3.4", subnet: "192.168.1.0/+24", expected: false },
-    { addr: "1.2.3.4", subnet: "192.168.1.0/1e1", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/0x18", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/1e1", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/ 24", expected: false },
+    { addr: "192.168.1.1", subnet: "192.168.1.0/+24", expected: false },
     { addr: "192.168.1.1", subnet: "192.168.1.0/24abc", expected: false },
     { addr: "192.168.1.1", subnet: "192.168.1.0/24/8", expected: false },
 
