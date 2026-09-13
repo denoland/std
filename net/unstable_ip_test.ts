@@ -135,6 +135,8 @@ Deno.test("parseIPv6() returns undefined for invalid addresses", () => {
     "1:2:3:4:5:6:7:8:9",
     "1:2:3:4:5:6:7::8",
     "",
+    // Seven pieces already, so there is no room for the IPv4 tail's two.
+    "1:2:3:4:5:6::1.2.3.4",
     // More than one "::".
     "2001:db8::4444::8888",
     "2001:db8:::1",
@@ -148,6 +150,8 @@ Deno.test("parseIPv6() returns undefined for invalid addresses", () => {
     "::ffff:1.2.3",
     "::ffff:0x1.2.3.4",
     "::ffff:01.2.3.4",
+    "::1..2.3",
+    "::1.2.3.",
     // Surrounding whitespace, in both positions.
     " ::1",
     "::1 ",
