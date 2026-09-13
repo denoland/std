@@ -31,22 +31,27 @@ const expectedTimings: readonly (readonly number[] & { length: 10 })[] & {
 ] as const;
 
 Deno.test("exponentialBackoffWithJitter()", () => {
-  let nextSeed = INITIAL_SEED;
+  const random = Math.random;
+  try {
+    let nextSeed = INITIAL_SEED;
 
-  for (const row of expectedTimings) {
-    const randUint32 = prngMulberry32(nextSeed);
-    nextSeed = prngMulberry32(nextSeed)();
-    Math.random = () => randUint32() / 0x100000000;
+    for (const row of expectedTimings) {
+      const randUint32 = prngMulberry32(nextSeed);
+      nextSeed = prngMulberry32(nextSeed)();
+      Math.random = () => randUint32() / 0x100000000;
 
-    const results: number[] = [];
-    const base = 100;
-    const cap = Infinity;
+      const results: number[] = [];
+      const base = 100;
+      const cap = Infinity;
 
-    for (let i = 0; i < 10; ++i) {
-      const result = exponentialBackoffWithJitter(cap, base, i, 2, 1);
-      results.push(Math.round(result));
+      for (let i = 0; i < 10; ++i) {
+        const result = exponentialBackoffWithJitter(cap, base, i, 2, 1);
+        results.push(Math.round(result));
+      }
+
+      assertEquals(results as typeof row, row);
     }
-
-    assertEquals(results as typeof row, row);
+  } finally {
+    Math.random = random;
   }
 });
