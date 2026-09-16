@@ -499,6 +499,29 @@ Deno.test("serveDir() doesn't show dotfiles when showDotfiles=false", async () =
   assertEquals(body, "Not Found");
 });
 
+Deno.test("serveDir() rejects percent-encoded backslashes", async () => {
+  // A percent-encoded backslash (`%5C`) survives URL parsing and acts as a
+  // path separator on Windows, allowing dotfile disclosure and path
+  // traversal outside fsRoot if not rejected.
+  const paths = [
+    "/%5C.dotfile",
+    "/%5c.dotfile",
+    "/subdir%5C..%5C.dotfile",
+    "/subdir%5C..%5C..%5Cfile_server.ts",
+    "/%5C..%5C..%5Cfile_server.ts",
+  ];
+  for (const path of paths) {
+    const req = new Request(`http://localhost${path}`);
+    const res = await serveDir(req, {
+      ...serveDirOptions,
+      showDotfiles: false,
+    });
+    await res.body?.cancel();
+
+    assertEquals(res.status, 404);
+  }
+});
+
 Deno.test("serveDir() shows .. if it makes sense", async () => {
   const req1 = new Request("http://localhost/");
   const res1 = await serveDir(req1, serveDirOptions);
