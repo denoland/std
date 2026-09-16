@@ -1250,6 +1250,71 @@ Deno.test("(unstable) serveDir() does not shadow existing files and directory if
   assertEquals(res.headers.has("location"), true);
 });
 
+Deno.test("(unstable) serveDir() ignores dotfiles by default", async () => {
+  const req = new Request("http://localhost/.dotfile");
+  const res = await unstableServeDir(req, {
+    quiet: true,
+    fsRoot: testdataDir,
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.status, 404);
+});
+
+Deno.test("(unstable) serveDir() serves dotfiles when dotfiles=allow", async () => {
+  const req1 = new Request("http://localhost/.dotfile");
+  const res1 = await unstableServeDir(req1, {
+    ...serveDirOptions,
+    showDotfiles: false,
+    dotfiles: "allow",
+  });
+
+  assertEquals(res1.status, 200);
+  assertEquals(await res1.text(), "dotfile");
+
+  const req2 = new Request("http://localhost/");
+  const res2 = await unstableServeDir(req2, {
+    ...serveDirOptions,
+    showDotfiles: false,
+    dotfiles: "allow",
+  });
+  const listing = await res2.text();
+
+  assert(listing.includes(".dotfile"));
+});
+
+Deno.test("(unstable) serveDir() denies dotfiles when dotfiles=deny", async () => {
+  const req1 = new Request("http://localhost/.dotfile");
+  const res1 = await unstableServeDir(req1, {
+    ...serveDirOptions,
+    dotfiles: "deny",
+  });
+  await res1.body?.cancel();
+
+  assertEquals(res1.status, 403);
+
+  const req2 = new Request("http://localhost/");
+  const res2 = await unstableServeDir(req2, {
+    ...serveDirOptions,
+    dotfiles: "deny",
+  });
+  const listing = await res2.text();
+
+  assert(!listing.includes(".dotfile"));
+});
+
+Deno.test("(unstable) serveDir() dotfiles option takes precedence over showDotfiles", async () => {
+  const req = new Request("http://localhost/.dotfile");
+  const res = await unstableServeDir(req, {
+    ...serveDirOptions,
+    showDotfiles: true,
+    dotfiles: "ignore",
+  });
+  await res.body?.cancel();
+
+  assertEquals(res.status, 404);
+});
+
 Deno.test("(unstable) serveFile() sends custom headers", async () => {
   const req = new Request("http://localhost/testdata/test_file.txt");
   const res = await unstableServeFile(req, TEST_FILE_PATH, {

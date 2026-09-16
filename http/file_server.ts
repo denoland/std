@@ -701,7 +701,8 @@ async function createServeDirResponse(
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
   const cleanUrls = (opts as { cleanUrls?: boolean }).cleanUrls ?? false;
-  const showDotfiles = opts.showDotfiles || false;
+  const dotfiles = (opts as { dotfiles?: "allow" | "deny" | "ignore" })
+    .dotfiles ?? (opts.showDotfiles ? "allow" : "ignore");
   const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
     opts;
 
@@ -737,9 +738,11 @@ async function createServeDirResponse(
     return createStandardResponse(STATUS_CODE.NotFound);
   }
 
-  // Exclude dotfiles if showDotfiles is false
-  if (!showDotfiles && /\/\./.test(normalizedPath)) {
-    return createStandardResponse(STATUS_CODE.NotFound);
+  // Exclude dotfiles unless they are allowed
+  if (dotfiles !== "allow" && /\/\./.test(normalizedPath)) {
+    return createStandardResponse(
+      dotfiles === "deny" ? STATUS_CODE.Forbidden : STATUS_CODE.NotFound,
+    );
   }
 
   // Resolve path
@@ -810,7 +813,11 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(req, fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(req, fsPath, {
+      showDotfiles: dotfiles === "allow",
+      target,
+      quiet,
+    });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);
