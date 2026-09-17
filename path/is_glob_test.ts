@@ -114,10 +114,16 @@ Deno.test({
   },
 });
 
+const isBun = navigator.userAgent.includes("Bun/");
+
 // ref https://github.com/denoland/std/pull/6764
-Deno.test(
-  "isGlob works with the input that includes large number of open brackets",
-  async () => {
+Deno.test({
+  name:
+    "isGlob works with the input that includes large number of open brackets",
+  // Bun 1.4.2 crashes when constructing a node:worker_threads Worker
+  // (TypeError: undefined is not an object (evaluating 'this._events'))
+  ignore: isBun,
+  async fn() {
     const { promise, resolve, reject } = Promise.withResolvers<void>();
     const timer = setTimeout(() => {
       reject(new Error("isGlob() did not finish in time"));
@@ -149,4 +155,4 @@ Deno.test(
 
     await promise;
   },
-);
+});
