@@ -29,4 +29,5 @@ export * from "./binary_heap.ts";
 export * from "./binary_search_tree.ts";
 export * from "./comparators.ts";
 export * from "./deque.ts";
+export * from "./indexed_heap.ts";
 export * from "./red_black_tree.ts";
