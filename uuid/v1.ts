@@ -55,7 +55,7 @@ export interface GenerateOptions {
    */
   msecs?: number;
   /**
-   * The number of nanoseconds to add to {@linkcode V1Options.msecs}
+   * The number of nanoseconds to add to {@linkcode GenerateOptions.msecs}
    * (0 - 10,000).
    *
    * @see {@link https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4}
@@ -65,7 +65,7 @@ export interface GenerateOptions {
   random?: number[];
   /**
    * A function that returns an array of 16 random bytes (0 - 255).
-   * Alternative to {@linkcode V1Options.random}.
+   * Alternative to {@linkcode GenerateOptions.random}.
    */
   rng?: () => number[];
 }
@@ -76,7 +76,7 @@ export interface GenerateOptions {
  *
  * @param options Can use RFC time sequence values as overwrites.
  *
- * @returns Returns a UUIDv1 string or an array of 16 bytes.
+ * @returns Returns a UUIDv1 string.
  *
  * @example Usage
  * ```ts
@@ -91,7 +91,7 @@ export interface GenerateOptions {
  * };
  *
  * const uuid = generate(options);
- * assert(validate(uuid as string));
+ * assert(validate(uuid));
  * ```
  */
 export function generate(options: GenerateOptions = {}): string {
