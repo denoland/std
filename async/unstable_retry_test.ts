@@ -109,7 +109,6 @@ Deno.test("retry() keeps the computed backoff when getDelay returns it", async (
 Deno.test("retry() treats an explicitly undefined getDelay as omitted", async () => {
   assertEquals(
     await waitsUntilExhausted(
-      // @ts-expect-error: explicitly giving undefined
       { jitter: 0, getDelay: undefined },
     ),
     [1000, 2000, 4000, 8000],

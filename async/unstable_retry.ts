@@ -40,11 +40,13 @@ export interface RetryOptions extends StableRetryOptions {
    * this retry, after capping and jitter.
    * @returns The number of milliseconds to wait before the next attempt.
    */
-  getDelay?: (
-    error: unknown,
-    attempt: number,
-    computedDelay: number,
-  ) => number;
+  getDelay?:
+    | ((
+      error: unknown,
+      attempt: number,
+      computedDelay: number,
+    ) => number)
+    | undefined;
 }
 
 function selectDelay(
