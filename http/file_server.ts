@@ -37,7 +37,7 @@ import { extname } from "@std/path/extname";
 import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
-import { SEPARATOR_PATTERN } from "@std/path/constants";
+import { SEPARATOR, SEPARATOR_PATTERN } from "@std/path/constants";
 import { exists } from "@std/fs/exists";
 import { contentType } from "@std/media-types/content-type";
 import { eTag, ifNoneMatch } from "./etag.ts";
@@ -701,7 +701,8 @@ async function createServeDirResponse(
   const urlRoot = opts.urlRoot;
   const showIndex = opts.showIndex ?? true;
   const cleanUrls = (opts as { cleanUrls?: boolean }).cleanUrls ?? false;
-  const showDotfiles = opts.showDotfiles || false;
+  const dotfiles = (opts as { dotfiles?: "allow" | "deny" | "ignore" })
+    .dotfiles ?? (opts.showDotfiles ? "allow" : "ignore");
   const { etagAlgorithm = "SHA-256", showDirListing = false, quiet = false } =
     opts;
 
@@ -729,9 +730,19 @@ async function createServeDirResponse(
     normalizedPath = normalizedPath.slice(0, -1);
   }
 
-  // Exclude dotfiles if showDotfiles is false
-  if (!showDotfiles && /\/\./.test(normalizedPath)) {
+  // A percent-encoded backslash (`%5C`) survives URL parsing and is treated
+  // as a path separator by the Windows filesystem, which would bypass the
+  // POSIX-based normalization and dotfile checks (e.g. `/%5C.env` or
+  // `/sub%5C..%5C..%5Csecret`).
+  if (normalizedPath.includes("\\")) {
     return createStandardResponse(STATUS_CODE.NotFound);
+  }
+
+  // Exclude dotfiles unless they are allowed
+  if (dotfiles !== "allow" && /\/\./.test(normalizedPath)) {
+    return createStandardResponse(
+      dotfiles === "deny" ? STATUS_CODE.Forbidden : STATUS_CODE.NotFound,
+    );
   }
 
   // Resolve path
@@ -741,6 +752,18 @@ async function createServeDirResponse(
   if (cleanUrls && !fsPath.endsWith(".html") && !(await exists(fsPath))) {
     fsPath += ".html";
   }
+
+  // Defense in depth: the checks above should guarantee containment, but
+  // never serve a path that resolves outside the root directory.
+  const resolvedTarget = resolve(target);
+  const resolvedFsPath = resolve(fsPath);
+  if (
+    resolvedFsPath !== resolvedTarget &&
+    !resolvedFsPath.startsWith(resolvedTarget + SEPARATOR)
+  ) {
+    return createStandardResponse(STATUS_CODE.NotFound);
+  }
+
   const fileInfo = await Deno.stat(fsPath);
 
   // For files, remove the trailing slash from the path.
@@ -790,7 +813,11 @@ async function createServeDirResponse(
   }
 
   if (showDirListing) { // serve directory list
-    return serveDirIndex(req, fsPath, { showDotfiles, target, quiet });
+    return serveDirIndex(req, fsPath, {
+      showDotfiles: dotfiles === "allow",
+      target,
+      quiet,
+    });
   }
 
   return createStandardResponse(STATUS_CODE.NotFound);
