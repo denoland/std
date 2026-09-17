@@ -44,6 +44,21 @@ function isYearNumberALeapYear(yearNumber: number): boolean {
  * isLeap(2000);
  *
  * ```
+ *
+ * @example Migration to Temporal
+ * ```ts
+ * import { isLeap } from "@std/datetime/is-leap";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // Before
+ * assertEquals(isLeap(1972), true);
+ *
+ * // After
+ * assertEquals(Temporal.PlainDate.from({ year: 1972, month: 1, day: 1 }).inLeapYear, true);
+ * ```
+ *
+ * @deprecated Use {@linkcode Temporal.PlainDate.prototype.inLeapYear} instead.
+ * See https://github.com/denoland/std/issues/7262 for details.
  */
 export function isLeap(year: Date | number): boolean {
   const yearNumber = year instanceof Date ? year.getFullYear() : year;
@@ -73,6 +88,24 @@ export function isLeap(year: Date | number): boolean {
  *
  * assertEquals(isUtcLeap(1999), false);
  * ```
+ *
+ * @example Migration to Temporal
+ * ```ts
+ * import { isUtcLeap } from "@std/datetime/is-leap";
+ * import { assertEquals } from "@std/assert";
+ *
+ * const date = new Date("2000-01-01");
+ *
+ * // Before
+ * assertEquals(isUtcLeap(date), true);
+ *
+ * // After
+ * assertEquals(date.toTemporalInstant().toZonedDateTimeISO("UTC").inLeapYear, true);
+ * ```
+ *
+ * @deprecated Use {@linkcode Date.prototype.toTemporalInstant} and
+ * {@linkcode Temporal.ZonedDateTime.prototype.inLeapYear} instead. See
+ * https://github.com/denoland/std/issues/7262 for details.
  */
 export function isUtcLeap(year: Date | number): boolean {
   const yearNumber = year instanceof Date ? year.getUTCFullYear() : year;
