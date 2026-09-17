@@ -19,8 +19,9 @@ async function waitsUntilExhausted(options: RetryOptions): Promise<number[]> {
     starts.push(time.now - start);
     throw new Error("Failure");
   }, options);
+  const rejection = assertRejects(() => promise, RetryError);
   await time.runAllAsync();
-  await assertRejects(() => promise, RetryError);
+  await rejection;
   return starts.slice(1).map((at, i) => at - starts[i]!);
 }
 
