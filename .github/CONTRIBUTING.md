@@ -32,6 +32,22 @@ and [architecture guide](./ARCHITECTURE.md) before contributing.
 > request that precedes the pull request that implements the new package.
 <!--deno-fmt-ignore-end-->
 
+### PR titles and version bumps
+
+Pull requests are squash-merged: the PR title becomes the commit subject on
+`main`, and the release tooling derives each package's next version from those
+subjects. The title alone decides the bump.
+
+A scope with the `/unstable` suffix always releases as a patch, even for `feat`
+(normally a minor bump) and `BREAKING` (normally a major bump). For example,
+`BREAKING(http/unstable): rename an option` releases a patch of `@std/http`.
+Unstable APIs are not covered by the semver contract, so changes to them never
+raise a version beyond a patch.
+
+A change confined to unstable APIs must carry the `/unstable` suffix in its
+scope. Without it, the title reads as a change to stable APIs and inflates the
+package's version bump.
+
 ## Suggesting a new feature
 
 When new features are accepted, they are initially accepted as 'unstable'
@@ -212,6 +228,29 @@ the starting description.
  * ...
  */
 ```
+
+### Error Classes
+
+Throw the built-in error class whose meaning matches the failure:
+
+- `TypeError` when an argument has the wrong type or shape.
+- `RangeError` when a value is outside its allowed range.
+- `SyntaxError` when textual input cannot be parsed. This keeps `parse()`
+  functions consistent with `JSON.parse()`.
+
+```
+Bad: throw new Error("Cannot parse input x: value is empty")
+Good: throw new SyntaxError("Cannot parse input x: value is empty")
+```
+
+When an error carries structured data, subclass the closest built-in class so
+`instanceof` checks against the built-in keep working. For example,
+`XmlSyntaxError` and `YamlSyntaxError` extend `SyntaxError` and add `line`,
+`column`, and `offset` properties.
+
+Define a new class extending `Error` only for a domain condition callers are
+expected to catch, such as `RetryError` in `@std/async`. Plain `Error` and
+`EvalError` still appear in older packages; do not imitate them in new code.
 
 ### Error Messages
 
