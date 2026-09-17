@@ -9,7 +9,7 @@ import {
   parseProblemDetailsResponse,
   type ProblemDetails,
   type StandardProblemDetailsMember,
-} from "./unstable_problem_details.ts";
+} from "./problem_details.ts";
 
 // --- createProblemDetailsResponse ---
 
