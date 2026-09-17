@@ -27,6 +27,10 @@ export type { Writer, WriterSync } from "./types.ts";
  *
  * @param writer The writer to write to
  * @param data The data to write
+ *
+ * @deprecated Use
+ * `ReadableStream.from([data]).pipeTo(writable, { preventClose: true })`
+ * instead. See https://github.com/denoland/std/issues/7258 for details.
  */
 export async function writeAll(writer: Writer, data: Uint8Array) {
   let nwritten = 0;
@@ -58,6 +62,10 @@ export async function writeAll(writer: Writer, data: Uint8Array) {
  *
  * @param writer The writer to write to
  * @param data The data to write
+ *
+ * @deprecated Web streams have no synchronous equivalent. See
+ * https://github.com/denoland/std/issues/6284 for the replacement discussion
+ * and https://github.com/denoland/std/issues/7258 for details.
  */
 export function writeAllSync(writer: WriterSync, data: Uint8Array) {
   let nwritten = 0;

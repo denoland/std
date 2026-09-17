@@ -41,6 +41,10 @@ const MAX_SIZE = 2 ** 32 - 2;
  *
  * assertEquals(new TextDecoder().decode(data), "Hello, world!");
  * ```
+ *
+ * @deprecated Use
+ * {@link https://jsr.io/@std/streams/doc/buffer | `Buffer` from `@std/streams`}
+ * instead. See https://github.com/denoland/std/issues/7258 for details.
  */
 export class Buffer implements Writer, WriterSync, Reader, ReaderSync {
   #buf: Uint8Array; // contents are the bytes buf[off : len(buf)]
