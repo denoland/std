@@ -158,13 +158,87 @@ Deno.test("parse() excludes comments when ignoreComments is true", () => {
 });
 
 // =============================================================================
-// Additional coverage: Processing instructions not in tree
+// Processing Instructions in the Tree
 // =============================================================================
 
-Deno.test("parse() excludes processing instructions from tree", () => {
+Deno.test("parse() includes processing instructions in the tree", () => {
   const doc = parse("<?pi content?><root><?another pi?></root>");
 
-  // PIs are not included in the tree - root should have no children
+  assertEquals(doc.prolog, [
+    { type: "processing_instruction", target: "pi", content: "content" },
+  ]);
+  assertEquals(doc.root.children, [
+    { type: "processing_instruction", target: "another", content: "pi" },
+  ]);
+});
+
+Deno.test("parse() excludes processing instructions when ignoreProcessingInstructions is true", () => {
+  const doc = parse("<?pi content?><root><?another pi?></root><?trailing?>", {
+    ignoreProcessingInstructions: true,
+  });
+
+  assertEquals(doc.prolog, undefined);
+  assertEquals(doc.root.children.length, 0);
+  assertEquals(doc.epilog, undefined);
+});
+
+Deno.test("parse() places processing instructions after the root in epilog", () => {
+  const doc = parse(`<root/><?xml-stylesheet href="style.css"?>`);
+
+  assertEquals(doc.epilog, [{
+    type: "processing_instruction",
+    target: "xml-stylesheet",
+    content: `href="style.css"`,
+  }]);
+});
+
+Deno.test("parse() places comments outside the root in prolog and epilog", () => {
+  const doc = parse("<!-- license --><root/><!-- trailer -->");
+
+  assertEquals(doc.prolog, [{ type: "comment", text: " license " }]);
+  assertEquals(doc.epilog, [{ type: "comment", text: " trailer " }]);
+});
+
+Deno.test("parse() omits prolog and epilog when empty", () => {
+  const doc = parse("<root/>");
+
+  assertEquals("prolog" in doc, false);
+  assertEquals("epilog" in doc, false);
+});
+
+Deno.test("parse() excludes prolog comments when ignoreComments is true", () => {
+  const doc = parse("<!-- a --><?pi?><root/>", { ignoreComments: true });
+
+  assertEquals(doc.prolog, [
+    { type: "processing_instruction", target: "pi", content: "" },
+  ]);
+});
+
+Deno.test("parse() keeps prolog nodes in document order", () => {
+  const doc = parse("<?first?><!-- second --><?third x?><root/>");
+
+  assertEquals(doc.prolog, [
+    { type: "processing_instruction", target: "first", content: "" },
+    { type: "comment", text: " second " },
+    { type: "processing_instruction", target: "third", content: "x" },
+  ]);
+});
+
+Deno.test("parse() does not store whitespace-only text in prolog or epilog", () => {
+  const doc = parse("\n<?pi?>\n<root/>\n");
+
+  assertEquals(doc.prolog, [
+    { type: "processing_instruction", target: "pi", content: "" },
+  ]);
+  assertEquals(doc.epilog, undefined);
+});
+
+Deno.test("parse() does not include processing instructions from DTD internal subset", () => {
+  const doc = parse(`<!DOCTYPE root [<?dtd-pi content?>]><root/>`, {
+    disallowDoctype: false,
+  });
+
+  assertEquals(doc.prolog, undefined);
   assertEquals(doc.root.children.length, 0);
 });
 

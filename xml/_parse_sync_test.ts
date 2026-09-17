@@ -58,6 +58,140 @@ Deno.test("parseSync() handles DOCTYPE with nested brackets in internal subset",
   assertEquals(doc.root.name.local, "root");
 });
 
+Deno.test("parseSync() exposes doctype when disallowDoctype is false", () => {
+  const doc = parseSync("<!DOCTYPE root><root/>", { disallowDoctype: false });
+
+  assertEquals(doc.doctype, {
+    type: "doctype",
+    name: "root",
+    line: 1,
+    column: 1,
+    offset: 0,
+  });
+});
+
+Deno.test("parseSync() exposes doctype system identifier", () => {
+  const doc = parseSync(`<!DOCTYPE html SYSTEM "about:legacy-compat"><html/>`, {
+    disallowDoctype: false,
+  });
+
+  assertEquals(doc.doctype?.name, "html");
+  assertEquals(doc.doctype?.publicId, undefined);
+  assertEquals(doc.doctype?.systemId, "about:legacy-compat");
+});
+
+Deno.test("parseSync() exposes doctype public and system identifiers", () => {
+  const doc = parseSync(
+    `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html/>`,
+    { disallowDoctype: false },
+  );
+
+  assertEquals(doc.doctype?.publicId, "-//W3C//DTD XHTML 1.0 Strict//EN");
+  assertEquals(
+    doc.doctype?.systemId,
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd",
+  );
+});
+
+Deno.test("parseSync() exposes doctype public identifier without system identifier", () => {
+  // Leniently accepted: PUBLIC without a following system literal
+  const doc = parseSync(`<!DOCTYPE root PUBLIC "pub-id"><root/>`, {
+    disallowDoctype: false,
+  });
+
+  assertEquals(doc.doctype?.publicId, "pub-id");
+  assertEquals(doc.doctype?.systemId, undefined);
+});
+
+Deno.test("parseSync() exposes doctype system identifier in single quotes", () => {
+  const doc = parseSync(`<!DOCTYPE root SYSTEM 'sys.dtd'><root/>`, {
+    disallowDoctype: false,
+  });
+
+  assertEquals(doc.doctype?.systemId, "sys.dtd");
+});
+
+Deno.test("parseSync() exposes doctype identifiers when internal subset follows", () => {
+  const doc = parseSync(
+    `<!DOCTYPE root SYSTEM "sys.dtd" [<!ELEMENT root (#PCDATA)>]><root/>`,
+    { disallowDoctype: false },
+  );
+
+  assertEquals(doc.doctype?.name, "root");
+  assertEquals(doc.doctype?.systemId, "sys.dtd");
+});
+
+Deno.test("parseSync() does not capture doctype internal subset", () => {
+  const doc = parseSync(
+    `<!DOCTYPE root [<!ENTITY e "v">]><root/>`,
+    { disallowDoctype: false },
+  );
+
+  // Only name, ids, and position are exposed; the subset is discarded
+  assertEquals(Object.keys(doc.doctype!).toSorted(), [
+    "column",
+    "line",
+    "name",
+    "offset",
+    "type",
+  ]);
+});
+
+Deno.test("parseSync() tracks doctype position after declaration", () => {
+  const doc = parseSync(
+    `<?xml version="1.0"?>\n<!DOCTYPE root><root/>`,
+    { disallowDoctype: false },
+  );
+
+  assertEquals(doc.doctype?.line, 2);
+  assertEquals(doc.doctype?.column, 1);
+  assertEquals(doc.doctype?.offset, 22);
+});
+
+Deno.test("parseSync() zeroes doctype position when trackPosition is false", () => {
+  const doc = parseSync("<!DOCTYPE root><root/>", {
+    disallowDoctype: false,
+    trackPosition: false,
+  });
+
+  assertEquals(doc.doctype?.line, 0);
+  assertEquals(doc.doctype?.column, 0);
+  assertEquals(doc.doctype?.offset, 0);
+});
+
+Deno.test("parseSync() omits doctype when document has none", () => {
+  const doc = parseSync("<root/>", { disallowDoctype: false });
+
+  assertEquals("doctype" in doc, false);
+});
+
+Deno.test("parseSync() rejects DOCTYPE after the root element", () => {
+  assertThrows(
+    () => parseSync("<root/><!DOCTYPE root>", { disallowDoctype: false }),
+    XmlSyntaxError,
+    "Cannot have DOCTYPE declaration after the root element (XML 1.0 §2.8)",
+  );
+});
+
+Deno.test("parseSync() rejects multiple DOCTYPE declarations", () => {
+  assertThrows(
+    () =>
+      parseSync("<!DOCTYPE root><!DOCTYPE root><root/>", {
+        disallowDoctype: false,
+      }),
+    XmlSyntaxError,
+    "Cannot have multiple DOCTYPE declarations (XML 1.0 §2.8)",
+  );
+});
+
+Deno.test("parseSync() accepts doctype name that differs from root element", () => {
+  // Root Element Type is a validity constraint, not well-formedness
+  const doc = parseSync("<!DOCTYPE foo><bar/>", { disallowDoctype: false });
+
+  assertEquals(doc.doctype?.name, "foo");
+  assertEquals(doc.root.name.local, "bar");
+});
+
 // =============================================================================
 // Empty Text Node Handling
 // =============================================================================
