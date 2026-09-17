@@ -61,6 +61,23 @@ export interface ServeDirOptions extends StableServeDirOptions {
    * @default {false}
    */
   cleanUrls?: boolean;
+  /**
+   * How to treat dotfiles (files and directories whose name starts with a
+   * dot):
+   *
+   * - `"ignore"`: respond with `404 Not Found`, as if the file does not
+   *   exist, and hide dotfiles from directory listings.
+   * - `"deny"`: respond with `403 Forbidden` and hide dotfiles from
+   *   directory listings.
+   * - `"allow"`: no special treatment; serve dotfiles and show them in
+   *   directory listings.
+   *
+   * Takes precedence over {@linkcode ServeDirOptions.showDotfiles} when both
+   * are specified.
+   *
+   * @default {"ignore"}
+   */
+  dotfiles?: "allow" | "deny" | "ignore";
 }
 
 /** Interface for serveFile options. */
