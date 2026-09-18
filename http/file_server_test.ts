@@ -15,7 +15,10 @@ import {
   dirname,
   fromFileUrl,
   join,
+  parse,
+  relative,
   resolve,
+  SEPARATOR,
   toFileUrl,
 } from "@std/path";
 import denoConfig from "./deno.json" with { type: "json" };
@@ -520,6 +523,22 @@ Deno.test("serveDir() rejects percent-encoded backslashes", async () => {
 
     assertEquals(res.status, 404);
   }
+});
+
+Deno.test("serveDir() serves descendants when fsRoot is a filesystem root", async () => {
+  const filesystemRoot = parse(TEST_FILE_PATH).root;
+  const requestPath = "/" + relative(filesystemRoot, TEST_FILE_PATH)
+    .split(SEPARATOR)
+    .map(encodeURIComponent)
+    .join("/");
+  const req = new Request(`http://localhost${requestPath}`);
+  const res = await serveDir(req, {
+    quiet: true,
+    fsRoot: filesystemRoot,
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(await res.text(), TEST_FILE_TEXT);
 });
 
 Deno.test("serveDir() shows .. if it makes sense", async () => {
