@@ -156,8 +156,15 @@ export async function exists(
         (await Deno.permissions.query({ name: "read", path })).state ===
           "granted"
       ) {
-        // --allow-read not missing
-        return !options?.isReadable; // PermissionDenied was raised by file system, so the item exists, but can't be read
+        // --allow-read is not missing, so PermissionDenied came from the
+        // OS. If the caller specifically asked whether the path is
+        // readable, "no" is a defensible answer. Otherwise the usual
+        // cause is that the parent directory isn't traversable and we
+        // genuinely can't tell whether the path exists — guessing "true"
+        // silently misleads callers (see #6528). Re-throw so the caller
+        // can decide how to handle the indeterminate case.
+        if (options?.isReadable) return false;
+        throw error;
       }
     }
     throw error;
@@ -294,8 +301,15 @@ export function existsSync(
       if (
         Deno.permissions.querySync({ name: "read", path }).state === "granted"
       ) {
-        // --allow-read not missing
-        return !options?.isReadable; // PermissionDenied was raised by file system, so the item exists, but can't be read
+        // --allow-read is not missing, so PermissionDenied came from the
+        // OS. If the caller specifically asked whether the path is
+        // readable, "no" is a defensible answer. Otherwise the usual
+        // cause is that the parent directory isn't traversable and we
+        // genuinely can't tell whether the path exists — guessing "true"
+        // silently misleads callers (see #6528). Re-throw so the caller
+        // can decide how to handle the indeterminate case.
+        if (options?.isReadable) return false;
+        throw error;
       }
     }
     throw error;
