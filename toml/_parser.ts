@@ -441,7 +441,7 @@ function escapeSequence(scanner: Scanner): ParseResult<string> {
     case "u":
     case "U": {
       // Unicode character
-      const codePointLen = scanner.char() === "u" ? 4 : 6;
+      const codePointLen = scanner.char() === "u" ? 4 : 8;
       const codePoint = parseInt("0x" + scanner.slice(1, 1 + codePointLen), 16);
       const str = String.fromCodePoint(codePoint);
       scanner.next(codePointLen + 1);
