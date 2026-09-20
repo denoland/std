@@ -74,7 +74,6 @@ const ignored = [
   "valid/inline-table/array-03",
   "valid/spec-1.0.0/table-4",
   "valid/string/ends-in-whitespace-escape",
-  
   "valid/string/multiline",
   "valid/string/multiline-empty",
   "valid/string/multiline-quotes",
