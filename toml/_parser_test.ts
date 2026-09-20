@@ -60,7 +60,7 @@ Deno.test({
   fn() {
     const parse = parserFactory(basicString);
     assertEquals(
-      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U01F995"'),
+      parse('"a\\"\\n\\t\\b\\\\\\u3042\\U0001F995"'),
       'a"\n\t\b\\\あ🦕',
     );
     assertEquals(parse('""'), "");
