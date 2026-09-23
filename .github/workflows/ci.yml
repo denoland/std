@@ -77,6 +77,8 @@ jobs:
           - latest
         os:
           - ubuntu-latest
+          - windows-latest
+          - macOS-latest
 
     steps:
       - name: Clone repository
