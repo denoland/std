@@ -263,7 +263,7 @@ export function getCookies(
 ): Partial<Record<string, string>> {
   const cookie = headers.get("Cookie");
   const out: Partial<Record<string, string>> = Object.create(null);
-  if (cookie !== null) {
+  if (cookie) {
     const c = cookie.split(";");
     for (const kv of c) {
       const [cookieKey, ...cookieVal] = kv.split("=");

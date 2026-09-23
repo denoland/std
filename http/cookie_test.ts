@@ -40,6 +40,15 @@ Deno.test({
   },
 });
 
+Deno.test("getCookies() handles empty cookie headers", () => {
+  for (const cookie of ["", " \t "]) {
+    const headers = new Headers({ Cookie: cookie });
+    const cookies = getCookies(headers);
+    assertEquals(cookies, {});
+    assertEquals(Object.getPrototypeOf(cookies), null);
+  }
+});
+
 Deno.test({
   name: "getCookies() has correct types",
   fn() {
