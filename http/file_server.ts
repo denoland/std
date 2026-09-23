@@ -228,18 +228,6 @@ export async function serveFile(
   }
   const fileSize = fileInfo.size;
 
-  if (req.method === METHOD.Head) {
-    // Set content length
-    headers.set(HEADER.ContentLength, `${fileSize}`);
-
-    const status = STATUS_CODE.OK;
-    return new Response(null, {
-      status,
-      statusText: STATUS_TEXT[status],
-      headers,
-    });
-  }
-
   if (etag || fileInfo.mtime) {
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
@@ -261,6 +249,18 @@ export async function serveFile(
         headers,
       });
     }
+  }
+
+  if (req.method === METHOD.Head) {
+    // Set content length
+    headers.set(HEADER.ContentLength, `${fileSize}`);
+
+    const status = STATUS_CODE.OK;
+    return new Response(null, {
+      status,
+      statusText: STATUS_TEXT[status],
+      headers,
+    });
   }
 
   const rangeValue = req.headers.get(HEADER.Range);
