@@ -1,10 +1,10 @@
 This directory contains the test cases copied from the official
 [toml-lang/toml-test](https://github.com/toml-lang/toml-test) repository at
-[`1d35870ef6783d86366ba55d7df703f3f60b3b55`](https://github.com/toml-lang/toml-test/tree/1d35870ef6783d86366ba55d7df703f3f60b3b55).
+[`v2.1.0`](https://github.com/toml-lang/toml-test/tree/v2.1.0).
 
 The license of the copied data is as follows.
 
-https://github.com/toml-lang/toml-test/blob/1d35870ef6783d86366ba55d7df703f3f60b3b55/LICENSE
+https://github.com/toml-lang/toml-test/blob/v2.1.0/LICENSE
 
 ```
 The MIT License (MIT)
