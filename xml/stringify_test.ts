@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
+import { parse } from "./parse.ts";
 import { stringify } from "./stringify.ts";
 import type { XmlDocument, XmlElement } from "./types.ts";
 
@@ -311,6 +312,306 @@ Deno.test("stringify() handles document without declaration", () => {
 });
 
 // =============================================================================
+// DOCTYPE Declaration
+// =============================================================================
+
+const EMPTY_ROOT: XmlElement = {
+  type: "element",
+  name: { raw: "root", local: "root" },
+  attributes: {},
+  children: [],
+};
+
+Deno.test("stringify() serializes doctype with name only", () => {
+  const doc: XmlDocument = {
+    doctype: { type: "doctype", name: "root", line: 1, column: 1, offset: 0 },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(stringify(doc), "<!DOCTYPE root><root/>");
+});
+
+Deno.test("stringify() serializes doctype with system identifier", () => {
+  const doc: XmlDocument = {
+    doctype: {
+      type: "doctype",
+      name: "root",
+      systemId: "about:legacy-compat",
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(
+    stringify(doc),
+    `<!DOCTYPE root SYSTEM "about:legacy-compat"><root/>`,
+  );
+});
+
+Deno.test("stringify() serializes doctype with public and system identifiers", () => {
+  const doc: XmlDocument = {
+    doctype: {
+      type: "doctype",
+      name: "root",
+      publicId: "-//EXAMPLE//DTD Root//EN",
+      systemId: "root.dtd",
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(
+    stringify(doc),
+    `<!DOCTYPE root PUBLIC "-//EXAMPLE//DTD Root//EN" "root.dtd"><root/>`,
+  );
+});
+
+Deno.test("stringify() serializes doctype with public identifier only", () => {
+  const doc: XmlDocument = {
+    doctype: {
+      type: "doctype",
+      name: "root",
+      publicId: "pub-id",
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(stringify(doc), `<!DOCTYPE root PUBLIC "pub-id"><root/>`);
+});
+
+Deno.test("stringify() omits doctype when option is false", () => {
+  const doc: XmlDocument = {
+    doctype: { type: "doctype", name: "root", line: 1, column: 1, offset: 0 },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(stringify(doc, { doctype: false }), "<root/>");
+});
+
+Deno.test("stringify() emits declaration before doctype on separate lines when indenting", () => {
+  const doc: XmlDocument = {
+    declaration: {
+      type: "declaration",
+      version: "1.0",
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    doctype: { type: "doctype", name: "root", line: 1, column: 22, offset: 21 },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(
+    stringify(doc, { indent: "  " }),
+    `<?xml version="1.0"?>\n<!DOCTYPE root>\n<root/>`,
+  );
+});
+
+Deno.test("stringify() single-quotes system identifier containing double quote", () => {
+  const doc: XmlDocument = {
+    doctype: {
+      type: "doctype",
+      name: "root",
+      systemId: `a"b`,
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    root: EMPTY_ROOT,
+  };
+
+  assertEquals(stringify(doc), `<!DOCTYPE root SYSTEM 'a"b'><root/>`);
+});
+
+Deno.test("stringify() throws when system identifier contains both quote kinds", () => {
+  const doc: XmlDocument = {
+    doctype: {
+      type: "doctype",
+      name: "root",
+      systemId: `a"b'c`,
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    "Cannot serialize DOCTYPE: system identifier contains both single and double quotes",
+  );
+});
+
+Deno.test("stringify() throws when public identifier contains double quote", () => {
+  const doc: XmlDocument = {
+    doctype: {
+      type: "doctype",
+      name: "root",
+      publicId: `a"b`,
+      line: 1,
+      column: 1,
+      offset: 0,
+    },
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    `Cannot serialize DOCTYPE: public identifier contains '"'`,
+  );
+});
+
+// =============================================================================
+// Processing Instructions
+// =============================================================================
+
+Deno.test("stringify() serializes processing instruction child", () => {
+  const element: XmlElement = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [{
+      type: "processing_instruction",
+      target: "php",
+      content: "echo 1;",
+    }],
+  };
+
+  assertEquals(stringify(element), "<root><?php echo 1;?></root>");
+});
+
+Deno.test("stringify() serializes processing instruction without content", () => {
+  const element: XmlElement = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [{
+      type: "processing_instruction",
+      target: "marker",
+      content: "",
+    }],
+  };
+
+  assertEquals(stringify(element), "<root><?marker?></root>");
+});
+
+Deno.test("stringify() serializes prolog and epilog around the root", () => {
+  const doc: XmlDocument = {
+    prolog: [
+      {
+        type: "processing_instruction",
+        target: "xml-stylesheet",
+        content: `href="style.css"`,
+      },
+      { type: "comment", text: " license " },
+    ],
+    root: EMPTY_ROOT,
+    epilog: [{ type: "comment", text: " trailer " }],
+  };
+
+  assertEquals(
+    stringify(doc),
+    `<?xml-stylesheet href="style.css"?><!-- license --><root/><!-- trailer -->`,
+  );
+});
+
+Deno.test("stringify() puts prolog and epilog nodes on separate lines when indenting", () => {
+  const doc: XmlDocument = {
+    doctype: { type: "doctype", name: "root", line: 1, column: 1, offset: 0 },
+    prolog: [{
+      type: "processing_instruction",
+      target: "xml-stylesheet",
+      content: `href="style.css"`,
+    }],
+    root: EMPTY_ROOT,
+    epilog: [{ type: "comment", text: " trailer " }],
+  };
+
+  assertEquals(
+    stringify(doc, { indent: "  " }),
+    `<!DOCTYPE root>\n<?xml-stylesheet href="style.css"?>\n<root/>\n<!-- trailer -->`,
+  );
+});
+
+Deno.test("stringify() uses block layout for element with processing instruction child", () => {
+  const element: XmlElement = {
+    type: "element",
+    name: { raw: "root", local: "root" },
+    attributes: {},
+    children: [
+      { type: "text", text: "text" },
+      { type: "processing_instruction", target: "pi", content: "" },
+    ],
+  };
+
+  assertEquals(
+    stringify(element, { indent: "  " }),
+    "<root>\ntext\n  <?pi?>\n</root>",
+  );
+});
+
+Deno.test("stringify() throws on processing instruction with empty target", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "", content: "" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    "Cannot serialize processing instruction: target is empty",
+  );
+});
+
+Deno.test("stringify() throws on processing instruction target with whitespace", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "a b", content: "" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    "Cannot serialize processing instruction: target contains whitespace",
+  );
+});
+
+Deno.test("stringify() throws on processing instruction with reserved target", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "XML", content: "" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    `Cannot serialize processing instruction: target "XML" is reserved (XML 1.0 §2.6)`,
+  );
+});
+
+Deno.test("stringify() throws on processing instruction content containing '?>'", () => {
+  const doc: XmlDocument = {
+    prolog: [{ type: "processing_instruction", target: "pi", content: "a?>b" }],
+    root: EMPTY_ROOT,
+  };
+
+  assertThrows(
+    () => stringify(doc),
+    TypeError,
+    `Cannot serialize processing instruction: content contains "?>"`,
+  );
+});
+
+// =============================================================================
 // Pretty Printing
 // =============================================================================
 
@@ -597,4 +898,43 @@ Deno.test("stringify() allows single hyphen in comment", () => {
     stringify(element),
     "<root><!-- single-hyphen is fine --></root>",
   );
+});
+
+// =============================================================================
+// Round-Trip with parse()
+// =============================================================================
+
+Deno.test("stringify() round-trips doctype from parse()", () => {
+  const xml = `<?xml version="1.0"?><!DOCTYPE root SYSTEM "root.dtd"><root/>`;
+
+  const doc = parse(xml, { disallowDoctype: false });
+
+  assertEquals(stringify(doc), xml);
+});
+
+Deno.test("stringify() round-trips doctype and processing instructions", () => {
+  const xml =
+    `<?xml version="1.0"?><!DOCTYPE root SYSTEM "root.dtd"><?xml-stylesheet href="style.css"?><root><?pi data?></root><!-- trailer -->`;
+
+  const doc = parse(xml, { disallowDoctype: false });
+
+  assertEquals(stringify(doc), xml);
+});
+
+Deno.test("stringify() round-trips doctype with public identifier from parse()", () => {
+  const xml =
+    `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html/>`;
+
+  const doc = parse(xml, { disallowDoctype: false });
+
+  assertEquals(stringify(doc), xml);
+});
+
+Deno.test("stringify() drops doctype internal subset on round-trip", () => {
+  // Documented fidelity limitation: the DTD internal subset is not captured
+  const doc = parse(`<!DOCTYPE root [<!ENTITY e "v">]><root/>`, {
+    disallowDoctype: false,
+  });
+
+  assertEquals(stringify(doc), "<!DOCTYPE root><root/>");
 });

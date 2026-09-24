@@ -10,11 +10,14 @@
 import type {
   StringifyOptions,
   XmlDeclaration,
+  XmlDoctype,
   XmlDocument,
   XmlElement,
   XmlNode,
+  XmlProcessingInstructionNode,
 } from "./types.ts";
 import { encodeAttributeValue, encodeEntities } from "./_entities.ts";
+import { isReservedPiTarget } from "./_common.ts";
 
 export type { StringifyOptions } from "./types.ts";
 
@@ -44,18 +47,26 @@ export function stringify(
   node: XmlDocument | XmlElement,
   options?: StringifyOptions,
 ): string {
-  const { indent, declaration = true } = options ?? {};
+  const { indent, declaration = true, doctype = true } = options ?? {};
 
   // Check if it's a document (has 'root' property) or an element
   if ("root" in node) {
+    const newline = indent !== undefined ? "\n" : "";
+    const indentFn = createIndentCache(indent);
     let result = "";
     if (declaration && node.declaration) {
-      result += serializeDeclaration(node.declaration);
-      if (indent !== undefined) {
-        result += "\n";
-      }
+      result += serializeDeclaration(node.declaration) + newline;
     }
-    result += serializeElement(node.root, indent, 0);
+    if (doctype && node.doctype) {
+      result += serializeDoctype(node.doctype) + newline;
+    }
+    for (const misc of node.prolog ?? []) {
+      result += serializeNode(misc, indent, 0, indentFn) + newline;
+    }
+    result += serializeElement(node.root, indent, 0, indentFn);
+    for (const misc of node.epilog ?? []) {
+      result += newline + serializeNode(misc, indent, 0, indentFn);
+    }
     return result;
   }
 
@@ -72,6 +83,45 @@ function serializeDeclaration(decl: XmlDeclaration): string {
     ? ` standalone="${decl.standalone}"`
     : "";
   return `<?xml version="${decl.version}"${encoding}${standalone}?>`;
+}
+
+/**
+ * Serializes a DOCTYPE declaration to a string.
+ *
+ * A `publicId` without a `systemId` is emitted as-is
+ * (`<!DOCTYPE name PUBLIC "pub">`), matching the DOM `XMLSerializer`:
+ * the parser leniently accepts that form, and round-tripping
+ * parser-produced data must never throw.
+ */
+function serializeDoctype(doctype: XmlDoctype): string {
+  let result = `<!DOCTYPE ${doctype.name}`;
+  if (doctype.publicId !== undefined) {
+    if (doctype.publicId.includes('"')) {
+      throw new TypeError(
+        `Cannot serialize DOCTYPE: public identifier contains '"'`,
+      );
+    }
+    result += ` PUBLIC "${doctype.publicId}"`;
+    if (doctype.systemId !== undefined) {
+      result += ` ${quoteSystemId(doctype.systemId)}`;
+    }
+  } else if (doctype.systemId !== undefined) {
+    result += ` SYSTEM ${quoteSystemId(doctype.systemId)}`;
+  }
+  return `${result}>`;
+}
+
+/**
+ * Quotes a system identifier, preferring double quotes and falling back to
+ * single quotes.
+ * @throws {TypeError} If the system identifier contains both quote kinds.
+ */
+function quoteSystemId(systemId: string): string {
+  if (!systemId.includes('"')) return `"${systemId}"`;
+  if (!systemId.includes("'")) return `'${systemId}'`;
+  throw new TypeError(
+    "Cannot serialize DOCTYPE: system identifier contains both single and double quotes",
+  );
 }
 
 /**
@@ -156,6 +206,13 @@ function serializeNode(
       const prefix = getIndent(depth);
       return `${prefix}<!--${validateCommentText(node.text)}-->`;
     }
+    case "processing_instruction": {
+      const prefix = getIndent(depth);
+      validateProcessingInstruction(node);
+      return node.content === ""
+        ? `${prefix}<?${node.target}?>`
+        : `${prefix}<?${node.target} ${node.content}?>`;
+    }
   }
 }
 
@@ -194,4 +251,40 @@ function validateCommentText(text: string): string {
     );
   }
   return text;
+}
+
+/**
+ * Validates a processing instruction per XML 1.0 §2.6. Only well-formedness
+ * is checked; the failing cases are only reachable via hand-built nodes, as
+ * the parser never produces them.
+ * @throws {TypeError} If the target or content is not serializable.
+ */
+function validateProcessingInstruction(
+  node: XmlProcessingInstructionNode,
+): void {
+  if (node.target === "") {
+    throw new TypeError(
+      "Cannot serialize processing instruction: target is empty",
+    );
+  }
+  if (/\s/.test(node.target)) {
+    throw new TypeError(
+      "Cannot serialize processing instruction: target contains whitespace",
+    );
+  }
+  if (node.target.includes("?>")) {
+    throw new TypeError(
+      `Cannot serialize processing instruction: target contains "?>"`,
+    );
+  }
+  if (isReservedPiTarget(node.target)) {
+    throw new TypeError(
+      `Cannot serialize processing instruction: target "${node.target}" is reserved (XML 1.0 §2.6)`,
+    );
+  }
+  if (node.content.includes("?>")) {
+    throw new TypeError(
+      `Cannot serialize processing instruction: content contains "?>"`,
+    );
+  }
 }
