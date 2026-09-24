@@ -34,6 +34,7 @@
 
 import { normalize as posixNormalize } from "@std/path/posix/normalize";
 import { extname } from "@std/path/extname";
+import { isAbsolute } from "@std/path/is-absolute";
 import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
@@ -226,18 +227,6 @@ export async function serveFile(
   }
   const fileSize = fileInfo.size;
 
-  if (req.method === "HEAD") {
-    // Set content length
-    headers.set("Content-Length", `${fileSize}`);
-
-    const status = STATUS_CODE.OK;
-    return new Response(null, {
-      status,
-      statusText: STATUS_TEXT[status],
-      headers,
-    });
-  }
-
   if (etag || fileInfo.mtime) {
     // If a `if-none-match` header is present and the value matches the tag or
     // if a `if-modified-since` header is present and the value is bigger than
@@ -259,6 +248,18 @@ export async function serveFile(
         headers,
       });
     }
+  }
+
+  if (req.method === "HEAD") {
+    // Set content length
+    headers.set("Content-Length", `${fileSize}`);
+
+    const status = STATUS_CODE.OK;
+    return new Response(null, {
+      status,
+      statusText: STATUS_TEXT[status],
+      headers,
+    });
   }
 
   const rangeValue = req.headers.get("Range");
@@ -755,9 +756,12 @@ async function createServeDirResponse(
   // never serve a path that resolves outside the root directory.
   const resolvedTarget = resolve(target);
   const resolvedFsPath = resolve(fsPath);
+  const relativeFsPath = relative(resolvedTarget, resolvedFsPath);
+
   if (
-    resolvedFsPath !== resolvedTarget &&
-    !resolvedFsPath.startsWith(resolvedTarget + SEPARATOR)
+    isAbsolute(relativeFsPath) ||
+    relativeFsPath === ".." ||
+    relativeFsPath.startsWith(`..${SEPARATOR}`)
   ) {
     return createStandardResponse(STATUS_CODE.NotFound);
   }

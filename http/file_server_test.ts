@@ -15,7 +15,10 @@ import {
   dirname,
   fromFileUrl,
   join,
+  parse,
+  relative,
   resolve,
+  SEPARATOR,
   toFileUrl,
 } from "@std/path";
 import denoConfig from "./deno.json" with { type: "json" };
@@ -520,6 +523,22 @@ Deno.test("serveDir() rejects percent-encoded backslashes", async () => {
 
     assertEquals(res.status, 404);
   }
+});
+
+Deno.test("serveDir() serves descendants when fsRoot is a filesystem root", async () => {
+  const filesystemRoot = parse(TEST_FILE_PATH).root;
+  const requestPath = "/" + relative(filesystemRoot, TEST_FILE_PATH)
+    .split(SEPARATOR)
+    .map(encodeURIComponent)
+    .join("/");
+  const req = new Request(`http://localhost${requestPath}`);
+  const res = await serveDir(req, {
+    quiet: true,
+    fsRoot: filesystemRoot,
+  });
+
+  assertEquals(res.status, 200);
+  assertEquals(await res.text(), TEST_FILE_TEXT);
 });
 
 Deno.test("serveDir() shows .. if it makes sense", async () => {
@@ -1190,6 +1209,52 @@ Deno.test("serveDir() handles HEAD request for a file", async () => {
   assertEquals(res.headers.get("etag"), TEST_FILE_ETAG);
   assertEquals(res.headers.get("last-modified"), TEST_FILE_LAST_MODIFIED);
   assertEquals(res.headers.get("accept-ranges"), "bytes");
+});
+
+Deno.test("serveFile() evaluates conditional HEAD requests", async () => {
+  for (
+    const [headers, status] of [
+      [{ "if-none-match": TEST_FILE_ETAG }, 304],
+      [{ "if-none-match": "*" }, 304],
+      [{ "if-modified-since": TEST_FILE_LAST_MODIFIED }, 304],
+      [{ "if-modified-since": "Thu, 01 Jan 1970 00:00:00 GMT" }, 200],
+      [{ "if-modified-since": "invalid date" }, 200],
+      [{
+        "if-none-match": '"different"',
+        "if-modified-since": TEST_FILE_LAST_MODIFIED,
+      }, 200],
+      [{ range: "bytes=0-1" }, 200],
+    ] as const
+  ) {
+    const res = await serveFile(
+      new Request("http://localhost/test_file.txt", {
+        method: "HEAD",
+        headers,
+      }),
+      TEST_FILE_PATH,
+    );
+    assertEquals(res.body, null);
+    assertEquals(res.status, status, JSON.stringify(headers));
+    assertEquals(res.headers.get("etag"), TEST_FILE_ETAG);
+    assertEquals(res.headers.get("last-modified"), TEST_FILE_LAST_MODIFIED);
+    assertEquals(res.headers.get("content-range"), null);
+    if (status === 200) {
+      assertEquals(res.headers.get("content-length"), `${TEST_FILE_SIZE}`);
+    }
+  }
+});
+
+Deno.test("serveDir() evaluates conditional HEAD requests for files", async () => {
+  const res = await serveDir(
+    new Request("http://localhost/test_file.txt", {
+      method: "HEAD",
+      headers: { "if-none-match": TEST_FILE_ETAG },
+    }),
+    serveDirOptions,
+  );
+  assertEquals(res.body, null);
+  assertEquals(res.status, 304);
+  assertEquals(res.headers.get("etag"), TEST_FILE_ETAG);
 });
 
 Deno.test("serveDir() handles HEAD request for index.html", async () => {
