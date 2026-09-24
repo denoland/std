@@ -30,6 +30,21 @@ const Day = {
  *
  * assertEquals(weekOfYear(new Date("2020-07-10T03:24:00")), 28);
  * ```
+ *
+ * @example Migration to Temporal
+ * ```ts
+ * import { weekOfYear } from "@std/datetime/week-of-year";
+ * import { assertEquals } from "@std/assert";
+ *
+ * // Before
+ * assertEquals(weekOfYear(new Date("2020-12-28T03:24:00")), 53);
+ *
+ * // After
+ * assertEquals(Temporal.PlainDate.from("2020-12-28").weekOfYear, 53);
+ * ```
+ *
+ * @deprecated Use {@linkcode Temporal.PlainDate.prototype.weekOfYear} instead.
+ * See https://github.com/denoland/std/issues/7262 for details.
  */
 export function weekOfYear(date: Date): number {
   const workingDate = new Date(
