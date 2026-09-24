@@ -1,3 +1,78 @@
+### 2026.09.24
+
+#### @std/async 1.5.1 (patch)
+
+- feat(async/unstable): add getDelay option to retry() (#7317)
+- feat(async/unstable): add support for AbortSignal in `pooledMap` (#7240)
+- fix(async/unstable): count circuit breaker requests at completion (#7307)
+- fix(async/unstable): ignore stale half-open requests in circuit breaker
+  (#7306)
+- fix(async/unstable): return a proper async generator from abortable() when no
+  signal is provided (#7278)
+- fix(async): close the source iterator when an abortable() iterable is returned
+  early (#7277)
+- fix(async/unstable): honor abort in pooledMapSettled after source is exhausted
+  (#7275)
+
+#### @std/cbor 0.1.10 (patch)
+
+- fix(cbor): size object keys with multi-byte characters (#7318)
+- fix(cbor): stop leaking inherited keys into encoded objects (#7250)
+
+#### @std/collections 1.4.0 (minor)
+
+- feat(collections): stabilize Iterable input for zip() (#7271)
+
+#### @std/data-structures 1.1.3 (patch)
+
+- fix(data-structures): support array-like inputs in BinarySearchTree.from() and
+  RedBlackTree.from() (#7314)
+- perf(data-structures): make `BinarySearchTree.prototype.lvlValues()` linear
+  (#7323)
+- docs(data-structures): bring RedBlackTree docs in line with its siblings
+  (#7313)
+
+#### @std/http 1.1.4 (patch)
+
+- fix(http/unstable): make `parseCacheControl()` lenient instead of throwing
+  (#7249)
+- fix(http): allow filesystem roots in serveDir() (#7325)
+- fix(http): evaluate cache validators for HEAD requests (#7329)
+- fix(http): reject percent-encoded backslashes in serveDir() paths (#7321)
+
+#### @std/jsonc 1.0.3 (patch)
+
+- fix(jsonc): report unterminated strings as unexpected end of input (#7302)
+- test(jsonc): make the JSONTestSuite harness compare parsed values (#7303)
+
+#### @std/net 1.0.7 (patch)
+
+- fix(net/unstable): parse IP addresses per the URL standard (#7316)
+
+#### @std/streams 1.2.0 (minor)
+
+- feat(streams): stabilize `BatchStream` (#7269)
+
+#### @std/testing 1.0.21 (patch)
+
+- fix(testing): preserve Date subclass prototype under FakeTime (#7309)
+
+#### @std/text 1.1.0 (minor)
+
+- feat(text): stabilize `truncate()` (#7295)
+
+#### @std/uuid 1.1.2 (patch)
+
+- fix(uuid): reject timestamps that exceed 48 bits in v7.generate() (#7284)
+- docs(uuid): document that v7 UUIDs are not monotonic within a millisecond
+  (#7286)
+- docs(uuid): fix stale v1 JSDoc and remove unnecessary casts from examples
+  (#7285)
+
+#### @std/yaml 1.3.0 (minor)
+
+- feat(yaml): stabilize `quoteStyle` option for `stringify()` (#7288)
+
 ### 2026.07.30
 
 #### @std/cache 0.2.4 (patch)
