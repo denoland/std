@@ -53,6 +53,8 @@ for (const modFilePath of MOD_FILE_PATHS) {
         /uuid(\/|\\)v5\.ts$/,
         /uuid(\/|\\)v6\.ts$/,
         /uuid(\/|\\)v7\.ts$/,
+        // Subpath-only: generic export names would pollute the root namespace
+        /http(\/|\\)structured_fields\.ts$/,
         /_test\.ts$/,
         /_bench\.ts$/,
         /\.d\.ts$/,
