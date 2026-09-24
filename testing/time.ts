@@ -711,10 +711,24 @@ export class FakeTime {
   async #advanceAsync(target: number) {
     assertNotInPast(target);
     while (runNextTimer(target)) {
-      await this.runMicrotasks();
+      await this.#drainMicrotasks();
     }
     // A callback or microtask may have moved the clock past the target.
     if (now < target) now = target;
+  }
+
+  /**
+   * Like `runMicrotasks()`, but uses `setImmediate` where available, since a
+   * zero-delay `setTimeout` waits at least 1 ms of real time.
+   */
+  async #drainMicrotasks() {
+    // deno-lint-ignore no-explicit-any
+    const { setImmediate } = globalThis as any;
+    if (typeof setImmediate === "function") {
+      await new Promise((resolve) => setImmediate(resolve));
+    } else {
+      await this.runMicrotasks();
+    }
   }
 
   /**
