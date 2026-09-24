@@ -4,6 +4,7 @@
 import { ascend } from "./comparators.ts";
 import { BinarySearchNode } from "./_binary_search_node.ts";
 import { internals } from "./_binary_search_tree_internals.ts";
+import { Deque } from "./deque.ts";
 
 type Direction = "left" | "right";
 
@@ -16,13 +17,32 @@ type Direction = "left" | "right";
  * self-balancing tree. See {@link RedBlackTree} for an example of how BinarySearchTree
  * can be extended to create a self-balancing binary search tree.
  *
- * | Method        | Average Case | Worst Case |
- * | ------------- | ------------ | ---------- |
- * | find(value)   | O(log n)     | O(n)       |
- * | insert(value) | O(log n)     | O(n)       |
- * | remove(value) | O(log n)     | O(n)       |
- * | min()         | O(log n)     | O(n)       |
- * | max()         | O(log n)     | O(n)       |
+ * The following bounds are for a tree of n values, or an input collection of n
+ * values for `from()`. Traversal bounds cover consuming the entire iterator;
+ * comparison and mapping functions are assumed to take O(1).
+ *
+ * | Method                  | Average Case | Worst Case |
+ * | ----------------------- | ------------ | ---------- |
+ * | find(value)             | O(log n)     | O(n)       |
+ * | insert(value)           | O(log n)     | O(n)       |
+ * | remove(value)           | O(log n)     | O(n)       |
+ * | min()                   | O(log n)     | O(n)       |
+ * | max()                   | O(log n)     | O(n)       |
+ * | size                    | O(1)         | O(1)       |
+ * | isEmpty()               | O(1)         | O(1)       |
+ * | clear()                 | O(1)         | O(1)       |
+ * | lnrValues()             | O(n)         | O(n)       |
+ * | rnlValues()             | O(n)         | O(n)       |
+ * | nlrValues()             | O(n)         | O(n)       |
+ * | lrnValues()             | O(n)         | O(n)       |
+ * | lvlValues()             | O(n)         | O(n)       |
+ * | [Symbol.iterator]()     | O(n)         | O(n)       |
+ * | BinarySearchTree()      | O(1)         | O(1)       |
+ * | BinarySearchTree.from() | O(n log n)   | O(n²)      |
+ *
+ * {@linkcode BinarySearchTree.from} takes O(n) when copying a
+ * {@linkcode BinarySearchTree} without a `compare` or `map` option, since it
+ * clones the tree structure directly instead of reinserting the values.
  *
  * @example Usage
  * ```ts
@@ -724,13 +744,13 @@ export class BinarySearchTree<T> implements Iterable<T> {
    * @returns An iterator that traverses the tree in level-order (BFS).
    */
   *lvlValues(): IterableIterator<T> {
-    const children: BinarySearchNode<T>[] = [];
+    const children = new Deque<BinarySearchNode<T>>();
     let cursor: BinarySearchNode<T> | null = this.#root;
     while (cursor) {
       yield cursor.value;
-      if (cursor.left) children.push(cursor.left);
-      if (cursor.right) children.push(cursor.right);
-      cursor = children.shift() ?? null;
+      if (cursor.left) children.pushBack(cursor.left);
+      if (cursor.right) children.pushBack(cursor.right);
+      cursor = children.popFront() ?? null;
     }
   }
 
