@@ -34,6 +34,7 @@
 
 import { normalize as posixNormalize } from "@std/path/posix/normalize";
 import { extname } from "@std/path/extname";
+import { isAbsolute } from "@std/path/is-absolute";
 import { join } from "@std/path/join";
 import { relative } from "@std/path/relative";
 import { resolve } from "@std/path/resolve";
@@ -757,9 +758,12 @@ async function createServeDirResponse(
   // never serve a path that resolves outside the root directory.
   const resolvedTarget = resolve(target);
   const resolvedFsPath = resolve(fsPath);
+  const relativeFsPath = relative(resolvedTarget, resolvedFsPath);
+
   if (
-    resolvedFsPath !== resolvedTarget &&
-    !resolvedFsPath.startsWith(resolvedTarget + SEPARATOR)
+    isAbsolute(relativeFsPath) ||
+    relativeFsPath === ".." ||
+    relativeFsPath.startsWith(`..${SEPARATOR}`)
   ) {
     return createStandardResponse(STATUS_CODE.NotFound);
   }
