@@ -397,7 +397,12 @@ export function matchIPv6Subnet(addr: string, subnet: string): boolean {
  *
  * `"global"` covers every address that no special-purpose block claims, plus
  * the individual carve-outs that IANA marks globally reachable inside a
- * special-purpose block.
+ * special-purpose block. It means "not special-purpose", not "safe to connect
+ * to"; see {@linkcode classifyIP}.
+ *
+ * `"reserved"` covers both blocks that are not routable, such as `0.0.0.0/8`,
+ * and routable tunnel prefixes, such as 6to4 (`2002::/16`) and Teredo
+ * (`2001::/32`).
  *
  * @experimental **UNSTABLE**: New API, yet to be vetted.
  */
@@ -543,6 +548,11 @@ function unmapIPv4(bytes: Uint8Array): Uint8Array | undefined {
  * they are a route to an address rather than that address, and classify by
  * their own block.
  *
+ * A `"global"` result is therefore not SSRF protection on its own. The IPv4
+ * address inside a NAT64, 6to4, Teredo or IPv4-translated address is not
+ * inspected, so `64:ff9b::a9fe:a9fe` is `"global"` although it reaches
+ * `169.254.169.254`. DNS rebinding and redirects are out of scope too.
+ *
  * This takes an address, not a host string. `URL` normalizes an IPv4 host for
  * you, so `new URL("http://0x7f.1/").hostname` is `"127.0.0.1"`, but it keeps
  * the brackets around an IPv6 host. Strip those before classifying.
@@ -572,6 +582,16 @@ function unmapIPv4(bytes: Uint8Array): Uint8Array | undefined {
  *
  * assertEquals(classifyIP("192.0.0.1"), "reserved")
  * assertEquals(classifyIP("192.0.0.9"), "global")
+ * ```
+ *
+ * @example Embedded IPv4 addresses are not inspected
+ * ```ts
+ * import { classifyIP } from "@std/net/unstable-ip"
+ * import { assertEquals } from "@std/assert"
+ *
+ * // NAT64 and IPv4-translated forms of 169.254.169.254
+ * assertEquals(classifyIP("64:ff9b::a9fe:a9fe"), "global")
+ * assertEquals(classifyIP("::ffff:0:a9fe:a9fe"), "global")
  * ```
  *
  * @example Classify the host of a URL

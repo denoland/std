@@ -504,7 +504,7 @@ Deno.test("classifyIP() classifies IPv4-mapped addresses as the mapped address",
 });
 
 Deno.test("classifyIP() classifies tunnel and translation addresses by their own block", () => {
-  // All six embed 169.254.169.254. Only the mapped form is an alias for it; the
+  // All seven embed 169.254.169.254. Only the mapped form is an alias for it; the
   // others are a route to it, and classify by the block they are in.
   const list: [string, IPAddressKind][] = [
     ["169.254.169.254", "link-local"],
@@ -515,6 +515,8 @@ Deno.test("classifyIP() classifies tunnel and translation addresses by their own
     ["64:ff9b::a9fe:a9fe", "global"],
     // Teredo, RFC 4380: the embedded address is obfuscated by XOR.
     ["2001:0:0:0:0:0:5601:5601", "reserved"],
+    // IPv4-translated, RFC 2765, Section 2.1.
+    ["::ffff:0:a9fe:a9fe", "global"],
     // IPv4-compatible, RFC 4291, Section 2.5.5.1.
     ["::a9fe:a9fe", "reserved"],
   ];
