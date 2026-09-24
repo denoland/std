@@ -1,0 +1,28 @@
+{
+  "name": "telegram-bot-gramio",
+  "version": "1.0.0",
+  "description": "Owner-controlled Telegram business automation bot built with GramIO: publishing, editable buttons, scheduling, destinations, access control and group-mention assistance.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=20.6.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --env-file=.env dist/index.js",
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "db:init": "tsx --env-file=.env src/db/init.ts"
+  },
+  "dependencies": {
+    "@gramio/auto-answer-callback-query": "^0.0.2",
+    "better-sqlite3": "^11.3.0",
+    "gramio": "^0.4.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.7.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}
