@@ -54,12 +54,11 @@ const {
  * | rnlValues()         | O(n)                        |
  * | nlrValues()         | O(n)                        |
  * | lrnValues()         | O(n)                        |
- * | lvlValues()         | O(n²)                       |
+ * | lvlValues()         | O(n)                        |
  * | [Symbol.iterator]() | O(n)                        |
  * | RedBlackTree()      | O(1)                        |
  * | RedBlackTree.from() | O(n) or O(n log n)          |
  *
- * `lvlValues()` uses an array queue whose shifts can take linear time.
  * `RedBlackTree.from()` takes O(n) when copying a {@linkcode RedBlackTree}
  * without a `compare` or `map` option, and O(n log n) otherwise.
  *
