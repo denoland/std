@@ -89,13 +89,20 @@ export function pooledMap<T, R>(
       // Wait until all ongoing events have processed, then close the writer.
       await Promise.all(executing);
       writer.close();
-    } catch {
+    } catch (iterError) {
       const errors = [];
       for (const result of await Promise.allSettled(executing)) {
         if (result.status === "rejected") {
           errors.push(result.reason);
         }
       }
+      // The catch fires both when a transformation rejects and when the
+      // input iterable itself throws. When it's a transformation rejection
+      // the same reason is already in `executing`, but when the iterable
+      // throws the original error would otherwise be swallowed, leaving
+      // callers with an empty AggregateError (see #6716). Add it only if
+      // it isn't already accounted for.
+      if (!errors.includes(iterError)) errors.push(iterError);
       writer.write(Promise.reject(
         new AggregateError(errors, ERROR_WHILE_MAPPING_MESSAGE),
       )).catch(() => {});
