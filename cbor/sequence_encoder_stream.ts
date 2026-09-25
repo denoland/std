@@ -145,7 +145,9 @@ export class CborSequenceEncoderStream
     } else yield encodeCbor(x);
   }
 
-  async *#encodeArray(x: CborStreamInput[]): AsyncGenerator<Uint8Array> {
+  async *#encodeArray(
+    x: readonly CborStreamInput[],
+  ): AsyncGenerator<Uint8Array> {
     if (x.length < 24) yield new Uint8Array([0b100_00000 + x.length]);
     else if (x.length < 2 ** 8) yield new Uint8Array([0b100_11000, x.length]);
     else if (x.length < 2 ** 16) {
@@ -162,7 +164,7 @@ export class CborSequenceEncoderStream
   }
 
   async *#encodeObject(
-    x: { [k: string]: CborStreamInput },
+    x: { readonly [k: string]: CborStreamInput },
   ): AsyncGenerator<Uint8Array> {
     const len = Object.keys(x).length;
     if (len < 24) yield new Uint8Array([0b101_00000 + len]);
