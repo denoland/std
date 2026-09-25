@@ -40,6 +40,31 @@ Deno.test({
   },
 });
 
+Deno.test("getCookies() handles empty cookie headers", () => {
+  for (const cookie of ["", " \t "]) {
+    const headers = new Headers({ Cookie: cookie });
+    const cookies = getCookies(headers);
+    assertEquals(cookies, {});
+    assertEquals(Object.getPrototypeOf(cookies), null);
+  }
+});
+
+Deno.test("getCookies() ignores empty cookie pairs", () => {
+  for (const cookie of ["a=1;", "a=1; \t ;", "; a=1", "a=1;;;"]) {
+    assertEquals(getCookies(new Headers({ Cookie: cookie })), { a: "1" });
+  }
+  assertEquals(getCookies(new Headers({ Cookie: "; ;\t;" })), {});
+  assertEquals(
+    getCookies(new Headers({ Cookie: "a=1; ; b=two  ;" })),
+    { a: "1", b: "two  " },
+  );
+  assertThrows(
+    () => getCookies(new Headers({ Cookie: "a=1;=invalid;" })),
+    SyntaxError,
+    "Cookie cannot start with '='",
+  );
+});
+
 Deno.test({
   name: "getCookies() has correct types",
   fn() {

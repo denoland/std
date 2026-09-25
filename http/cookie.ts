@@ -263,9 +263,10 @@ export function getCookies(
 ): Partial<Record<string, string>> {
   const cookie = headers.get("Cookie");
   const out: Partial<Record<string, string>> = Object.create(null);
-  if (cookie !== null) {
+  if (cookie) {
     const c = cookie.split(";");
     for (const kv of c) {
+      if (kv.trim() === "") continue;
       const [cookieKey, ...cookieVal] = kv.split("=");
       if (cookieKey === "") {
         throw new SyntaxError("Cookie cannot start with '='");
