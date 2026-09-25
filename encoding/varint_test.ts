@@ -130,6 +130,16 @@ Deno.test("encodeVarint() throws when the buffer is too small", () => {
     "the provided buffer is too small",
   );
 });
+Deno.test("encodeVarint() throws when the offset leaves no room in the buffer", () => {
+  // A 10-byte buffer with offset 10 has zero bytes available, so any
+  // positive value must throw rather than silently truncate to an empty
+  // slice. Guards the offset arithmetic on the buffer-too-small path.
+  assertThrows(
+    () => encodeVarint(42n, new Uint8Array(10), 10),
+    RangeError,
+    "the provided buffer is too small",
+  );
+});
 Deno.test("encodeVarint() throws on overflow with negative", () => {
   assertThrows(
     () => encodeVarint(-1),
