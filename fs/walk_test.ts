@@ -1,5 +1,5 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { walk, type WalkOptions, walkSync } from "./walk.ts";
+import { walk, type WalkEntry, type WalkOptions, walkSync } from "./walk.ts";
 import {
   assertArrayIncludes,
   assertEquals,
@@ -336,6 +336,25 @@ Deno.test({
     });
     Deno.removeSync(tempDirPath, { recursive: true });
   },
+});
+
+Deno.test("walkSync() preserves the Generator return type", () => {
+  // Regression test for https://github.com/denoland/std/issues/7099:
+  // the return type must be `Generator<WalkEntry>` so the ES2025 iterator
+  // helpers (`.map`, `.filter`, etc.) are exposed at the type level wherever
+  // the host TypeScript lib defines them. `Generator<T>` requires the
+  // `.return()` / `.throw()` methods that `IterableIterator<T>` leaves
+  // optional, so this assignment fails if the return type is widened back
+  // to `IterableIterator<WalkEntry>`.
+  const iter: Generator<WalkEntry> = walkSync(testdataDir);
+  iter.return(undefined);
+});
+
+Deno.test("walk() preserves the AsyncGenerator return type", async () => {
+  // Regression test for https://github.com/denoland/std/issues/7099 — see the
+  // sync counterpart for rationale.
+  const iter: AsyncGenerator<WalkEntry> = walk(testdataDir);
+  await iter.return(undefined);
 });
 
 Deno.test("walk() rejects with `Deno.errors.NotFound` when root is removed during execution", async () => {
