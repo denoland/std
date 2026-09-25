@@ -1144,12 +1144,76 @@ export function toMatchSnapshot(
     maybeHint,
   );
 
+  matchSnapshot(
+    "toMatchSnapshot",
+    () =>
+      propertyMatchers
+        ? applyPropertyMatchers(context, propertyMatchers, "toMatchSnapshot")
+        : context.value,
+    hint,
+  );
+}
+
+/**
+ * Compares the message of the error thrown by a function (or the reason of a
+ * rejected promise, when used with `.rejects`) against a stored snapshot file.
+ *
+ * @experimental
+ */
+export function toThrowErrorMatchingSnapshot(
+  context: MatcherContext,
+  hint?: string,
+): MatchResult {
+  if (context.isNot) {
+    throw new AssertionError("Snapshot matchers do not support `.not`");
+  }
+
+  let error: unknown;
+  if (typeof context.value === "function") {
+    let threw = false;
+    try {
+      context.value();
+    } catch (err) {
+      threw = true;
+      error = err;
+    }
+    if (!threw) {
+      const defaultMessage = "Received function did not throw";
+      throw new AssertionError(
+        context.customMessage
+          ? `${context.customMessage}: ${defaultMessage}`
+          : defaultMessage,
+      );
+    }
+  } else {
+    // With `.rejects`, the value is already the rejection reason.
+    error = context.value;
+  }
+
+  const message = typeof error === "object" && error !== null &&
+      "message" in error
+    ? error.message
+    : error;
+
+  matchSnapshot("toThrowErrorMatchingSnapshot", () => message, hint);
+}
+
+/**
+ * Serializes the value returned by `getValue` and compares it against the
+ * stored snapshot for the current test, or records it when running in update
+ * mode.
+ */
+function matchSnapshot(
+  matcherName: string,
+  getValue: () => unknown,
+  hint: string | undefined,
+): void {
   // Determine test file path
   const state = getState();
   const testFilePath = state.testPath ?? getTestFileFromStack();
   if (!testFilePath) {
     throw new Error(
-      "toMatchSnapshot: Unable to determine test file path. " +
+      `${matcherName}: Unable to determine test file path. ` +
         "Set it using expect.setState({ testPath: import.meta.url }).",
     );
   }
@@ -1158,7 +1222,7 @@ export function toMatchSnapshot(
   const testName = state.currentTestName;
   if (!testName) {
     throw new Error(
-      "toMatchSnapshot: Unable to determine test name. " +
+      `${matcherName}: Unable to determine test name. ` +
         "Set it using expect.setState({ currentTestName: '<test name>' }).",
     );
   }
@@ -1169,11 +1233,7 @@ export function toMatchSnapshot(
   const count = snapshotCtx.getCount(snapshotName);
   const key = `${snapshotName} ${count}`;
 
-  const valueToSerialize = propertyMatchers
-    ? applyPropertyMatchers(context, propertyMatchers, "toMatchSnapshot")
-    : context.value;
-
-  const actualSnapshot = serialize(valueToSerialize);
+  const actualSnapshot = serialize(getValue());
   snapshotCtx.pushToUpdateQueue(key);
 
   if (getIsUpdate()) {

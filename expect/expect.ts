@@ -59,6 +59,7 @@ import {
   toMatchSnapshot,
   toStrictEqual,
   toThrow,
+  toThrowErrorMatchingSnapshot,
 } from "./_matchers.ts";
 import { addSerializer } from "./_serializer.ts";
 import { isPromiseLike } from "./_utils.ts";
@@ -117,6 +118,7 @@ const matchers: Record<MatcherKey, Matcher> = {
   toReturnWith: toHaveReturnedWith,
   toStrictEqual,
   toThrow,
+  toThrowErrorMatchingSnapshot,
 };
 
 /**

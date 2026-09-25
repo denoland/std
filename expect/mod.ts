@@ -40,6 +40,7 @@
  *   - {@linkcode Expected.toHaveProperty | toHaveProperty}
  *   - {@linkcode Expected.toMatchSnapshot | toMatchSnapshot}
  *   - {@linkcode Expected.toMatchInlineSnapshot | toMatchInlineSnapshot}
+ *   - {@linkcode Expected.toThrowErrorMatchingSnapshot | toThrowErrorMatchingSnapshot}
  * - Mock related matchers:
  *   - {@linkcode Expected.toHaveBeenCalled | toHaveBeenCalled}
  *   - {@linkcode Expected.toHaveBeenCalledTimes | toHaveBeenCalledTimes}
@@ -70,9 +71,8 @@
  *   - {@linkcode expect.extend}
  *   - {@linkcode expect.hasAssertions}
  *
- * Only these functions are still not available:
+ * Only this function is still not available:
  * - Matchers:
- *   - `toThrowErrorMatchingSnapshot`
  *   - `toThrowErrorMatchingInlineSnapshot`
  *
  * The tracking issue to add support for unsupported parts of the API is

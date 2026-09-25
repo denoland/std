@@ -910,6 +910,33 @@ export interface Expected<IsAsync = false> {
   ): void;
 
   /**
+   * Asserts that the function throws an error whose message matches the most
+   * recent snapshot. If no snapshot exists, one will be created when running
+   * in update mode (`-- --update`).
+   *
+   * When used with `.rejects`, the message of the rejection reason is
+   * compared instead.
+   *
+   * Requires `expect.setState({ currentTestName: "..." })` to be called before use.
+   * The test file path is auto-detected from the call stack.
+   *
+   * @example Usage
+   * ```ts ignore
+   * import { expect } from "@std/expect";
+   *
+   * Deno.test("error snapshot test", () => {
+   *   expect.setState({ currentTestName: "error snapshot test", testPath: import.meta.url });
+   *   expect(() => {
+   *     throw new Error("boom");
+   *   }).toThrowErrorMatchingSnapshot();
+   * });
+   * ```
+   *
+   * @param hint An optional hint string appended to the snapshot name.
+   */
+  toThrowErrorMatchingSnapshot(hint?: string): void;
+
+  /**
    * The negation object that allows chaining negated assertions.
    */
   not: IsAsync extends true ? Async<Expected<true>> : Expected<false>;
