@@ -27,6 +27,8 @@
     "./satisfies": "./satisfies.ts",
     "./try-parse": "./try_parse.ts",
     "./try-parse-range": "./try_parse_range.ts",
-    "./types": "./types.ts"
+    "./types": "./types.ts",
+    "./unstable-coerce": "./unstable_coerce.ts",
+    "./unstable-min-version": "./unstable_min_version.ts"
   }
 }
