@@ -266,6 +266,7 @@ export function getCookies(
   if (cookie) {
     const c = cookie.split(";");
     for (const kv of c) {
+      if (kv.trim() === "") continue;
       const [cookieKey, ...cookieVal] = kv.split("=");
       if (cookieKey === "") {
         throw new SyntaxError("Cookie cannot start with '='");
