@@ -131,6 +131,34 @@ export interface TarStreamEntry {
    * The content of the entry, if the entry is a file.
    */
   readable?: ReadableStream<Uint8Array>;
+  /**
+   * Cancels {@linkcode TarStreamEntry.readable} if it has not already been
+   * consumed, so the next entry can be read. This lets callers use the
+   * `await using` form to skip entries without an explicit `cancel()` call:
+   *
+   * ```ts ignore
+   * import { UntarStream } from "@std/tar/untar-stream";
+   *
+   * for await (
+   *   await using entry of (await Deno.open("./out.tar"))
+   *     .readable
+   *     .pipeThrough(new UntarStream())
+   * ) {
+   *   if (entry.path.endsWith(".log")) continue;
+   *   // ...consume entry.readable as usual...
+   * }
+   * ```
+   *
+   * Because disposal cancels {@linkcode TarStreamEntry.readable}, it can reject
+   * in two cases that are easy to miss under implicit `await using` disposal:
+   *
+   * - If `readable` has already **errored**, `cancel()` rejects. Leaving the
+   *   loop body via a thrown error then surfaces a `SuppressedError` wrapping
+   *   both the original error and the cancellation rejection.
+   * - If `readable` is **locked** (a reader was acquired without releasing it,
+   *   or a `pipeTo()` is in progress), `cancel()` throws a `TypeError`.
+   */
+  [Symbol.asyncDispose](): Promise<void>;
 }
 
 /**
@@ -149,7 +177,10 @@ export interface TarStreamEntry {
  * When expanding the archive, as demonstrated in the example, one must decide
  * to either consume the ReadableStream property, if present, or cancel it. The
  * next entry won't be resolved until the previous ReadableStream is either
- * consumed or cancelled.
+ * consumed or cancelled. Each entry also implements
+ * {@linkcode Symbol.asyncDispose}, so binding it with `await using` cancels an
+ * unconsumed `readable` automatically — handy for skipping entries with
+ * `continue` without hanging the loop.
  *
  * ### Understanding Compressed
  * A tar archive may be compressed, often identified by an additional file
@@ -287,6 +318,9 @@ export class UntarStream
           "prefix" in header && header.prefix.length ? header.prefix + "/" : ""
         ) + header.name,
         header,
+        async [Symbol.asyncDispose]() {
+          await this.readable?.cancel();
+        },
       };
       if (!["1", "2", "3", "4", "5", "6"].includes(header.typeflag)) {
         entry.readable = this.#readableFile(header.size);
