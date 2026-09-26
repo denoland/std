@@ -1,6 +1,10 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals } from "@std/assert";
-import * as c from "./colors.ts";
+import { stubProperty } from "@std/testing/unstable-stub-property";
+
+// Enable colors before importing to prevent test failures when NO_COLOR=1.
+using _ = stubProperty(Deno, "noColor", false);
+const c = await import("./colors.ts");
 
 Deno.test("reset()", function () {
   assertEquals(c.reset("foo bar"), "[0mfoo bar[0m");
@@ -19,6 +23,9 @@ Deno.test("red() replaces close characters", function () {
 });
 
 Deno.test("getColorEnabled() handles enabled colors", function () {
+  // setColorEnabled() ignores changes while Deno.noColor is true.
+  // Stub it again during this test so NO_COLOR cannot prevent toggling colors.
+  using _ = stubProperty(Deno, "noColor", false);
   assertEquals(c.getColorEnabled(), true);
   c.setColorEnabled(false);
   assertEquals(c.bgBlue(c.red("foo bar")), "foo bar");
