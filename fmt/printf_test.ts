@@ -5,10 +5,14 @@
 //   https://golang.org/src/fmt/fmt_test.go
 //   BSD: Copyright (c) 2009 The Go Authors. All rights reserved.
 
-import { printf, sprintf } from "./printf.ts";
 import { assertEquals, assertThrows } from "@std/assert";
 import { assertSpyCall, spy, stub } from "@std/testing/mock";
-import * as c from "./colors.ts";
+import { stubProperty } from "@std/testing/unstable-stub-property";
+
+// Enable colors before importing to prevent test failures when NO_COLOR=1.
+using _ = stubProperty(Deno, "noColor", false);
+const { printf, sprintf } = await import("./printf.ts");
+const c = await import("./colors.ts");
 
 Deno.test("sprintf() handles noVerb", function () {
   assertEquals(sprintf("bla"), "bla");
