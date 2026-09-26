@@ -1,6 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
-import { assertEquals } from "@std/assert";
+import { assertEquals, assertThrows } from "@std/assert";
 import { parse } from "./parse.ts";
 import * as path from "@std/path";
 import { assertSpyCall, spy } from "@std/testing/mock";
@@ -276,6 +276,40 @@ Deno.test("parse() expands variables", () => {
     "variables within and without brackets expanded",
   );
 });
+
+Deno.test(
+  "parse() expands an empty process env var as an empty value",
+  { permissions: { env: ["EMPTY"] } },
+  () => {
+    try {
+      Deno.env.set("EMPTY", "");
+      assertEquals(parse("EXPECT_EMPTY=${EMPTY}"), { EXPECT_EMPTY: "" });
+    } finally {
+      Deno.env.delete("EMPTY");
+    }
+  },
+);
+
+Deno.test(
+  "parse() does not require env access when nothing is expanded from the process env",
+  { permissions: "none" },
+  () => {
+    assertEquals(parse("GREETING=hello world"), { GREETING: "hello world" });
+  },
+);
+
+Deno.test(
+  "parse() requires env access when expanding from the process env",
+  { permissions: "none" },
+  () => {
+    assertThrows(
+      () => parse("EXPECT_EMPTY=${EMPTY}"),
+      // deno-lint-ignore no-explicit-any
+      (Deno as any).errors.NotCapable ?? Deno.errors.PermissionDenied,
+      `Requires env access to "EMPTY", run again with the --allow-env flag`,
+    );
+  },
+);
 
 Deno.test("parse() result is not affected by extended Object.prototype", () => {
   // deno-lint-ignore no-explicit-any
