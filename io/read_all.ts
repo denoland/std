@@ -23,6 +23,10 @@ import type { Reader, ReaderSync } from "./types.ts";
  *
  * @param reader The reader to read from
  * @returns The content as Uint8Array
+ *
+ * @deprecated Use
+ * {@link https://jsr.io/@std/streams/doc/to-bytes | `toBytes` from `@std/streams`}
+ * instead. See https://github.com/denoland/std/issues/7258 for details.
  */
 export async function readAll(reader: Reader): Promise<Uint8Array> {
   const chunks: Uint8Array[] = [];
@@ -58,6 +62,10 @@ export async function readAll(reader: Reader): Promise<Uint8Array> {
  *
  * @param reader The reader to read from
  * @returns The content as Uint8Array
+ *
+ * @deprecated Web streams have no synchronous equivalent. See
+ * https://github.com/denoland/std/issues/6284 for the replacement discussion
+ * and https://github.com/denoland/std/issues/7258 for details.
  */
 export function readAllSync(reader: ReaderSync): Uint8Array {
   const chunks: Uint8Array[] = [];

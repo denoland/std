@@ -5,7 +5,12 @@ import { writeAll } from "./write_all.ts";
 import type { Writer } from "./types.ts";
 import { isCloser } from "./_common.ts";
 
-/** Options for {@linkcode toWritableStream}. */
+/**
+ * Options for {@linkcode toWritableStream}.
+ *
+ * @deprecated Use the `writable` property of Deno resources instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
+ */
 // deno-lint-ignore deno-style-guide/naming-convention
 export interface toWritableStreamOptions {
   /**
@@ -30,6 +35,10 @@ export interface toWritableStreamOptions {
  * @param writer The writer to write to
  * @param options The options
  * @returns The writable stream
+ *
+ * @deprecated Use the `writable` property of Deno resources instead, e.g.
+ * {@linkcode Deno.FsFile.writable}. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export function toWritableStream(
   writer: Writer,

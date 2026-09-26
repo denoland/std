@@ -21,6 +21,9 @@ import type { Reader } from "./types.ts";
  *
  * @param streamReader The stream reader to read from
  * @returns The reader
+ *
+ * @deprecated Use the {@linkcode ReadableStream} directly instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export function readerFromStreamReader(
   streamReader: ReadableStreamDefaultReader<Uint8Array>,

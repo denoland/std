@@ -5,7 +5,12 @@ import { DEFAULT_CHUNK_SIZE } from "./_constants.ts";
 import { isCloser } from "./_common.ts";
 import type { Closer, Reader } from "./types.ts";
 
-/** Options for {@linkcode toReadableStream}. */
+/**
+ * Options for {@linkcode toReadableStream}.
+ *
+ * @deprecated Use the `readable` property of Deno resources instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
+ */
 export interface ToReadableStreamOptions {
   /** If the `reader` is also a `Closer`, automatically close the `reader`
    * when `EOF` is encountered, or a read error occurs.
@@ -44,6 +49,10 @@ export interface ToReadableStreamOptions {
  * @param reader The reader to read from
  * @param options The options
  * @returns The readable stream
+ *
+ * @deprecated Use the `readable` property of Deno resources instead, e.g.
+ * {@linkcode Deno.FsFile.readable}. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export function toReadableStream(
   reader: Reader | (Reader & Closer),

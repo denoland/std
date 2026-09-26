@@ -24,6 +24,9 @@ import type { Reader, Writer } from "./types.ts";
  * @param dst The destination to copy to
  * @param options Can be used to tune size of the buffer. Default size is 32kB
  * @returns Number of bytes copied
+ *
+ * @deprecated Use {@linkcode ReadableStream.pipeTo} instead. See
+ * https://github.com/denoland/std/issues/7258 for details.
  */
 export async function copy(
   src: Reader,
