@@ -42,7 +42,6 @@ for (const modFilePath of MOD_FILE_PATHS) {
       maxDepth: 1,
       skip: [
         /unstable/,
-        /dotenv(\/|\\)load\.ts$/,
         /front_matter(\/|\\)yaml\.ts$/,
         /front_matter(\/|\\)json\.ts$/,
         /front_matter(\/|\\)toml\.ts$/,
