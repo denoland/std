@@ -2,11 +2,14 @@
 import { assertEquals } from "@std/assert";
 import { Spinner } from "./unstable_spinner.ts";
 import { restore, stub } from "@std/testing/mock";
+import { stubProperty } from "@std/testing/unstable-stub-property";
 import { FakeTime } from "@std/testing/time";
 
 const decoder = new TextDecoder();
 
 Deno.test("Spinner can start and stop", async () => {
+  // Spinner.start() reads Deno.noColor, so enable colors while this test runs.
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m Loading...",
@@ -49,6 +52,7 @@ Deno.test("Spinner can start and stop", async () => {
 });
 
 Deno.test("Spinner constructor accepts spinner", async () => {
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     const expectedOutput = [
       "\r\x1b[K0\x1b[0m ",
@@ -93,6 +97,7 @@ Deno.test("Spinner constructor accepts spinner", async () => {
 });
 
 Deno.test("Spinner constructor accepts message", async () => {
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m Spinning with Deno 🦕",
@@ -128,6 +133,7 @@ Deno.test("Spinner constructor accepts message", async () => {
 });
 
 Deno.test("Spinner constructor accepts interval", async () => {
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     using time = new FakeTime();
     const expectedOutput = [
@@ -161,6 +167,7 @@ Deno.test("Spinner constructor accepts interval", async () => {
 });
 
 Deno.test("Spinner constructor accepts output", async () => {
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
@@ -203,6 +210,7 @@ Deno.test("Spinner constructor accepts output", async () => {
 });
 
 Deno.test("Spinner constructor accepts each color", async (t) => {
+  using _ = stubProperty(Deno, "noColor", false);
   await t.step("black", async () => {
     try {
       const expectedOutput = [
@@ -521,6 +529,7 @@ Deno.test("Spinner constructor accepts each color", async (t) => {
 });
 
 Deno.test("Spinner.color can set each color", async () => {
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m ",
@@ -588,6 +597,7 @@ Deno.test("Spinner.color can get each color", () => {
 });
 
 Deno.test("Spinner.message can be updated", async () => {
+  using _ = stubProperty(Deno, "noColor", false);
   try {
     const expectedOutput = [
       "\r\x1b[K⠋\x1b[0m One dino 🦕",
