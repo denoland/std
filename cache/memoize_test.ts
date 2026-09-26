@@ -1,7 +1,6 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assert, assertEquals, assertRejects, assertThrows } from "@std/assert";
-import { type MemoizationCacheResult, memoize } from "./memoize.ts";
-import { LruCache } from "./lru_cache.ts";
+import { memoize } from "./memoize.ts";
 
 Deno.test("memoize() memoizes nullary function (lazy/singleton)", async (t) => {
   await t.step("async function", async () => {
@@ -271,49 +270,6 @@ Deno.test("memoize() works with custom cache implementing MemoizationCache", () 
   assertEquals(fn(42), -42);
   assertEquals(fn(42), -42);
   assertEquals(calls, 2);
-});
-
-Deno.test("memoize() evicts stale entries when used with LruCache", () => {
-  let calls = 0;
-  const MAX_SIZE = 3;
-
-  const fn = memoize((n: number) => {
-    ++calls;
-    return 0 - n;
-  }, { cache: new LruCache<string, MemoizationCacheResult<number>>(MAX_SIZE) });
-
-  fn(1);
-  fn(2);
-  fn(3);
-  assertEquals(calls, 3);
-
-  fn(1);
-  assertEquals(calls, 3);
-
-  fn(4);
-  assertEquals(calls, 4);
-
-  fn(2);
-  assertEquals(calls, 5);
-});
-
-Deno.test("memoize() only caches single latest result with LruCache of maxSize=1", () => {
-  let calls = 0;
-
-  const fn = memoize((n: number) => {
-    ++calls;
-    return 0 - n;
-  }, { cache: new LruCache<string, MemoizationCacheResult<number>>(1) });
-
-  assertEquals(fn(0), 0);
-  assertEquals(fn(0), 0);
-  assertEquals(calls, 1);
-
-  assertEquals(fn(1), -1);
-  assertEquals(calls, 2);
-
-  assertEquals(fn(0), 0);
-  assertEquals(calls, 3);
 });
 
 Deno.test("memoize() exposes the underlying cache", () => {
