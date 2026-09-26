@@ -1,6 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
-import { assertEquals } from "@std/assert";
-import * as c from "./styles.ts";
+import { stubProperty } from "@std/testing/unstable-stub-property";
+
+// styles.ts captures Deno.noColor on import and is also loaded by @std/assert.
+// Enable colors before importing either module.
+using _ = stubProperty(Deno, "noColor", false);
+const { assertEquals } = await import("@std/assert");
+const c = await import("./styles.ts");
 
 Deno.test("red() single color", function () {
   assertEquals(c.red("foo bar"), "[31mfoo bar[39m");
