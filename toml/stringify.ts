@@ -134,10 +134,19 @@ class Dumper {
   }
   #printAsInlineValue(value: unknown): string | number {
     if (value instanceof Date) {
-      return `"${this.#printDate(value)}"`;
+      // TOML datetime literals are unquoted (e.g. 1979-05-27T07:32:00Z).
+      // The previous wrapping in quotes caused the value to round-trip as a
+      // string instead of a Date (#7162).
+      return this.#printDate(value);
     } else if (typeof value === "string" || value instanceof RegExp) {
       return JSON.stringify(value.toString());
     } else if (typeof value === "number") {
+      // TOML uses inf / -inf / nan as the keywords for non-finite numbers
+      // (#7162). Letting String(Infinity) / String(NaN) leak produces
+      // tokens that don't reparse.
+      if (Number.isNaN(value)) return "nan";
+      if (value === Infinity) return "inf";
+      if (value === -Infinity) return "-inf";
       return value;
     } else if (typeof value === "boolean") {
       return value.toString();
@@ -185,7 +194,12 @@ class Dumper {
     return `${title} = `;
   }
   #arrayDeclaration(keys: string[], value: unknown[]): string {
-    return `${this.#declaration(keys)}${JSON.stringify(value)}`;
+    // JSON.stringify(value) turned Infinity / -Infinity / NaN into `null` and
+    // wrapped Date values in extra quotes, producing arrays that round-trip
+    // incorrectly (#7162). Use the per-element inline formatter instead so
+    // primitive arrays use the same TOML literal forms as mixed-type arrays.
+    const inline = value.map((x) => this.#printAsInlineValue(x)).join(",");
+    return `${this.#declaration(keys)}[${inline}]`;
   }
   #strDeclaration(keys: string[], value: string): string {
     return `${this.#declaration(keys)}${JSON.stringify(value)}`;
