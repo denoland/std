@@ -3,6 +3,69 @@ import { dedent } from "./unstable_dedent.ts";
 import { assertEquals } from "@std/assert";
 import { stub } from "@std/testing/mock";
 
+Deno.test("dedent() preserves indentation inside multi-line substitution values (#6830)", () => {
+  // The substituted `inner` has lines with 4 and 6 spaces of leading
+  // whitespace. The outer template's computed indent is 6 spaces.
+  // Previously the regex stripped 6 spaces from every line including the
+  // substituted content's "      ...", turning it into "...". The fix
+  // applies indent stripping only to literal template parts so the
+  // substitution survives unchanged.
+  const inner = dedent`
+        [
+          ...
+    ...
+        ]
+  `;
+  assertEquals(inner, "    [\n      ...\n...\n    ]");
+
+  const outerV1 = dedent`
+        a
+            b
+        ${inner}
+      `;
+  assertEquals(outerV1, `a\n    b\n${inner}`);
+
+  // V2 has a wider outer indent (8 spaces vs 6) but the same substitution.
+  // Should produce the identical output — V1 and V2 were diverging before
+  // the fix.
+  const outerV2 = dedent`
+          a
+              b
+          ${inner}
+      `;
+  assertEquals(outerV2, `a\n    b\n${inner}`);
+});
+
+Deno.test("dedent() does not strip indent that originated inside a substituted value", () => {
+  const sub = "    leading-four-spaces";
+  const result = dedent`
+      prefix
+      ${sub}
+  `;
+  // The outer indent is 6 spaces. The substituted line starts with 4
+  // spaces. Those 4 spaces are part of `sub`, not part of the literal
+  // template's indent, so they must survive.
+  assertEquals(result, `prefix\n${sub}`);
+});
+
+Deno.test("dedent() interprets escape sequences in literal template parts", () => {
+  // The literal parts must be treated as cooked template strings, not raw.
+  // A `\\` in source is a single backslash, `<` is `<`, etc. Assembling
+  // from `input.raw` would double the backslashes and break consumers such
+  // as html/escapeJs and assert's diff tests, which build expected values
+  // with `dedent`.
+  const result = dedent`
+    {
+      "a": "\\u003c/script>",
+      "b": "line\ttab"
+    }
+  `;
+  assertEquals(
+    result,
+    `{\n  "a": "\\u003c/script>",\n  "b": "line\ttab"\n}`,
+  );
+});
+
 Deno.test("dedent() handles example 1", () => {
   assertEquals(
     dedent(`
