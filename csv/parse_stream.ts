@@ -65,9 +65,12 @@ export interface CsvParseStreamOptions {
   columns?: readonly string[];
 }
 
+const BYTE_ORDER_MARK = "﻿";
+
 class StreamLineReader implements LineReader {
   #reader: ReadableStreamDefaultReader<string>;
   #done = false;
+  #firstLine = true;
   constructor(reader: ReadableStreamDefaultReader<string>) {
     this.#reader = reader;
   }
@@ -78,8 +81,16 @@ class StreamLineReader implements LineReader {
       this.#done = true;
       return null;
     } else {
+      let line = value!;
+      if (this.#firstLine) {
+        this.#firstLine = false;
+        // Strip leading byte-order mark, matching the behaviour of parse().
+        if (line.startsWith(BYTE_ORDER_MARK)) {
+          line = line.slice(BYTE_ORDER_MARK.length);
+        }
+      }
       // NOTE: Remove trailing CR for compatibility with golang's `encoding/csv`
-      return stripLastCR(value!);
+      return stripLastCR(line);
     }
   }
 
