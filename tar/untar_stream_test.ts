@@ -268,3 +268,103 @@ Deno.test("UntarStream() with extra checksum digits", async () => {
     entry.readable?.cancel();
   }
 });
+
+Deno.test("UntarStream() entry can be skipped with `await using`", async () => {
+  const text = new TextEncoder().encode("Hello World!");
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "file",
+      path: "./a.txt",
+      size: text.length,
+      readable: ReadableStream.from([text.slice()]),
+    },
+    {
+      type: "file",
+      path: "./b.txt",
+      size: text.length,
+      readable: ReadableStream.from([text.slice()]),
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  const seen: string[] = [];
+  for await (await using entry of readable) {
+    seen.push(entry.path);
+    // Intentionally do not consume or cancel `entry.readable` — the
+    // `await using` form must dispose it so the next entry can be read.
+  }
+  assertEquals(seen, ["./a.txt", "./b.txt"]);
+});
+
+Deno.test("UntarStream() asyncDispose is a no-op when readable is absent", async () => {
+  const readable = ReadableStream.from<TarStreamInput>([
+    { type: "directory", path: "./dir" },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    assertEquals(entry.readable, undefined);
+    await entry[Symbol.asyncDispose]();
+  }
+});
+
+Deno.test("UntarStream() disposing an entry leaves the next entry positioned correctly", async () => {
+  const encoder = new TextEncoder();
+  const first = encoder.encode("first entry contents");
+  const second = encoder.encode("second entry contents, a different length");
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "file",
+      path: "./a.txt",
+      size: first.length,
+      readable: ReadableStream.from([first.slice()]),
+    },
+    {
+      type: "file",
+      path: "./b.txt",
+      size: second.length,
+      readable: ReadableStream.from([second.slice()]),
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  const reader = readable[Symbol.asyncIterator]();
+
+  // Skip the first entry by disposing it without consuming `readable`.
+  const a = (await reader.next()).value!;
+  assertEquals(a.path, "./a.txt");
+  await a[Symbol.asyncDispose]();
+
+  // The second entry's bytes must match exactly. Disposal consuming the wrong
+  // number of blocks would still yield the right path here while silently
+  // shifting the contents, so assert the actual bytes to pin the invariant.
+  const b = (await reader.next()).value!;
+  assertEquals(b.path, "./b.txt");
+  const buffer = new Uint8Array(await new Response(b.readable).arrayBuffer());
+  assertEquals(buffer, second);
+
+  assertEquals((await reader.next()).done, true);
+});
+
+Deno.test("UntarStream() asyncDispose is idempotent", async () => {
+  const text = new TextEncoder().encode("Hello World!");
+  const readable = ReadableStream.from<TarStreamInput>([
+    {
+      type: "file",
+      path: "./a.txt",
+      size: text.length,
+      readable: ReadableStream.from([text.slice()]),
+    },
+  ])
+    .pipeThrough(new TarStream())
+    .pipeThrough(new UntarStream());
+
+  for await (const entry of readable) {
+    await entry[Symbol.asyncDispose]();
+    // A second disposal after the readable is already cancelled must not throw.
+    await entry[Symbol.asyncDispose]();
+  }
+});
