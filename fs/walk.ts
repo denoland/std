@@ -469,7 +469,7 @@ export async function* walk(
   if (exts) {
     exts = exts.map((ext) => ext.startsWith(".") ? ext : `.${ext}`);
   }
-  if (includeDirs && include(root, exts, match, skip)) {
+  if (includeDirs && include(root, undefined, match, skip)) {
     yield await createWalkEntry(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
@@ -898,7 +898,7 @@ export function* walkSync(
   if (maxDepth < 0) {
     return;
   }
-  if (includeDirs && include(root, exts, match, skip)) {
+  if (includeDirs && include(root, undefined, match, skip)) {
     yield createWalkEntrySync(root);
   }
   if (maxDepth < 1 || !include(root, undefined, undefined, skip)) {
