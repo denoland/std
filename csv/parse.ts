@@ -524,7 +524,12 @@ export function parse<const T extends ParseOptions>(
 
     const zeroBasedFirstLineIndex = options.skipFirstRow ? 1 : 0;
     return r.map((row, i) => {
-      return convertRowToObject(row, headers, zeroBasedFirstLineIndex + i);
+      return convertRowToObject(
+        row,
+        headers,
+        zeroBasedFirstLineIndex + i,
+        (options?.fieldsPerRecord ?? 0) < 0,
+      );
     }) as ParseResult<ParseOptions, T>;
   }
   return r as ParseResult<ParseOptions, T>;

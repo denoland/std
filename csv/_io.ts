@@ -228,16 +228,26 @@ export function convertRowToObject(
   row: readonly string[],
   headers: readonly string[],
   zeroBasedLine: number,
+  /* allow less fields in a row than headers */
+  allowLessRowFields = false,
 ) {
-  if (row.length !== headers.length) {
+  if (!allowLessRowFields && row.length !== headers.length) {
     throw new Error(
       `Syntax error on line ${
         zeroBasedLine + 1
       }: The record has ${row.length} fields, but the header has ${headers.length} fields`,
     );
   }
+  if (allowLessRowFields && row.length > headers.length) {
+    throw new Error(
+      `Syntax error on line ${
+        zeroBasedLine + 1
+      }: The record has ${row.length} fields, but the header allows maximum ${headers.length} fields`,
+    );
+  }
   const out: Record<string, unknown> = {};
   for (const [index, header] of headers.entries()) {
+    if (index === row.length) break;
     out[header] = row[index];
   }
   return out;
