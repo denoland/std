@@ -39,6 +39,43 @@ export function relative(from: string, to: string): string {
 
   if (from === to) return "";
 
+  // Lowercasing can change the length of a path ("İ" becomes "i̇", which is
+  // two code units), so indexes found in the lowercased strings don't line up
+  // with the original paths. Fall back to comparing path segments, as Node.js
+  // does in https://github.com/nodejs/node/pull/53991
+  if (fromOrig.length !== from.length || toOrig.length !== to.length) {
+    const fromSegments = fromOrig.split("\\");
+    const toSegments = toOrig.split("\\");
+    if (fromSegments[fromSegments.length - 1] === "") fromSegments.pop();
+    if (toSegments[toSegments.length - 1] === "") toSegments.pop();
+
+    const fromSegmentCount = fromSegments.length;
+    const toSegmentCount = toSegments.length;
+    const maxSharedSegments = fromSegmentCount < toSegmentCount
+      ? fromSegmentCount
+      : toSegmentCount;
+
+    let sharedSegments = 0;
+    for (; sharedSegments < maxSharedSegments; sharedSegments++) {
+      const fromSegment = fromSegments[sharedSegments]!;
+      const toSegment = toSegments[sharedSegments]!;
+      if (fromSegment.toLowerCase() !== toSegment.toLowerCase()) break;
+    }
+
+    if (sharedSegments === 0) {
+      return toOrig;
+    } else if (sharedSegments === maxSharedSegments) {
+      if (toSegmentCount > maxSharedSegments) {
+        return toSegments.slice(sharedSegments).join("\\");
+      }
+      // Equal-length paths with all segments shared would have returned above.
+      return "..\\".repeat(fromSegmentCount - 1 - sharedSegments) + "..";
+    }
+
+    return "..\\".repeat(fromSegmentCount - sharedSegments) +
+      toSegments.slice(sharedSegments).join("\\");
+  }
+
   // Trim any leading backslashes
   let fromStart = 0;
   let fromEnd = from.length;

@@ -34,6 +34,22 @@ const relativeTests = {
     ["\\\\foo\\baz", "\\\\foo\\baz-quux", "..\\baz-quux"],
     ["C:\\baz", "\\\\foo\\bar\\baz", "\\\\foo\\bar\\baz"],
     ["\\\\foo\\bar\\baz", "C:\\baz", "C:\\baz"],
+    // Lowercasing can change a path's length ("İ" becomes "i̇"), see
+    // https://github.com/denoland/std/issues/7336
+    [
+      "C:\\İPTV\\player",
+      "C:\\İPTV\\player\\node_modules\\zod\\index.ts",
+      "node_modules\\zod\\index.ts",
+    ],
+    ["C:\\İPTV\\player", "C:\\İPTV\\player\\src\\main.ts", "src\\main.ts"],
+    ["C:\\İ\\İ\\a", "C:\\İ\\İ\\a\\bcd.ts", "bcd.ts"],
+    ["c:\\a\\İ", "c:\\a\\İ\\test.txt", "test.txt"],
+    ["c:\\İ\\a\\İ", "c:\\İ\\b\\İ\\test.txt", "..\\..\\b\\İ\\test.txt"],
+    ["c:\\i̇\\a\\İ", "c:\\İ\\b\\İ\\test.txt", "..\\..\\b\\İ\\test.txt"],
+    ["c:\\ß\\a\\ß", "c:\\ß\\b\\ß\\test.txt", "..\\..\\b\\ß\\test.txt"],
+    ["C:\\", "C:\\İPTV", "İPTV"],
+    ["C:\\İPTV\\player", "C:\\", "..\\.."],
+    ["C:\\İPTV\\player", "D:\\other\\target", "D:\\other\\target"],
   ] as const,
   // arguments          result
   posix: [
