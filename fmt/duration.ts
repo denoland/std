@@ -159,11 +159,7 @@ export function format(
           : addZero(x.value, 2)
       );
       if (ignoreZero) {
-        let cont = true;
-        while (cont) {
-          if (!Number(arr[arr.length - 1])) arr.pop();
-          else cont = false;
-        }
+        while (arr.length && !Number(arr.at(-1))) arr.pop();
       }
       return arr.join(":");
     }

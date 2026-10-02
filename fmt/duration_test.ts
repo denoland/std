@@ -86,6 +86,14 @@ Deno.test({
 });
 
 Deno.test({
+  name: "format() handles digital style ignore zero with zero duration",
+  fn() {
+    assertEquals(format(0, { ignoreZero: true, style: "digital" }), "");
+    assertEquals(format(1e-7, { ignoreZero: true, style: "digital" }), "");
+  },
+});
+
+Deno.test({
   name: "format() handles duration rounding error",
   fn() {
     assertEquals(format(16.342, { ignoreZero: true }), "16ms 342µs");
