@@ -785,11 +785,28 @@ export const value = or([
 
 export const pair = kv(dottedKey, "=", value);
 
+function documentStatement<T>(parser: ParserComponent<T>): ParserComponent<T> {
+  return (scanner: Scanner) => {
+    const result = parser(scanner);
+    if (!result.ok) return result;
+    scanner.skipWhitespaces();
+    // Leave comments and newlines for nextUntilChar().
+    if (
+      !scanner.eof() && !scanner.isCurrentCharEOL() && scanner.char() !== "#"
+    ) {
+      throw new SyntaxError(
+        "Cannot parse the TOML: Expected a newline or end of input after a statement",
+      );
+    }
+    return result;
+  };
+}
+
 export function block(
   scanner: Scanner,
 ): ParseResult<Block> {
   scanner.nextUntilChar();
-  const result = merge(repeat(pair))(scanner);
+  const result = merge(repeat(documentStatement(pair)))(scanner);
   if (result.ok) return success({ type: "Block", value: result.body });
   return failure();
 }
@@ -798,7 +815,7 @@ export const tableHeader = surround("[", dottedKey, "]");
 
 export function table(scanner: Scanner): ParseResult<Table> {
   scanner.nextUntilChar();
-  const header = tableHeader(scanner);
+  const header = documentStatement(tableHeader)(scanner);
   if (!header.ok) return failure();
   scanner.nextUntilChar();
   const b = block(scanner);
@@ -815,7 +832,7 @@ export function tableArray(
   scanner: Scanner,
 ): ParseResult<TableArray> {
   scanner.nextUntilChar();
-  const header = tableArrayHeader(scanner);
+  const header = documentStatement(tableArrayHeader)(scanner);
   if (!header.ok) return failure();
   scanner.nextUntilChar();
   const b = block(scanner);

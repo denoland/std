@@ -893,3 +893,83 @@ Deno.test({
     assert(success);
   },
 });
+
+Deno.test("parse() rejects missing newlines after key/value pairs", () => {
+  for (
+    const input of [
+      "a = 1 b = 2",
+      "a = true\tb = 2",
+      'a = "hello"b = 2',
+      "a = 'hello'\"b\" = 2",
+      'a = """hello""" b = 2',
+      "a = '''hello''' b = 2",
+      'a = """first\nlast""" b = 2',
+      "a = '''first\nlast''' b = 2",
+      "a = [1, 2] b = 2",
+      "a = [\n1,\n2,\n] b = 2",
+      "a = { x = 1, y = [2] } b = 2",
+      "a = 1 [next]",
+      "a = [1][[next]]",
+    ]
+  ) {
+    for (const prefix of ["", "[table]\n", "[[table]]\n"]) {
+      assertThrows(() => parse(prefix + input), SyntaxError);
+    }
+  }
+});
+
+Deno.test("parse() rejects missing newlines after table headers", () => {
+  for (const header of ["[table]", "[[table]]"]) {
+    for (const separator of ["", " ", "\t", "\r"]) {
+      for (const next of ["a = 1", "[next]", "[[next]]"]) {
+        assertThrows(() => parse(header + separator + next), SyntaxError);
+      }
+    }
+  }
+});
+
+Deno.test("parse() accepts newlines and comments after document statements", () => {
+  for (const newline of ["\n", "\r\n"]) {
+    for (const ending of ["", " \t", "#", " # comment"]) {
+      const input = [
+        "a = { x = 1, y = [2, 3] }",
+        "[table]",
+        "b = [1, # array comment" + newline + "2]",
+        'c = """first' + newline + 'last"""',
+        "[[items]]",
+        "d = '''first" + newline + "last'''",
+      ].join(ending + newline) + ending + newline;
+      assertEquals(parse(input), {
+        a: { x: 1, y: [2, 3] },
+        table: { b: [1, 2], c: "first" + newline + "last" },
+        items: [{ d: "first" + newline + "last" }],
+      });
+    }
+  }
+});
+
+Deno.test("parse() accepts document statements at EOF", () => {
+  for (const ending of ["", " \t", "#", " # comment"]) {
+    assertEquals(parse("a = 1" + ending), { a: 1 });
+    assertEquals(parse("[table]" + ending), { table: {} });
+    assertEquals(parse("[[table]]" + ending), { table: [{}] });
+  }
+});
+
+Deno.test("parse() reports the position of a missing statement newline", () => {
+  assertThrows(
+    () => parse("a = 1 b = 2"),
+    SyntaxError,
+    "line 1, column 6",
+  );
+  assertThrows(
+    () => parse("# comment\r\n[table] a = 1"),
+    SyntaxError,
+    "line 2, column 8",
+  );
+  assertThrows(
+    () => parse('a = """first\nlast""" b = 2'),
+    SyntaxError,
+    "line 2, column 8",
+  );
+});
