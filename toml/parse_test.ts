@@ -2,6 +2,39 @@
 import { assert, assertEquals, assertThrows } from "@std/assert";
 import { parse } from "./mod.ts";
 
+Deno.test("parse() handles trailing quotes in multiline strings", () => {
+  for (const quote of ['"', "'"]) {
+    for (const count of [0, 1, 2]) {
+      const delimiter = quote.repeat(3);
+      const value = "content" + quote.repeat(count);
+      assertEquals(
+        parse(`value = ${delimiter}${value}${delimiter}\nnext = 1`),
+        { value, next: 1 },
+      );
+      assertEquals(parse(`value = ${quote.repeat(6 + count)}`), {
+        value: quote.repeat(count),
+      });
+    }
+    assertThrows(
+      () => parse(`value = ${quote.repeat(3)}content${quote.repeat(6)}`),
+      SyntaxError,
+    );
+    for (const count of [6, 7]) {
+      for (const suffix of [`foo${quote} = 1`, " = 1"]) {
+        assertThrows(
+          () =>
+            parse(
+              `value = ${quote.repeat(3)}content${
+                quote.repeat(count)
+              }${suffix}`,
+            ),
+          SyntaxError,
+        );
+      }
+    }
+  }
+});
+
 Deno.test({
   name: "parse() handles error message",
   fn() {

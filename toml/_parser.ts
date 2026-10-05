@@ -546,10 +546,15 @@ export function multilineBasicString(
       `Multi-line string is not closed:\n${acc.join("")}`,
     );
   }
-  // if ends with 4 `"`, push the fist `"` to string
-  if (scanner.char(3) === '"') {
+  // Up to two quotes can appear immediately before the closing delimiter.
+  for (let i = 0; i < 2 && scanner.char(3) === '"'; i++) {
     acc.push('"');
     scanner.next();
+  }
+  if (scanner.char(3) === '"') {
+    throw new SyntaxError(
+      "Multi-line string cannot end with more than five quotes",
+    );
   }
   scanner.next(3); // skip last '""""
   return success(acc.join(""));
@@ -578,10 +583,15 @@ export function multilineLiteralString(
       `Multi-line string is not closed:\n${acc.join("")}`,
     );
   }
-  // if ends with 4 `'`, push the fist `'` to string
-  if (scanner.char(3) === "'") {
+  // Up to two quotes can appear immediately before the closing delimiter.
+  for (let i = 0; i < 2 && scanner.char(3) === "'"; i++) {
     acc.push("'");
     scanner.next();
+  }
+  if (scanner.char(3) === "'") {
+    throw new SyntaxError(
+      "Multi-line string cannot end with more than five quotes",
+    );
   }
   scanner.next(3); // skip last "'''"
   return success(acc.join(""));

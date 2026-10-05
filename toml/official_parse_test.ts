@@ -78,7 +78,6 @@ const ignored = [
   "valid/string/multibyte-escape",
   "valid/string/multiline",
   "valid/string/multiline-empty",
-  "valid/string/multiline-quotes",
   "valid/string/quoted-unicode",
   "valid/string/raw-multiline",
   "valid/string/unicode-escape",
