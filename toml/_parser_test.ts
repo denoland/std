@@ -46,6 +46,54 @@ Deno.test({
 });
 
 Deno.test({
+  name: "Scanner.nextUntilChar() rejects control characters in comments",
+  fn() {
+    const controls = [
+      ...Array.from({ length: 9 }, (_, i) => i),
+      ...Array.from({ length: 21 }, (_, i) => i + 11),
+      127,
+    ];
+    for (const code of controls) {
+      const char = String.fromCharCode(code);
+      for (const suffix of ["", " tail\nvalue"]) {
+        const scanner = new Scanner(`# comment${char}${suffix}`);
+        assertThrows(
+          () => scanner.nextUntilChar(),
+          SyntaxError,
+          "Cannot parse comment: control characters are not allowed",
+        );
+        assertEquals(scanner.position, 9);
+        assertEquals(scanner.char(), char);
+      }
+    }
+  },
+});
+
+Deno.test({
+  name: "Scanner.nextUntilChar() skips valid comments through LF, CRLF or EOF",
+  fn() {
+    for (const ending of ["\n", "\r\n", ""]) {
+      const comment = `#\t ~\u0080\u0085\u2028 café 中文 🦕${ending}`;
+      const scanner = new Scanner(comment + (ending ? "value" : ""));
+      scanner.nextUntilChar();
+      assertEquals(scanner.position, comment.length);
+      assertEquals(scanner.char(), ending ? "v" : "");
+      assertEquals(scanner.eof(), ending === "");
+    }
+  },
+});
+
+Deno.test({
+  name: "Scanner.nextUntilChar() leaves comments when skipComments is false",
+  fn() {
+    const scanner = new Scanner(" \t\r\n#\u0000 comment");
+    scanner.nextUntilChar({ skipComments: false });
+    assertEquals(scanner.position, 4);
+    assertEquals(scanner.char(), "#");
+  },
+});
+
+Deno.test({
   name: "parse() handles bare key",
   fn() {
     const parse = parserFactory(bareKey);

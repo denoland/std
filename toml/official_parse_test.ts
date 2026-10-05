@@ -14,7 +14,6 @@ const ignored = [
   // Lacking implemention
   "invalid/array/extending-table",
   "invalid/array/tables-01",
-  "invalid/control/comment-",
   "invalid/control/multi-",
   "invalid/control/rawmulti-",
   "invalid/control/rawstring-",

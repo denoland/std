@@ -732,6 +732,62 @@ objectives = [ # Comment
 });
 
 Deno.test({
+  name: "parse() rejects control characters in comments",
+  fn() {
+    for (
+      const source of [
+        "# comment\u0000\nvalue = 1",
+        "value = 1 # comment\u007f\nnext = 2",
+        "value = [# comment\u000b\n1]",
+        "value = [1, # comment\u000c\n2]",
+        "[table] # comment\u001f\nvalue = 1",
+        "[[table]] # comment\u0001\nvalue = 1",
+        "value = 1 # comment\r tail\nnext = 2",
+        "# comment\r",
+      ]
+    ) {
+      assertThrows(() => parse(source), SyntaxError);
+    }
+    const error = assertThrows(
+      () => parse("value = 1\n# comment\u0000"),
+      SyntaxError,
+    );
+    assertEquals(
+      error.message,
+      "Parse error on line 2, column 9: Cannot parse comment: control characters are not allowed",
+    );
+  },
+});
+
+Deno.test({
+  name: "parse() accepts valid comment characters and line endings",
+  fn() {
+    const comment = "#\t ~\u0080\u0085\u2028 café 中文 🦕";
+    for (const ending of ["\n", "\r\n"]) {
+      assertEquals(
+        parse(
+          `${comment}${ending}value = 1 # comment${ending}next = [2, # comment${ending}3] #`,
+        ),
+        { value: 1, next: [2, 3] },
+      );
+    }
+    assertEquals(parse(comment), {});
+    assertEquals(parse("#"), {});
+  },
+});
+
+Deno.test({
+  name: "parse() preserves hashes and escaped controls in strings",
+  fn() {
+    assertEquals(parse('value = "#\\u0000" # comment'), { value: "#\u0000" });
+    assertEquals(parse("value = '#\\u0000' # comment"), { value: "#\\u0000" });
+    assertEquals(parse('value = """\\\n#\\u0000""" # comment'), {
+      value: "#\u0000",
+    });
+  },
+});
+
+Deno.test({
   name: "parse() handles inline array of inline table",
   fn() {
     const expected = {

@@ -104,6 +104,12 @@ export class Scanner {
       } else if (options.skipComments && this.char() === "#") {
         // entering comment
         while (!this.isCurrentCharEOL() && !this.eof()) {
+          const code = this.char().charCodeAt(0);
+          if ((code < 0x20 && code !== 0x09) || code === 0x7f) {
+            throw new SyntaxError(
+              "Cannot parse comment: control characters are not allowed",
+            );
+          }
           this.next();
         }
       } else {
