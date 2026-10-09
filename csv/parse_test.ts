@@ -163,6 +163,34 @@ Deno.test({
     });
 
     await t.step({
+      name: "LeadingBlankLineFieldCount",
+      fn() {
+        const input = "\na,b,c\nd,e,f";
+        assertEquals(
+          parse(input, { fieldsPerRecord: 0 }),
+          [
+            ["a", "b", "c"],
+            ["d", "e", "f"],
+          ],
+        );
+      },
+    });
+
+    await t.step({
+      name: "LeadingCommentFieldCount",
+      fn() {
+        const input = "# comment\na,b,c\nd,e,f";
+        assertEquals(
+          parse(input, { comment: "#", fieldsPerRecord: 0 }),
+          [
+            ["a", "b", "c"],
+            ["d", "e", "f"],
+          ],
+        );
+      },
+    });
+
+    await t.step({
       name: "TrimSpace",
       fn() {
         const input = " a,  b,   c\n";

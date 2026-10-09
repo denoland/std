@@ -418,6 +418,11 @@ export class CsvParseStream<
       this.#options,
       this.#zeroBasedLineIndex,
     );
+    if (record.length === 0) {
+      // Found a comment line
+      this.#zeroBasedLineIndex++;
+      return this.#pull(controller);
+    }
 
     if (this.#isFirstRow) {
       this.#isFirstRow = false;

@@ -166,6 +166,24 @@ field"`,
       },
       {
         name:
+          "fieldsPerRecord = 0 - a leading comment line is not counted as the first row",
+        input: "# comment\na,b,c\nd,e,f",
+        output: [
+          ["a", "b", "c"],
+          ["d", "e", "f"],
+        ],
+        comment: "#",
+        fieldsPerRecord: 0,
+      },
+      {
+        name: "skipFirstRow - a leading comment line is not used as the header",
+        input: "# comment\na,b\n1,2",
+        output: [{ a: "1", b: "2" }],
+        comment: "#",
+        skipFirstRow: true,
+      },
+      {
+        name:
           "fieldsPerRecord = 3 - SyntaxError is thrown when the number of fields is not 2",
         input: "a,b,c\nd,e",
         fieldsPerRecord: 3,

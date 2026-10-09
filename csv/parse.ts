@@ -210,7 +210,6 @@ class Parser {
     const result: string[][] = [];
 
     let lineResult: string[];
-    let first = true;
     let lineIndex = 0;
 
     const INVALID_RUNE = ["\r", "\n", '"'];
@@ -249,16 +248,13 @@ class Parser {
       if (r === null) break;
       lineResult = r;
       lineIndex++;
-      // If fieldsPerRecord is 0, Read sets it to
-      // the number of fields in the first record
-      if (first) {
-        first = false;
+
+      if (lineResult.length > 0) {
+        // If fieldsPerRecord is 0, Read sets it to
+        // the number of fields in the first record
         if (_nbFields === "UNINITIALIZED") {
           _nbFields = lineResult.length;
         }
-      }
-
-      if (lineResult.length > 0) {
         if (typeof _nbFields === "number" && _nbFields !== lineResult.length) {
           throw new SyntaxError(
             `Syntax error on line ${lineIndex}: expected ${_nbFields} fields but got ${lineResult.length}`,
