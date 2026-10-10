@@ -724,6 +724,45 @@ Deno.test("serveFile() serves ok response for empty file range request", async (
   assertEquals(res.statusText, "OK");
 });
 
+for (
+  const [name, serve] of [
+    ["serveFile", (req: Request) => serveFile(req, TEST_FILE_PATH)],
+    ["serveDir", (req: Request) => serveDir(req, serveDirOptions)],
+  ] as const
+) {
+  for (
+    const [validator, status] of [
+      [TEST_FILE_LAST_MODIFIED, 206],
+      ["Thu, 01 Jan 1970 00:00:00 GMT", 200],
+      ["Thu, 01 Jan 2099 00:00:00 GMT", 200],
+      [TEST_FILE_ETAG, 200],
+      [TEST_FILE_ETAG.slice(2), 200],
+      [`"${TEST_FILE_LAST_MODIFIED}"`, 200],
+      ['"outdated"', 200],
+      ["invalid", 200],
+    ] as const
+  ) {
+    Deno.test(`${name}() evaluates If-Range ${validator}`, async () => {
+      const res = await serve(
+        new Request("http://localhost/test_file.txt", {
+          headers: { range: "bytes=0-9", "if-range": validator },
+        }),
+      );
+      const text = await res.text();
+      assertEquals(res.status, status);
+      assertEquals(
+        text,
+        status === 206 ? TEST_FILE_TEXT.slice(0, 10) : TEST_FILE_TEXT,
+      );
+      assertEquals(
+        res.headers.get("content-range"),
+        status === 206 ? `bytes 0-9/${TEST_FILE_SIZE}` : null,
+      );
+      assertEquals(res.headers.get("content-length"), String(text.length));
+    });
+  }
+}
+
 Deno.test("serveDir() sets accept-ranges header to bytes for directory listing", async () => {
   const req = new Request("http://localhost/");
   const res = await serveDir(req, serveDirOptions);

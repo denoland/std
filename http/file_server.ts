@@ -264,7 +264,14 @@ export async function serveFile(
     });
   }
 
-  const rangeValue = req.headers.get(HEADER.Range);
+  const ifRangeValue = req.headers.get(HEADER.IfRange);
+  // A stale validator must restart the download, not mix two file versions.
+  const rangeValue = ifRangeValue === null ||
+      (!ifRangeValue.startsWith('"') && fileInfo.mtime &&
+        new Date(ifRangeValue).getTime() ===
+          Math.floor(fileInfo.mtime.getTime() / 1000) * 1000)
+    ? req.headers.get(HEADER.Range)
+    : null;
 
   // handle range request
   // Note: Some clients add a Range header to all requests to limit the size of the response.
