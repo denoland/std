@@ -77,7 +77,8 @@ export function pooledMap<T, R>(
         // fail the race, taking us to the catch block where all currently
         // executing jobs are allowed to finish and all rejections among them
         // can be reported together.
-        writer.write(p);
+        // The consumer can stop iterating while a write is still pending.
+        writer.write(p).catch(() => {});
         const e: Promise<unknown> = p.then(() =>
           executing.splice(executing.indexOf(e), 1)
         );
@@ -88,7 +89,7 @@ export function pooledMap<T, R>(
       }
       // Wait until all ongoing events have processed, then close the writer.
       await Promise.all(executing);
-      writer.close();
+      writer.close().catch(() => {});
     } catch {
       const errors = [];
       for (const result of await Promise.allSettled(executing)) {
@@ -96,9 +97,12 @@ export function pooledMap<T, R>(
           errors.push(result.reason);
         }
       }
-      writer.write(Promise.reject(
+      const error = Promise.reject(
         new AggregateError(errors, ERROR_WHILE_MAPPING_MESSAGE),
-      )).catch(() => {});
+      );
+      // Cancellation can prevent the transform from observing this rejection.
+      error.catch(() => {});
+      writer.write(error).catch(() => {});
     }
   })();
   // Feature test until browser coverage is adequate

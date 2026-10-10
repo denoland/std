@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { delay } from "./delay.ts";
 import { pooledMap } from "./pool.ts";
+import { pooledMap as unstablePooledMap } from "./unstable_pool.ts";
 import {
   assertEquals,
   assertGreaterOrEqual,
@@ -10,6 +11,41 @@ import {
   assertThrows,
 } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
+
+for (
+  const [name, pool] of [
+    ["stable", pooledMap],
+    [
+      "unstable",
+      (
+        limit: number,
+        values: number[],
+        fn: (value: number) => Promise<number>,
+      ) => unstablePooledMap(values, fn, limit),
+    ],
+  ] as const
+) {
+  for (const poolLimit of [1, 4]) {
+    for (const reject of [false, true]) {
+      Deno.test(`pooledMap() permits early return (${name}, ${poolLimit}, ${reject})`, async () => {
+        const results = pool(
+          poolLimit,
+          [1, 2, 3],
+          (value) =>
+            reject && value > 1
+              ? Promise.reject(new Error("mapping failed"))
+              : Promise.resolve(value),
+        );
+        for await (const value of results) {
+          assertEquals(value, 1);
+          break;
+        }
+        // Let pending writes and transformations settle after cancellation.
+        await delay(0);
+      });
+    }
+  }
+}
 
 Deno.test("pooledMap() throws for invalid poolLimit", () => {
   const noop = (i: number) => Promise.resolve(i);

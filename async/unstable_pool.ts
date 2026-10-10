@@ -255,9 +255,12 @@ export function pooledMap<T, R>(
       if (errors.length === 0 && signal?.aborted) {
         writer.write(Promise.resolve(ABORT_SENTINEL)).catch(() => {});
       } else {
-        writer.write(Promise.reject(
+        const error = Promise.reject(
           new AggregateError(errors, ERROR_WHILE_MAPPING_MESSAGE),
-        )).catch(() => {});
+        );
+        // Cancellation can prevent the transform from observing this rejection.
+        error.catch(() => {});
+        writer.write(error).catch(() => {});
       }
     } finally {
       removeAbortListener?.();
