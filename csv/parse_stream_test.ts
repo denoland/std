@@ -1,13 +1,47 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { CsvParseStream } from "./parse_stream.ts";
 import type { CsvParseStreamOptions } from "./parse_stream.ts";
-import { assert, assertEquals, assertRejects } from "@std/assert";
+import {
+  assert,
+  assertEquals,
+  assertRejects,
+  assertStrictEquals,
+} from "@std/assert";
 import type { AssertTrue, IsExact } from "@std/testing/types";
 import { fromFileUrl, join } from "@std/path";
 import { delay } from "@std/async/delay";
 
 const testdataDir = join(fromFileUrl(import.meta.url), "../testdata");
 const encoder = new TextEncoder();
+
+for (
+  const [name, input, options, errorType] of [
+    ["invalid quote", 'a"b,c\n', {}, SyntaxError],
+    ["field count", "a,b,c\n", { fieldsPerRecord: 2 }, SyntaxError],
+    ["header count", "a,b,c\n", { columns: ["a", "b"] }, Error],
+  ] as const
+) {
+  Deno.test(`CsvParseStream cancels its input on ${name} error`, async () => {
+    let cancelReason: unknown;
+    const source = new ReadableStream<string>({
+      pull(controller) {
+        controller.enqueue(input);
+      },
+      cancel(reason) {
+        cancelReason = reason;
+      },
+    });
+    const parser = new CsvParseStream(options);
+    const piping = source.pipeTo(parser.writable);
+    const rejected = assertRejects(() => piping, errorType);
+    const error = await assertRejects(
+      () => parser.readable.getReader().read(),
+      errorType,
+    );
+    assertStrictEquals(await rejected, error);
+    assertStrictEquals(cancelReason, error);
+  });
+}
 
 Deno.test({
   name: "CsvParseStream should work with Deno.FsFile's readable",

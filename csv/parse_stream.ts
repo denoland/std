@@ -87,8 +87,8 @@ class StreamLineReader implements LineReader {
     return this.#done;
   }
 
-  cancel() {
-    this.#reader.cancel();
+  cancel(reason?: unknown) {
+    return this.#reader.cancel(reason);
   }
 }
 
@@ -389,8 +389,12 @@ export class CsvParseStream<
     this.#lines = new TextDelimiterStream("\n");
     this.#lineReader = new StreamLineReader(this.#lines.readable.getReader());
     this.#readable = new ReadableStream({
-      pull: (controller) => this.#pull(controller),
-      cancel: () => this.#lineReader.cancel(),
+      pull: (controller) =>
+        this.#pull(controller).catch((error) => {
+          controller.error(error);
+          return this.#lineReader.cancel(error);
+        }),
+      cancel: (reason) => this.#lineReader.cancel(reason),
     });
   }
 
