@@ -84,7 +84,8 @@ function parseValue(_key: string, value: string) {
  * {@linkcode ParseOptions.reviver}.
  *
  * Nested sections, repeated key names within a section, and key/value arrays
- * are not supported. White space padding and lines starting with `#`, `;`, or
+ * are not supported. A repeated section name merges its keys into the first
+ * occurrence of that section. White space padding and lines starting with `#`, `;`, or
  * `//` will be treated as comments.
  *
  * @throws {SyntaxError} If the INI string is invalid or if it contains
@@ -172,13 +173,23 @@ export function parse<T extends object>(
         );
       }
 
-      object = {};
-      Object.defineProperty(root, sectionName, {
-        value: object,
-        writable: true,
-        enumerable: true,
-        configurable: true,
-      });
+      const existing = (root as Record<string, unknown>)[sectionName];
+      if (
+        existing !== null && typeof existing === "object" &&
+        !Array.isArray(existing)
+      ) {
+        // A repeated section name adds its keys to the existing section
+        // instead of silently replacing it.
+        object = existing;
+      } else {
+        object = {};
+        Object.defineProperty(root, sectionName, {
+          value: object,
+          writable: true,
+          enumerable: true,
+          configurable: true,
+        });
+      }
 
       continue;
     }

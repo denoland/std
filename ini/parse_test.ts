@@ -109,6 +109,22 @@ Deno.test({
 });
 
 Deno.test({
+  name: "parse() merges repeated sections",
+  fn() {
+    // A repeated section name keeps the earlier keys instead of dropping them
+    assertEquals(parse("[s]\na=1\n[s]\nb=2"), { s: { a: 1, b: 2 } });
+    assertEquals(parse("[db]\nhost=a\nport=1\n[db]\nuser=b"), {
+      db: { host: "a", port: 1, user: "b" },
+    });
+    // A key repeated across the two occurrences follows the same
+    // last-assignment-wins rule as a repeated key within one section
+    assertEquals(parse("[s]\na=1\n[s]\na=2"), { s: { a: 2 } });
+    // A top-level key sharing the section name is still replaced by the section
+    assertEquals(parse("s=1\n[s]\na=2"), { s: { a: 2 } });
+  },
+});
+
+Deno.test({
   name: "parse() does not parse other than strings",
   fn() {
     assertThrows(
