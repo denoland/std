@@ -4,6 +4,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 
 import { assertEquals, assertThrows } from "@std/assert";
+import { parse as parseYaml } from "./parse.ts";
 import { stringify } from "./stringify.ts";
 import {
   type ImplicitType,
@@ -796,6 +797,33 @@ Deno.test({
       }),
       `foo: [bar,baz]\nbar: {"hello":world}\n`,
     );
+  },
+});
+
+Deno.test({
+  name: "stringify() does not double quote keys with condenseFlow option",
+  fn() {
+    const options = { flowLevel: 0, condenseFlow: true };
+    assertEquals(
+      stringify({ "1": 1, "#": 2, "": 3 }, options),
+      `{'1':1, '#':2, '':3}\n`,
+    );
+    assertEquals(
+      stringify({ 'a"b': 1, "a\\nb": 2, "a\nb": 3 }, options),
+      `{"a\\"b":1, "a\\\\nb":2, "a\\nb":3}\n`,
+    );
+
+    const object = {
+      "1": 1,
+      "true": 2,
+      "#": 3,
+      "": 4,
+      'a"b': 5,
+      "a\\nb": 6,
+      "a\nb": 7,
+      ["x".repeat(1100)]: 8,
+    };
+    assertEquals(parseYaml(stringify(object, options)), object);
   },
 });
 

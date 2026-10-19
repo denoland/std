@@ -614,18 +614,28 @@ export class DumperState {
     object: Record<string, unknown>,
     { level }: { level: number },
   ): string {
-    const quote = this.condenseFlow ? '"' : "";
     const separator = this.condenseFlow ? ":" : ": ";
 
     const results = [];
     for (const [key, value] of Object.entries(object)) {
-      const keyString = this.stringifyNode(key, {
+      let keyString = this.stringifyNode(key, {
         level,
         block: false,
         compact: false,
         isKey: false,
       });
       if (keyString === null) continue; // Skip this pair because of invalid key;
+
+      // A condensed pair has no space after the colon, so the key must be a
+      // quoted scalar. Wrap plain keys in double quotes, but leave keys that
+      // are already quoted as they are.
+      if (
+        this.condenseFlow &&
+        keyString[0] !== "'" &&
+        keyString[0] !== '"'
+      ) {
+        keyString = `"${escapeString(keyString)}"`;
+      }
 
       const valueString = this.stringifyNode(value, {
         level,
@@ -637,7 +647,7 @@ export class DumperState {
 
       const keyPrefix = keyString.length > 1024 ? "? " : "";
       results.push(
-        quote + keyPrefix + keyString + quote + separator + valueString,
+        keyPrefix + keyString + separator + valueString,
       );
     }
 
