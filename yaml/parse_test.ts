@@ -1226,3 +1226,33 @@ Deno.test({
     );
   },
 });
+
+Deno.test({
+  name: "parse() rejects tab characters used as block indentation",
+  fn() {
+    for (
+      const yaml of [
+        "a:\n\tb: 1",
+        "a:\n  b:\n\tc: 2",
+        "a:\n \tb: 1",
+        "a:\n\t- 1",
+      ]
+    ) {
+      assertThrows(
+        () => parse(yaml),
+        YamlSyntaxError,
+        "Tab characters must not be used in indentation",
+      );
+    }
+  },
+});
+
+Deno.test({
+  name: "parse() still accepts tabs that are not indentation",
+  fn() {
+    assertEquals(parse("a:\t1"), { a: 1 });
+    assertEquals(parse("- a\n-\tb"), ["a", "b"]);
+    assertEquals(parse("a:\n  \t# comment\n  b: 1"), { a: { b: 1 } });
+    assertEquals(parse("a:\n\t\n  b: 1"), { a: { b: 1 } });
+  },
+});

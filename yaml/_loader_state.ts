@@ -33,6 +33,7 @@ import {
   SINGLE_QUOTE,
   SMALLER_THAN,
   SPACE,
+  TAB,
   VERTICAL_LINE,
 } from "./_chars.ts";
 
@@ -218,6 +219,8 @@ export class LoaderState {
   lineIndent = 0;
   lineStart = 0;
   line = 0;
+  /** Line on which a tab was found before any other content, or -1. */
+  tabIndentLine = -1;
   onWarning: ((error: YamlSyntaxError) => void) | undefined;
   allowDuplicateKeys: boolean;
   implicitTypes: Type<"scalar">[];
@@ -269,6 +272,14 @@ export class LoaderState {
       this.lineIndent += 1;
       this.#scanner.next();
       ch = this.#scanner.peek();
+    }
+  }
+
+  #assertNoTabIndent() {
+    if (this.tabIndentLine === this.line) {
+      throw this.#createError(
+        "Tab characters must not be used in indentation",
+      );
     }
   }
 
@@ -393,6 +404,7 @@ export class LoaderState {
         break;
       }
 
+      this.#assertNoTabIndent();
       detected = true;
       this.#scanner.next();
 
@@ -560,6 +572,12 @@ export class LoaderState {
     let ch = this.#scanner.peek();
 
     while (ch !== 0) {
+      if (
+        ch === TAB &&
+        this.#scanner.position - this.lineStart === this.lineIndent
+      ) {
+        this.tabIndentLine = this.line;
+      }
       this.skipWhitespaces();
       ch = this.#scanner.peek();
 
@@ -1189,6 +1207,7 @@ export class LoaderState {
       const following = this.#scanner.peek(1);
       line = this.line; // Save the current line.
       pos = this.#scanner.position;
+      this.#assertNoTabIndent();
 
       //
       // Explicit notation case. There are two separate blocks:
