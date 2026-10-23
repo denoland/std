@@ -95,3 +95,10 @@ Deno.test("test() handles wrong format", () => {
   );
   assertFalse(result);
 });
+
+Deno.test("test() accepts readonly formats", () => {
+  const formats: readonly Format[] = ["yaml", "toml"];
+  assert(test("---\nname: deno\n---\n", formats));
+  assertFalse(test('---json\n{"name": "deno"}\n---\n', formats));
+  assert(test("---toml\nname = 'deno'\n---\n", ["toml"] as const));
+});

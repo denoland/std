@@ -65,10 +65,8 @@ export type { Format };
  * assertFalse(result);
  * ```
  */
-export function test(str: string, formats?: Format[]): boolean {
-  if (!formats) formats = [...EXTRACT_REGEXP_MAP.keys()] as Format[];
-
-  for (const format of formats) {
+export function test(str: string, formats?: readonly Format[]): boolean {
+  for (const format of formats ?? EXTRACT_REGEXP_MAP.keys()) {
     const regexp = EXTRACT_REGEXP_MAP.get(format);
     if (!regexp) {
       throw new TypeError(`Unable to test for ${format} front matter format`);
