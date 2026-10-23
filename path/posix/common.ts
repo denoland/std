@@ -21,6 +21,6 @@ import { SEPARATOR } from "./constants.ts";
  * @param paths The paths to compare.
  * @returns The common path.
  */
-export function common(paths: string[]): string {
+export function common(paths: readonly string[]): string {
   return _common(paths, SEPARATOR);
 }

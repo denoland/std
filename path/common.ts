@@ -30,6 +30,6 @@ import { SEPARATOR } from "./constants.ts";
  * }
  * ```
  */
-export function common(paths: string[]): string {
+export function common(paths: readonly string[]): string {
   return _common(paths, SEPARATOR);
 }

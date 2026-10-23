@@ -96,3 +96,23 @@ Deno.test({
     assertEquals(actual, "file://deno/");
   },
 });
+
+Deno.test({
+  name: "common() accepts readonly arrays",
+  fn() {
+    const posixPaths: readonly string[] = [
+      "./deno/std/path/mod.ts",
+      "./deno/std/fs/mod.ts",
+    ];
+    assertEquals(posix.common(posixPaths), "./deno/std/");
+
+    const windowsPaths: readonly string[] = [
+      "C:\\deno\\std\\path\\mod.ts",
+      "C:\\deno\\std\\fs\\mod.ts",
+    ];
+    assertEquals(windows.common(windowsPaths), "C:\\deno\\std\\");
+
+    const paths = ["./deno/std/path/mod.ts", "./deno/std/path/mod.ts"] as const;
+    assertEquals(common(paths), "./deno/std/path/mod.ts");
+  },
+});

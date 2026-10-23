@@ -1,7 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-export function common(paths: string[], sep: string): string {
+export function common(paths: readonly string[], sep: string): string {
   const [first = "", ...remaining] = paths;
   const parts = first.split(sep);
 
