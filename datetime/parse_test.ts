@@ -153,6 +153,29 @@ Deno.test("parse(): The date is 2021-12-31", () => {
   );
 });
 
+Deno.test("parse() handles 12 AM and 12 PM", () => {
+  assertEquals(
+    parse("01-03-2019 12:00 AM", "MM-dd-yyyy hh:mm a"),
+    new Date(2019, 0, 3, 0, 0),
+  );
+  assertEquals(
+    parse("01-03-2019 12:30 A.M.", "MM-dd-yyyy hh:mm a"),
+    new Date(2019, 0, 3, 0, 30),
+  );
+  assertEquals(
+    parse("01-03-2019 12:00 PM", "MM-dd-yyyy hh:mm a"),
+    new Date(2019, 0, 3, 12, 0),
+  );
+  assertEquals(
+    parse("01-03-2019 12:30 P.M.", "MM-dd-yyyy hh:mm a"),
+    new Date(2019, 0, 3, 12, 30),
+  );
+  assertEquals(
+    parse("01-03-2019 11:59 PM", "MM-dd-yyyy hh:mm a"),
+    new Date(2019, 0, 3, 23, 59),
+  );
+});
+
 Deno.test({
   name: "parse() throws with invalid datetime format",
   fn: () => {

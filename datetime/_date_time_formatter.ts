@@ -600,12 +600,12 @@ export class DateTimeFormatter {
               case "AM":
               case "AM.":
               case "A.M.":
-                // ignore
+                if (value === 12) value = 0;
                 break;
               case "PM":
               case "PM.":
               case "P.M.":
-                value += 12;
+                if (value !== 12) value += 12;
                 break;
               default:
                 throw new Error(
