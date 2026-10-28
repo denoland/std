@@ -142,6 +142,10 @@ export function buildMessage(
 
     return color(`${createSign(result.type)}${line}`);
   });
-  messages.push(...(stringDiff ? [diffMessages.join("")] : diffMessages), "");
-  return messages;
+  // Do not `push(...diffMessages)`: spreading tens of thousands of lines
+  // overflows V8's argument limit with RangeError (#5942).
+  if (stringDiff) {
+    return messages.concat(diffMessages.join(""), "");
+  }
+  return messages.concat(diffMessages, "");
 }

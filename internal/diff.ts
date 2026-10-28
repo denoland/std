@@ -218,6 +218,54 @@ export function createFp(
 }
 
 /**
+ * Myers stores an `(M * N)`-sized `Uint32Array`. Cap the length so comparing
+ * large arrays cannot throw `RangeError` or OOM the isolate (#5942).
+ * 2^26 elements is 256 MiB; typical assertion diffs stay well under this.
+ */
+const MAX_ROUTES_LENGTH = 2 ** 26;
+
+function myersRoutesLength(M: number, N: number): number {
+  const knuth = M + N + 1;
+  if (M > 0 && N > (Number.MAX_SAFE_INTEGER - knuth - 1) / M) {
+    return Infinity;
+  }
+  const size = (M * N + knuth + 1) * 2;
+  return Number.isSafeInteger(size) ? size : Infinity;
+}
+
+/**
+ * Linear fallback used when the Myers table would not fit in memory.
+ * Common prefix is already stripped; a common suffix is recovered so a single
+ * contiguous change still renders as one hunk.
+ */
+function fallbackDiff<T>(
+  A: T[],
+  B: T[],
+  prefixCommon: T[],
+  swapped: boolean,
+): DiffResult<T>[] {
+  const origA = swapped ? B : A;
+  const origB = swapped ? A : B;
+  let suffixLen = 0;
+  const maxSuffix = Math.min(origA.length, origB.length);
+  while (
+    suffixLen < maxSuffix &&
+    origA[origA.length - 1 - suffixLen] === origB[origB.length - 1 - suffixLen]
+  ) {
+    suffixLen++;
+  }
+  const aMid = origA.slice(0, origA.length - suffixLen);
+  const bMid = origB.slice(0, origB.length - suffixLen);
+  const suffix = origA.slice(origA.length - suffixLen);
+  return [
+    ...prefixCommon.map((value) => ({ type: "common" as const, value })),
+    ...aMid.map((value) => ({ type: "removed" as const, value })),
+    ...bMid.map((value) => ({ type: "added" as const, value })),
+    ...suffix.map((value) => ({ type: "common" as const, value })),
+  ];
+}
+
+/**
  * Renders the differences between the actual and expected values.
  *
  * @typeParam T The type of elements in the arrays.
@@ -258,6 +306,9 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
       ...A.map((value) => ({ type: swapped ? "added" : "removed", value })),
     ] as DiffResult<T>[];
   }
+  if (myersRoutesLength(M, N) > MAX_ROUTES_LENGTH) {
+    return fallbackDiff(A, B, prefixCommon, swapped);
+  }
   const offset = N;
   const delta = M - N;
   const length = M + N + 1;
@@ -267,7 +318,15 @@ export function diff<T>(A: T[], B: T[]): DiffResult<T>[] {
    * Note: this buffer is used to save memory and improve performance. The first
    * half is used to save route and the last half is used to save diff type.
    */
-  const routes = new Uint32Array((M * N + length + 1) * 2);
+  let routes: Uint32Array;
+  try {
+    routes = new Uint32Array((M * N + length + 1) * 2);
+  } catch (error) {
+    if (error instanceof RangeError) {
+      return fallbackDiff(A, B, prefixCommon, swapped);
+    }
+    throw error;
+  }
   const diffTypesPtrOffset = routes.length / 2;
   let ptr = 0;
 

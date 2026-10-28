@@ -124,6 +124,39 @@ Deno.test({
 });
 
 Deno.test({
+  name: "diff() does not throw RangeError for large disjoint arrays",
+  fn() {
+    const n = 2 ** 18;
+    const a = Array.from({ length: n }, (_, i) => `a${i}`);
+    const b = Array.from({ length: n }, (_, i) => `b${i}`);
+    const result = diff(a, b);
+    assertEquals(result.length, n * 2);
+    assertEquals(result[0], { type: "removed", value: "a0" });
+    assertEquals(result[n - 1], { type: "removed", value: `a${n - 1}` });
+    assertEquals(result[n], { type: "added", value: "b0" });
+    assertEquals(result[n * 2 - 1], { type: "added", value: `b${n - 1}` });
+  },
+});
+
+Deno.test({
+  name:
+    "diff() keeps a single inner change as one hunk when the Myers table would overflow",
+  fn() {
+    const side = 10_000;
+    const prefix = Array.from({ length: side }, (_, i) => `p${i}`);
+    const suffix = Array.from({ length: side }, (_, i) => `s${i}`);
+    const a = [...prefix, "old", ...suffix];
+    const b = [...prefix, "new", ...suffix];
+    assertEquals(diff(a, b), [
+      ...prefix.map((value) => ({ type: "common" as const, value })),
+      { type: "removed", value: "old" },
+      { type: "added", value: "new" },
+      ...suffix.map((value) => ({ type: "common" as const, value })),
+    ]);
+  },
+});
+
+Deno.test({
   name: "assertFp()",
   fn() {
     const fp = { y: 0, id: 0 };

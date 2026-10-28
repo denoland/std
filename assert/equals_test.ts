@@ -228,3 +228,16 @@ Deno.test({
     assertEquals(new Set(data), new Set(data));
   },
 });
+
+Deno.test({
+  name: "assertEquals() throws AssertionError for large unequal arrays",
+  fn() {
+    const n = 2 ** 16;
+    const actual = Array.from({ length: n }, (_, i) => i);
+    const expected = Array.from({ length: n }, () => -1);
+    assertThrows(
+      () => assertEquals(actual, expected),
+      AssertionError,
+    );
+  },
+});

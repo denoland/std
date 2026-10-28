@@ -71,6 +71,19 @@ Deno.test("buildMessage()", async (t) => {
       ],
     );
   });
+
+  await t.step("large diff does not throw RangeError", () => {
+    const n = 2 ** 16;
+    const diffResult: DiffResult<string>[] = Array.from(
+      { length: n },
+      (_, i) => ({ type: "removed", value: `l${i}` }),
+    );
+    const message = buildMessage(diffResult);
+    assertEquals(message.length, prelude.length + n + 1);
+    assertEquals(message[prelude.length], red(bold("-   l0")));
+    assertEquals(message[message.length - 2], red(bold(`-   l${n - 1}`)));
+    assertEquals(message[message.length - 1], "");
+  });
 });
 
 Deno.test("createColor()", () => {
