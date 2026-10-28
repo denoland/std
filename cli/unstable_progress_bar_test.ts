@@ -226,3 +226,61 @@ Deno.test("ProgressBar() handles value > max", async () => {
   }
   assertEquals(actual, expected);
 });
+
+Deno.test("ProgressBar() shows hours as minutes in the default time", async () => {
+  using fakeTime = new FakeTime();
+  const { readable, writable } = new TransformStream();
+  const bar = new ProgressBar({
+    writable,
+    max: 10 * 1000,
+    interval: 3_665_000,
+  });
+  fakeTime.tick(3_665_000);
+  bar.stop().then(() => writable.close());
+
+  const expected = [
+    "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[61:05] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\r\x1b[K[61:05] [--------------------------------------------------] [0.00/9.77 KiB]",
+    "\n",
+  ];
+
+  const actual: string[] = [];
+  for await (const buffer of readable) {
+    actual.push(decoder.decode(buffer));
+  }
+  assertEquals(actual, expected);
+});
+
+Deno.test("ProgressBar() falls back to mm:ss when Temporal is not available", async () => {
+  const temporal = Object.getOwnPropertyDescriptor(globalThis, "Temporal");
+  Reflect.deleteProperty(globalThis, "Temporal");
+  try {
+    using fakeTime = new FakeTime();
+    const { readable, writable } = new TransformStream();
+    const bar = new ProgressBar({
+      writable,
+      max: 10 * 1000,
+      interval: 3_665_000,
+    });
+    fakeTime.tick(3_665_000);
+    bar.stop().then(() => writable.close());
+
+    const expected = [
+      "\r\x1b[K[00:00] [--------------------------------------------------] [0.00/9.77 KiB]",
+      "\r\x1b[K[61:05] [--------------------------------------------------] [0.00/9.77 KiB]",
+      "\r\x1b[K[61:05] [--------------------------------------------------] [0.00/9.77 KiB]",
+      "\n",
+    ];
+
+    const actual: string[] = [];
+    for await (const buffer of readable) {
+      actual.push(decoder.decode(buffer));
+    }
+    assertEquals(actual, expected);
+  } finally {
+    if (temporal !== undefined) {
+      Object.defineProperty(globalThis, "Temporal", temporal);
+    }
+  }
+});

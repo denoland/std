@@ -7,11 +7,6 @@ import { formatUnitFraction } from "./_unit.ts";
  */
 export interface ProgressBarFormatter {
   /**
-   * A formatted version of the duration.
-   * `mm:ss`
-   */
-  styledTime: string;
-  /**
    * A formatted version of the data received.
    * `0.40/97.66 KiB`
    */
@@ -22,7 +17,7 @@ export interface ProgressBarFormatter {
    */
   progressBar: string;
   /**
-   * The duration of the progress bar.
+   * The duration of the progress bar, in milliseconds.
    */
   time: number;
   /**
@@ -102,8 +97,41 @@ export interface ProgressBarOptions {
 
 const LINE_CLEAR = "\r\u001b[K";
 
+const DURATION_ROUNDING_OPTIONS = {
+  largestUnit: "minutes",
+  smallestUnit: "seconds",
+  roundingMode: "trunc",
+} as const;
+
+interface DurationFormatter {
+  format(duration: Temporal.Duration): string;
+}
+
+let timeFormatter: DurationFormatter | undefined;
+
+function formatTime(milliseconds: number): string {
+  // `Intl.DurationFormat` and `Temporal` are not available in Deno v1.x, so
+  // they are looked up on first use and `mm:ss` is used as a fallback.
+  // deno-lint-ignore no-explicit-any
+  const { DurationFormat } = Intl as any;
+  if (DurationFormat === undefined || typeof Temporal === "undefined") {
+    const minutes = (milliseconds / 1000 / 60 | 0).toString().padStart(2, "0");
+    const seconds = (milliseconds / 1000 % 60 | 0).toString().padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }
+  timeFormatter ??= new DurationFormat(undefined, {
+    minutes: "2-digit",
+    seconds: "2-digit",
+  }) as DurationFormatter;
+  const duration = Temporal.Duration
+    .from({ milliseconds })
+    .round(DURATION_ROUNDING_OPTIONS);
+  return timeFormatter.format(duration);
+}
+
 function defaultFormatter(formatter: ProgressBarFormatter) {
-  return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.styledData}]`;
+  const styledTime = formatTime(formatter.time);
+  return `[${styledTime}] [${formatter.progressBar}] [${formatter.styledData}]`;
 }
 
 function clamp(value: number, min: number, max: number) {
@@ -146,10 +174,18 @@ function clamp(value: number, min: number, max: number) {
  * import { delay } from "@std/async";
  * import { ProgressBar } from "@std/cli/unstable-progress-bar";
  *
+ * const timeFormat = new Intl.DurationFormat("en", {
+ *   style: "narrow",
+ *   secondsDisplay: "always",
+ * });
+ *
  * const bar = new ProgressBar({
  *   max: 100,
  *   formatter(formatter) {
- *     return `[${formatter.styledTime}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
+ *     const time = Temporal.Duration
+ *       .from({ milliseconds: formatter.time })
+ *       .round({ largestUnit: "hours", smallestUnit: "seconds", roundingMode: "trunc" });
+ *     return `[${timeFormat.format(time)}] [${formatter.progressBar}] [${formatter.value}/${formatter.max} files]`;
  *   },
  * });
  *
@@ -254,11 +290,6 @@ export class ProgressBar {
     const emptyChars = this.#emptyChar.repeat(this.#barLength - size);
 
     return {
-      get styledTime() {
-        const minutes = (this.time / 1000 / 60 | 0).toString().padStart(2, "0");
-        const seconds = (this.time / 1000 % 60 | 0).toString().padStart(2, "0");
-        return `${minutes}:${seconds}`;
-      },
       get styledData() {
         return formatUnitFraction(this.value, this.max);
       },
