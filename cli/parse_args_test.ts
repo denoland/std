@@ -543,6 +543,24 @@ Deno.test("parseArgs() handles empty value after equals sign", function () {
   assertEquals(parseArgs(["--foo="]), { _: [], foo: "" });
 });
 
+Deno.test("parseArgs() handles empty string value as separate argument", function () {
+  assertEquals(parseArgs(["--foo", ""], { string: ["foo"] }), {
+    _: [],
+    foo: "",
+  });
+  assertEquals(parseArgs(["-f", ""], { string: ["f"] }), { _: [], f: "" });
+  assertEquals(parseArgs(["--foo", ""]), { _: [], foo: "" });
+  assertEquals(parseArgs(["-f", ""]), { _: [], f: "" });
+  assertEquals(parseArgs(["--foo", ""], { boolean: ["foo"] }), {
+    _: [""],
+    foo: true,
+  });
+  assertEquals(parseArgs(["-f", ""], { boolean: ["f"] }), {
+    _: [""],
+    f: true,
+  });
+});
+
 Deno.test("parseArgs() handles short flag combo with trailing equals sign", function () {
   assertEquals(parseArgs(["-abc="]), { _: [], a: true, b: true, c: "" });
 });
