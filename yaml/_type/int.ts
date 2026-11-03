@@ -27,6 +27,8 @@ function isDecCode(c: number): boolean {
 }
 
 function resolveYamlInteger(data: string): boolean {
+  if (data === null) return false;
+
   const max = data.length;
   let index = 0;
   let hasDigits = false;
@@ -73,6 +75,19 @@ function resolveYamlInteger(data: string): boolean {
       return hasDigits && ch !== "_";
     }
 
+    if (ch === "o") {
+      // base 8
+      index++;
+
+      for (; index < max; index++) {
+        ch = data[index];
+        if (ch === "_") continue;
+        if (!isOctCode(data.charCodeAt(index))) return false;
+        hasDigits = true;
+      }
+      return hasDigits && ch !== "_";
+    }
+
     // base 8
     for (; index < max; index++) {
       ch = data[index];
@@ -83,7 +98,7 @@ function resolveYamlInteger(data: string): boolean {
     return hasDigits && ch !== "_";
   }
 
-  // base 10 (except 0) or base 60
+  // base 10
 
   // value should not start with `_`;
   if (ch === "_") return false;
@@ -100,8 +115,7 @@ function resolveYamlInteger(data: string): boolean {
   // Should have digits and should not end with `_`
   if (!hasDigits || ch === "_") return false;
 
-  // base60 almost not used, no needs to optimize
-  return /^(:[0-5]?[0-9])+$/.test(data.slice(index));
+  return true;
 }
 
 function constructYamlInteger(data: string): number {
@@ -124,6 +138,7 @@ function constructYamlInteger(data: string): number {
   if (ch === "0") {
     if (value[1] === "b") return sign * parseInt(value.slice(2), 2);
     if (value[1] === "x") return sign * parseInt(value, 16);
+    if (value[1] === "o") return sign * parseInt(value.slice(2), 8);
     return sign * parseInt(value, 8);
   }
 

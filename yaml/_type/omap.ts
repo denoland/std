@@ -7,6 +7,8 @@ import type { Type } from "../_type.ts";
 import { isPlainObject } from "../_utils.ts";
 
 function resolveYamlOmap(data: Record<string, unknown>[]): boolean {
+  if (data === null) return true;
+
   const objectKeys = new Set();
   for (const object of data) {
     if (!isPlainObject(object)) return false;
@@ -25,6 +27,6 @@ export const omap: Type<"sequence", Record<PropertyKey, unknown>[]> = {
   kind: "sequence",
   resolve: resolveYamlOmap,
   construct(data) {
-    return data;
+    return data !== null ? data : [];
   },
 };
