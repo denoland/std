@@ -380,8 +380,24 @@ Deno.test({
       - 012_34
       - 0x1A
       - 0x1A_2B
+      - 0o17
+      - 0o777
     `),
-      [10, 170, 10, 668, 26, 6699],
+      [10, 170, 10, 668, 26, 6699, 15, 511],
+    );
+
+    // explicit !!int tag on resolvable scalars
+    assertEquals(
+      parse(`
+      - !!int 42
+      - !!int -42
+      - !!int "42"
+      - !!int 0b1010
+      - !!int 012
+      - !!int 0x1A
+      - !!int 0o17
+    `),
+      [42, -42, 42, 10, 10, 26, 15],
     );
 
     // empty string is invalid integer
@@ -421,6 +437,13 @@ Deno.test({
       () => parse("!!int 0x1G"),
       SyntaxError,
       "Cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag at line 2, column 1:\n    \n    ^",
+    );
+
+    // empty value with !!int tag fails with a syntax error, not a TypeError
+    assertThrows(
+      () => parse("x: !!int\n"),
+      SyntaxError,
+      "Cannot resolve a node with !<tag:yaml.org,2002:int> explicit tag",
     );
   },
 });
@@ -499,6 +522,22 @@ Deno.test({
       SyntaxError,
       "Cannot resolve a node with !<tag:yaml.org,2002:omap> explicit tag",
     );
+
+    // empty omap resolves to an empty sequence
+    assertEquals(parse("x: !!omap\n"), { x: [] });
+  },
+});
+
+Deno.test({
+  name: "parse() handles null type",
+  fn() {
+    assertEquals(parse("x: null\ny: ~\nz:\n"), {
+      x: null,
+      y: null,
+      z: null,
+    });
+    // explicit !!null tag on an empty value resolves to null
+    assertEquals(parse("x: !!null\n"), { x: null });
   },
 });
 
@@ -597,6 +636,32 @@ Deno.test("parse() handles anchors and aliases", () => {
       new Uint8Array([72, 101, 108, 108, 111]),
     ],
   );
+  // anchor on the key line binds the indented scalar value
+  assertEquals(
+    parse(`a: &anchor
+  value
+ref: *anchor`),
+    { a: "value", ref: "value" },
+  );
+  assertEquals(
+    parse(`a: &anchor
+  "quoted"
+ref: *anchor`),
+    { a: "quoted", ref: "quoted" },
+  );
+  assertEquals(
+    parse(`a: &anchor
+  42
+ref: *anchor`),
+    { a: 42, ref: 42 },
+  );
+  // anchor with empty value binds null
+  assertEquals(
+    parse(`a: &anchor
+
+ref: *anchor`),
+    { a: null, ref: null },
+  );
   assertThrows(
     () =>
       parse(`- &anchor Foo
@@ -611,6 +676,19 @@ Deno.test("parse() handles anchors and aliases", () => {
     SyntaxError,
     "Cannot read alias: alias name must contain at least one character at line 2, column 4:\n    - *\n       ^",
   );
+});
+
+Deno.test("parse() rejects empty flow collection entries", () => {
+  // YAML 1.2, section 7.4: flow collection entries can never be empty
+  for (const doc of ["[, 4]", "[1, , 3]", "[, ]", "{, a: 1}"]) {
+    assertThrows(
+      () => parse(doc),
+      SyntaxError,
+      "expected the node content, but found ','",
+    );
+  }
+  // a trailing comma is allowed
+  assertEquals(parse("[a,]"), ["a"]);
 });
 
 Deno.test("parse() handles escaped strings in double quotes", () => {

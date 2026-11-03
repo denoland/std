@@ -919,6 +919,13 @@ export class LoaderState {
           "Cannot read flow collection: missing comma between flow collection entries",
         );
       }
+      if (ch === COMMA) {
+        // "flow collection entries can never be completely empty",
+        // as per YAML 1.2, section 7.4
+        throw this.#createError(
+          "Cannot read flow collection: expected the node content, but found ','",
+        );
+      }
 
       keyTag = keyNode = valueNode = null;
       isPair = isExplicitPair = false;
@@ -1515,8 +1522,11 @@ export class LoaderState {
   resolveTag(state: State) {
     switch (state.tag) {
       case null:
-      case "!":
+      case "!": {
+        const { anchor } = state;
+        if (anchor !== null) this.anchorMap.set(anchor, state.result);
         return state;
+      }
       case "?": {
         for (const type of this.implicitTypes) {
           // Implicit resolving is not allowed for non-scalar types, and '?'

@@ -12,6 +12,7 @@ export const nil: Type<"scalar", null> = {
   predicate: (object: unknown): object is null => object === null,
   construct: () => null,
   resolve: (data: string): boolean => {
+    if (data === null) return true;
     return (
       data === "~" ||
       data === "null" ||
