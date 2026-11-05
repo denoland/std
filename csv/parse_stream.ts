@@ -367,7 +367,9 @@ export class CsvParseStream<
    *
    * @param options Options for the stream.
    */
-  constructor(options?: T) {
+  constructor(
+    options?: T & (T extends object ? CsvParseStreamOptions : unknown),
+  ) {
     this.#options = {
       ...options,
       separator: options?.separator ?? ",",
