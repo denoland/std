@@ -600,12 +600,14 @@ export class DateTimeFormatter {
               case "AM":
               case "AM.":
               case "A.M.":
-                // ignore
+                // 12 AM is midnight
+                value %= 12;
                 break;
               case "PM":
               case "PM.":
               case "P.M.":
-                value += 12;
+                // 12 PM is noon
+                value = (value % 12) + 12;
                 break;
               default:
                 throw new Error(

@@ -1,6 +1,7 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 import { assertEquals, assertThrows } from "@std/assert";
 import { FakeTime } from "@std/testing/time";
+import { format } from "./format.ts";
 import { parse } from "./parse.ts";
 
 Deno.test({
@@ -163,4 +164,52 @@ Deno.test({
       parse("2019-01-01", "x-y-z");
     }, Error);
   },
+});
+
+Deno.test("parse() reads 12 AM as midnight and 12 PM as noon", () => {
+  for (const [am, pm] of [["AM", "PM"], ["AM.", "PM."], ["a.m.", "p.m."]]) {
+    assertEquals(
+      parse(`2024-01-01 12:00 ${am}`, "yyyy-MM-dd hh:mm a"),
+      new Date(2024, 0, 1, 0, 0),
+    );
+    assertEquals(
+      parse(`2024-01-01 12:30 ${am}`, "yyyy-MM-dd hh:mm a"),
+      new Date(2024, 0, 1, 0, 30),
+    );
+    assertEquals(
+      parse(`2024-01-01 12:00 ${pm}`, "yyyy-MM-dd hh:mm a"),
+      new Date(2024, 0, 1, 12, 0),
+    );
+    assertEquals(
+      parse(`2024-01-01 12:30 ${pm}`, "yyyy-MM-dd hh:mm a"),
+      new Date(2024, 0, 1, 12, 30),
+    );
+  }
+});
+
+Deno.test("parse() keeps 1 to 11 o'clock for AM and PM", () => {
+  assertEquals(
+    parse("2024-01-01 01:15 AM", "yyyy-MM-dd hh:mm a"),
+    new Date(2024, 0, 1, 1, 15),
+  );
+  assertEquals(
+    parse("2024-01-01 11:45 AM", "yyyy-MM-dd hh:mm a"),
+    new Date(2024, 0, 1, 11, 45),
+  );
+  assertEquals(
+    parse("2024-01-01 01:15 PM", "yyyy-MM-dd hh:mm a"),
+    new Date(2024, 0, 1, 13, 15),
+  );
+  assertEquals(
+    parse("2024-01-01 11:45 PM", "yyyy-MM-dd hh:mm a"),
+    new Date(2024, 0, 1, 23, 45),
+  );
+});
+
+Deno.test("parse() round-trips every hour formatted with 'hh:mm a'", () => {
+  for (let hour = 0; hour < 24; hour++) {
+    const date = new Date(2024, 0, 1, hour, 30);
+    const text = format(date, "yyyy-MM-dd hh:mm a");
+    assertEquals(parse(text, "yyyy-MM-dd hh:mm a"), date);
+  }
 });
