@@ -72,7 +72,7 @@ function parseValue(_key: string, value: string) {
   if (value === "false") return false;
   const match = value.match(QUOTED_VALUE_REGEXP);
   if (match) return match.groups?.value as string;
-  if (!isNaN(+value)) return +value;
+  if (value !== "" && !isNaN(+value)) return +value;
   return value;
 }
 
