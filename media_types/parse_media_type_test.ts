@@ -84,6 +84,21 @@ Deno.test({
         "form-data",
         { name: "file", filename: `C:\\新建文件夹\\中文第二次测试.mp4` },
       ],
+      [
+        "attachment; filename*=UTF-8''a%26b%3Bc.txt",
+        "attachment",
+        { filename: "a&b;c.txt" },
+      ],
+      [
+        "attachment; filename*0*=UTF-8''a; filename*1*=%2F%3B%23",
+        "attachment",
+        { filename: "a/;#" },
+      ],
+      [
+        "attachment; filename*0*=UTF-8''%E2%82; filename*1*=%AC",
+        "attachment",
+        { filename: "€" },
+      ],
     ];
 
     for (const [fixture, mediaType, params] of fixtures) {
