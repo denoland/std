@@ -87,6 +87,26 @@ Deno.test("decodeVarint32() throws on overflow", () => {
     RangeError,
   );
 });
+Deno.test("decodeVarint32() throws on truncated input", () => {
+  assertThrows(() => decodeVarint32(Uint8Array.of(0x80)), RangeError);
+  assertThrows(() => decodeVarint32(Uint8Array.of(0xff, 0xff)), RangeError);
+});
+Deno.test("decodeVarint32() throws when 32-bit bound is exceeded", () => {
+  assertThrows(
+    () =>
+      decodeVarint32(
+        Uint8Array.of(0x80, 0x80, 0x80, 0x80, 0x80, 0x01),
+      ),
+    RangeError,
+  );
+  assertThrows(
+    () =>
+      decodeVarint32(
+        Uint8Array.of(0xff, 0xff, 0xff, 0xff, 0x7f),
+      ),
+    RangeError,
+  );
+});
 Deno.test("decodeVarint32() handles with offset", () => {
   assertEquals(
     decodeVarint32(

@@ -165,7 +165,10 @@ export function decodeAscii85(
   // translate all encodings to most basic adobe/btoa one and decompress some special characters ("z" and "y")
   switch (standard) {
     case "Adobe":
-      ascii85 = ascii85.replaceAll(/(<~|~>)/g, "").replaceAll("z", "!!!!!");
+      ascii85 = ascii85
+        .replace(/^\s*<~/, "")
+        .replace(/~>\s*$/, "")
+        .replaceAll("z", "!!!!!");
       break;
     case "btoa":
       ascii85 = ascii85
