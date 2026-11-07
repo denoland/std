@@ -53,9 +53,6 @@ const defaultUnescapeOptions: UnescapeOptions = {
 
 const MAX_CODE_POINT = 0x10ffff;
 
-const DEC_ENTITY_REGEXP = /&#([0-9]+);/g;
-const HEX_ENTITY_REGEXP = /&#x(\p{AHex}+);/gu;
-
 const entityListRegexCache = new WeakMap<EntityList, RegExp>();
 
 /**
@@ -97,22 +94,20 @@ export function unescape(
   let entityRe = entityListRegexCache.get(entityList);
 
   if (!entityRe) {
-    entityRe = new RegExp(
-      `(${
-        Object.keys(entityList)
-          .sort((a, b) => b.length - a.length)
-          .join("|")
-      })`,
-      "g",
-    );
+    const keys = Object.keys(entityList).sort((a, b) => b.length - a.length);
+    const pattern = keys.length > 0
+      ? `&#([0-9]+);|&#x(\\p{AHex}+);|(${keys.join("|")})`
+      : `&#([0-9]+);|&#x(\\p{AHex}+);`;
+    entityRe = new RegExp(pattern, "gu");
 
     entityListRegexCache.set(entityList, entityRe);
   }
 
-  return str
-    .replaceAll(entityRe, (m) => entityList[m]!)
-    .replaceAll(DEC_ENTITY_REGEXP, (_, dec) => codePointStrToChar(dec, 10))
-    .replaceAll(HEX_ENTITY_REGEXP, (_, hex) => codePointStrToChar(hex, 16));
+  return str.replaceAll(entityRe, (m, dec, hex) => {
+    if (dec !== undefined) return codePointStrToChar(dec, 10);
+    if (hex !== undefined) return codePointStrToChar(hex, 16);
+    return entityList[m] ?? m;
+  });
 }
 
 function codePointStrToChar(codePointStr: string, radix: number) {

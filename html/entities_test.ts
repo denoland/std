@@ -26,7 +26,19 @@ Deno.test("unescape()", async (t) => {
   await t.step("round-trips with escape", () => {
     const chars = "&<>'\"";
     assertEquals(unescape(escape(chars)), chars);
+    assertEquals(unescape(escape("&#60;b&#62;")), "&#60;b&#62;");
   });
+
+  await t.step(
+    "unescapes in a single pass without re-evaluating decoded entities",
+    () => {
+      assertEquals(unescape("&amp;#65;"), "&#65;");
+      assertEquals(
+        unescape("&amp;#x3c;script&amp;#x3e;"),
+        "&#x3c;script&#x3e;",
+      );
+    },
+  );
 
   await t.step("named entities", async (t) => {
     await t.step("default options", async (t) => {
