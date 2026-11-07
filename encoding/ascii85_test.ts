@@ -215,3 +215,13 @@ Deno.test({
     }
   },
 });
+
+Deno.test({
+  name: "decodeAscii85() decodes Adobe delimited data ending in '<'",
+  fn() {
+    const raw = new Uint8Array([0xc6, 0x91, 0xeb, 0x81]);
+    const encoded = encodeAscii85(raw, { delimiter: true });
+    assertEquals(encoded, "<~`f]S<~>");
+    assertEquals(decodeAscii85(encoded), raw);
+  },
+});

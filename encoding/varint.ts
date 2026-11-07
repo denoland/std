@@ -176,12 +176,19 @@ export function decodeVarint32(buf: Uint8Array, offset = 0): [number, number] {
   let decoded = 0;
   for (
     let i = offset;
-    i <= Math.min(buf.length, offset + MaxVarintLen32);
+    i < Math.min(buf.length, offset + MaxVarintLen32);
     i += 1, shift += SHIFT
   ) {
     const byte = buf[i]!;
     decoded += (byte & REST) * Math.pow(2, shift);
-    if (!(byte & MSB)) return [decoded, i + 1];
+    if (!(byte & MSB)) {
+      if (decoded > 0xffffffff) {
+        throw new RangeError(
+          "Cannot decode the varint input: Malformed or overflow varint",
+        );
+      }
+      return [decoded, i + 1];
+    }
   }
   throw new RangeError(
     "Cannot decode the varint input: Malformed or overflow varint",
