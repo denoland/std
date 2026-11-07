@@ -1,7 +1,11 @@
 // Copyright 2018-2026 the Deno authors. MIT license.
 // This module is browser compatible.
 
-import { consumeMediaParam, decode2331Encoding } from "./_util.ts";
+import {
+  consumeMediaParam,
+  decode2331Encoding,
+  percentDecode,
+} from "./_util.ts";
 
 const SEMICOLON_REGEXP = /^\s*;\s*$/;
 /**
@@ -78,7 +82,6 @@ export function parseMediaType(
 
   // Stitch together any continuations or things with stars
   // (i.e. RFC 2231 things with stars: "foo*0" or "foo*")
-  let str = "";
   for (const [key, pieceMap] of continuation) {
     const singlePartKey = `${key}*`;
     const type = pieceMap[singlePartKey];
@@ -90,14 +93,16 @@ export function parseMediaType(
       continue;
     }
 
-    str = "";
     let valid = false;
+    let charset = "";
+    const byteChunks: Uint8Array[] = [];
+
     for (let n = 0;; n++) {
       const simplePart = `${key}*${n}`;
       let type = pieceMap[simplePart];
       if (type) {
         valid = true;
-        str += type;
+        byteChunks.push(new TextEncoder().encode(type));
         continue;
       }
       const encodedPart = `${simplePart}*`;
@@ -107,17 +112,35 @@ export function parseMediaType(
       }
       valid = true;
       if (n === 0) {
-        const decv = decode2331Encoding(type);
-        if (decv) {
-          str += decv;
+        const sv = type.split("'", 3);
+        if (sv.length === 3) {
+          const [sv0, , sv2] = sv as [string, string, string];
+          charset = sv0.toLowerCase();
+          byteChunks.push(percentDecode(sv2));
+        } else {
+          byteChunks.push(percentDecode(type));
         }
       } else {
-        const decv = decodeURI(type);
-        str += decv;
+        byteChunks.push(percentDecode(type));
       }
     }
     if (valid) {
-      params[key] = str;
+      const totalLen = byteChunks.reduce((acc, c) => acc + c.length, 0);
+      const combined = new Uint8Array(totalLen);
+      let offset = 0;
+      for (const chunk of byteChunks) {
+        combined.set(chunk, offset);
+        offset += chunk.length;
+      }
+      const targetCharset = (charset === "us-ascii" || charset === "utf-8")
+        ? charset
+        : "utf-8";
+      try {
+        params[key] = new TextDecoder(targetCharset).decode(combined);
+      } catch {
+        // Fallback to raw string if decoding fails
+        params[key] = new TextDecoder().decode(combined);
+      }
     }
   }
 

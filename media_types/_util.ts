@@ -70,6 +70,22 @@ export function consumeMediaParam(
   return [param, value, rest];
 }
 
+export function percentDecode(v: string): Uint8Array {
+  const bytes: number[] = [];
+  for (let i = 0; i < v.length; i++) {
+    if (v[i] === "%" && i + 2 < v.length) {
+      const hex = v.slice(i + 1, i + 3);
+      if (/^[0-9A-Fa-f]{2}$/.test(hex)) {
+        bytes.push(parseInt(hex, 16));
+        i += 2;
+        continue;
+      }
+    }
+    bytes.push(v.charCodeAt(i));
+  }
+  return new Uint8Array(bytes);
+}
+
 export function decode2331Encoding(v: string): string | undefined {
   const sv = v.split(`'`, 3);
   if (sv.length !== 3) {
@@ -83,11 +99,16 @@ export function decode2331Encoding(v: string): string | undefined {
   if (charset !== "us-ascii" && charset !== "utf-8") {
     return undefined;
   }
-  const encv = decodeURI(sv2);
-  if (!encv) {
+  if (!sv2) {
     return undefined;
   }
-  return encv;
+  const bytes = percentDecode(sv2);
+  try {
+    const decoder = new TextDecoder(charset, { fatal: true });
+    return decoder.decode(bytes);
+  } catch {
+    return undefined;
+  }
 }
 
 function indexOf<T>(s: Iterable<T>, fn: (s: T) => boolean): number {
