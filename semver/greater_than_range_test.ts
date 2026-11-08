@@ -66,6 +66,7 @@ Deno.test("greaterThanRange() checks if the semver is greater than the range", a
     ["=0.7.x", "0.8.2"],
     ["<0.7.x", "0.7.2"],
     ["=0.1.0", "1.0.0"],
+    ["* <1.2.1", "2.0.3"],
   ] as const;
 
   for (const [range, version] of versionGtRange) {

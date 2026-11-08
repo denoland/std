@@ -240,6 +240,7 @@ function handleLessThanOperator(groups: RangeRegExpGroups): Comparator[] {
 function handleLessThanOrEqualOperator(
   groups: RangeRegExpGroups,
 ): Comparator[] {
+  const majorIsWildcard = isWildcard(groups.major);
   const minorIsWildcard = isWildcard(groups.minor);
   const patchIsWildcard = isWildcard(groups.patch);
 
@@ -247,6 +248,7 @@ function handleLessThanOrEqualOperator(
   const minor = +groups.minor;
   const patch = +groups.patch;
 
+  if (majorIsWildcard) return [ALL];
   if (minorIsWildcard) {
     return [{ operator: "<", major: major + 1, minor: 0, patch: 0 }];
   }

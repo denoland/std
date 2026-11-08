@@ -33,15 +33,15 @@ export function lessThanRange(version: SemVer, range: Range): boolean {
 }
 
 function lessThanComparatorSet(version: SemVer, comparatorSet: Comparator[]) {
-  // If the comparator set contains wildcard, then the semver is not greater than the range.
-  if (comparatorSet.some(isWildcardComparator)) return false;
+  const bounded = comparatorSet.filter(
+    (comparator) => !isWildcardComparator(comparator),
+  );
+  if (bounded.length === 0) return false;
   // If the SemVer satisfies the comparator set, then it's not less than the range.
   if (testComparatorSet(version, comparatorSet)) return false;
   // If the SemVer is greater than any of the comparator set, then it's not less than the range.
   if (
-    comparatorSet.some((comparator) =>
-      greaterThanComparator(version, comparator)
-    )
+    bounded.some((comparator) => greaterThanComparator(version, comparator))
   ) return false;
   return true;
 }
