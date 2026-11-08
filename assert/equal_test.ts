@@ -253,6 +253,16 @@ Deno.test("equal()", () => {
       })(),
     ),
   );
+
+  assertFalse(equal(new Number(1), new Number(2)));
+  assert(equal(new Number(1), new Number(1)));
+  assertFalse(equal(new Boolean(true), new Boolean(false)));
+  assert(equal(new Boolean(true), new Boolean(true)));
+  assertFalse(equal(Object(1n), Object(2n)));
+  assert(equal(Object(1n), Object(1n)));
+  assertFalse(equal(Object(Symbol("a")), Object(Symbol("a"))));
+  const boxedSym = Symbol("b");
+  assert(equal(Object(boxedSym), Object(boxedSym)));
 });
 
 Deno.test("equal() circular", () => {
@@ -317,6 +327,14 @@ Deno.test("equal() keyed collection edge cases", () => {
   assertFalse(equal(new Set([sym, "a"]), new Set(["b", sym])));
   assertFalse(equal(new Set([Symbol()]), new Set([Symbol()])));
   assert(equal(new Set([Symbol.for("x")]), new Set([Symbol.for("x")])));
+  assertFalse(equal(
+    new Set([{ a: 1 }, { a: 1 }]),
+    new Set([{ a: 1 }, { a: 2 }]),
+  ));
+  assertFalse(equal(
+    new Set([{ a: 1 }, { a: 2 }]),
+    new Set([{ a: 1 }, { a: 1 }]),
+  ));
 
   assert(equal(
     new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
@@ -329,6 +347,10 @@ Deno.test("equal() keyed collection edge cases", () => {
   assertFalse(equal(
     new Map([[{ b: 2 }, 2], [{ a: 1 }, 1]]),
     new Map([[{ a: 1 }, 1], [{ b: 3 }, 2]]),
+  ));
+  assertFalse(equal(
+    new Map([[{ k: 1 }, 1], [{ k: 1 }, 1]]),
+    new Map([[{ k: 1 }, 1], [{ k: 2 }, 1]]),
   ));
 
   assert(equal(

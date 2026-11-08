@@ -118,6 +118,16 @@ export function equal(a: unknown, b: unknown): boolean {
     if (a instanceof Date && b instanceof Date) {
       return Object.is(a.getTime(), b.getTime());
     }
+    if (
+      (a instanceof Number && b instanceof Number) ||
+      (a instanceof Boolean && b instanceof Boolean) ||
+      (typeof Symbol === "function" && a instanceof Symbol &&
+        b instanceof Symbol) ||
+      (typeof BigInt === "function" && a instanceof BigInt &&
+        b instanceof BigInt)
+    ) {
+      return sameValueZero(a.valueOf(), b.valueOf());
+    }
     if (a && typeof a === "object" && b && typeof b === "object") {
       if (!prototypesEqual(a, b)) {
         return false;
@@ -173,26 +183,29 @@ export function equal(a: unknown, b: unknown): boolean {
           return true;
         }
 
-        let unmatchedEntries = a.size;
+        const unmatchedB = new Set(b.entries());
 
         for (const [aKey, aValue] of a.entries()) {
-          for (const [bKey, bValue] of b.entries()) {
+          let matched = false;
+          for (const bEntry of unmatchedB) {
+            const [bKey, bValue] = bEntry;
             /* Given that Map keys can be references, we need
              * to ensure that they are also deeply equal */
-
             if (!compare(aKey, bKey)) continue;
 
             if (
               (aKey === aValue && bKey === bValue) ||
-              (compare(aValue, bValue))
+              compare(aValue, bValue)
             ) {
-              unmatchedEntries--;
+              unmatchedB.delete(bEntry);
+              matched = true;
               break;
             }
           }
+          if (!matched) return false;
         }
 
-        return unmatchedEntries === 0;
+        return unmatchedB.size === 0;
       }
 
       let keys: Iterable<string | symbol>;
