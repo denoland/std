@@ -12,12 +12,12 @@ function comparatorIntersects(
   const op0 = comparator1.operator;
   const op1 = comparator2.operator;
 
-  if (op0 === undefined) {
+  if (op0 === undefined || op0 === "=") {
     // if comparator1 is empty comparator, then returns true
     if (isWildcardComparator(comparator1)) return true;
     return satisfies(comparator1, [[comparator2]]);
   }
-  if (op1 === undefined) {
+  if (op1 === undefined || op1 === "=") {
     if (isWildcardComparator(comparator2)) return true;
     return satisfies(comparator2, [[comparator1]]);
   }
@@ -45,13 +45,6 @@ function comparatorIntersects(
     oppositeDirectionsGreaterThan;
 }
 
-function rangesSatisfiable(ranges: Range[]): boolean {
-  return ranges.every((r) => {
-    // For each OR at least one AND must be satisfiable
-    return r.some((comparators) => comparatorsSatisfiable(comparators));
-  });
-}
-
 function comparatorsSatisfiable(comparators: Comparator[]): boolean {
   // Comparators are satisfiable if they all intersect with each other
   for (let i = 0; i < comparators.length - 1; i++) {
@@ -66,8 +59,8 @@ function comparatorsSatisfiable(comparators: Comparator[]): boolean {
 }
 
 /**
- * The ranges intersect every range of AND comparators intersects with a least
- * one range of OR ranges.
+ * Returns true if a comparator set of one range and a comparator set of the
+ * other range can be satisfied by the same version.
  *
  * @example Usage
  * ```ts
@@ -88,14 +81,9 @@ function comparatorsSatisfiable(comparators: Comparator[]): boolean {
  * @returns returns true if the given ranges intersect, false otherwise
  */
 export function rangeIntersects(range1: Range, range2: Range): boolean {
-  return rangesSatisfiable([range1, range2]) &&
-    range1.some((range10) => {
-      return range2.some((r11) => {
-        return range10.every((comparator1) => {
-          return r11.every((comparator2) =>
-            comparatorIntersects(comparator1, comparator2)
-          );
-        });
-      });
-    });
+  return range1.some((comparators1) =>
+    range2.some((comparators2) =>
+      comparatorsSatisfiable([...comparators1, ...comparators2])
+    )
+  );
 }
