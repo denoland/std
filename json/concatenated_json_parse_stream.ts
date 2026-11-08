@@ -143,7 +143,7 @@ export class ConcatenatedJsonParseStream
         // example: '3.14{"foo": "bar"}' => 3.14, {foo: "bar"}
         if (
           hasValue && nestCount === 0 &&
-          (char === "{" || char === "[" || char === '"' || char === " " ||
+          (char === "{" || char === "[" || char === '"' || isBlankChar(char) ||
             char === "n" || char === "t" || char === "f")
         ) {
           yield parse(targetString + string.slice(sliceStart, i));

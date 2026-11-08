@@ -67,6 +67,11 @@ Deno.test({
       ['100 200["foo"]'],
       [100, 200, ["foo"]],
     );
+    await assertValidParse(
+      ConcatenatedJsonParseStream,
+      ["1\n2\t3\r\n4"],
+      [1, 2, 3, 4],
+    );
 
     await assertValidParse(
       ConcatenatedJsonParseStream,
