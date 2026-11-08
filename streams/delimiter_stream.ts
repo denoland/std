@@ -152,20 +152,36 @@ export class DelimiterStream extends TransformStream<Uint8Array, Uint8Array> {
             }
           } else if (delimitedChunkEnd < 0 && bufs.length > 0) {
             // Our chunk started by finishing a partial delimiter match.
-            const lastIndex = bufs.length - 1;
-            const last = bufs[lastIndex]!;
-            const lastSliceIndex = last.byteLength + delimitedChunkEnd;
-            const lastSliced = last.subarray(0, lastSliceIndex);
-            if (lastIndex === 0) {
-              controller.enqueue(lastSliced);
-            } else {
-              bufs[lastIndex] = lastSliced;
+            let trimRemaining = -delimitedChunkEnd;
+            const prefixBufs: Uint8Array[] = [];
+            while (trimRemaining > 0 && bufs.length > 0) {
+              const last = bufs[bufs.length - 1]!;
+              if (last.byteLength <= trimRemaining) {
+                trimRemaining -= last.byteLength;
+                if (disposition === "prefix") {
+                  prefixBufs.unshift(last);
+                }
+                bufs.pop();
+              } else {
+                const sliceIndex = last.byteLength - trimRemaining;
+                if (disposition === "prefix") {
+                  prefixBufs.unshift(last.subarray(sliceIndex));
+                }
+                bufs[bufs.length - 1] = last.subarray(0, sliceIndex);
+                trimRemaining = 0;
+              }
+            }
+            if (bufs.length === 1) {
+              controller.enqueue(bufs[0]!);
+            } else if (bufs.length > 1) {
               controller.enqueue(concat(bufs));
+            } else {
+              controller.enqueue(new Uint8Array());
             }
             bufs.length = 0;
             if (disposition === "prefix") {
-              // Must keep last bytes of last chunk.
-              bufs.push(last.subarray(lastSliceIndex));
+              // Must keep matched delimiter bytes from previous chunks.
+              bufs.push(...prefixBufs);
               chunkStart = 0;
             } else {
               chunkStart = inspectIndex;
