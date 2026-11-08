@@ -66,6 +66,7 @@ Deno.test("lessThanRange() checks if the SemVer is less than the range", async (
     [">=0.7.x", "0.7.0-asdf"],
     [">=0.7.x", "0.6.2"],
     [">1.2.3", "1.3.0-alpha"],
+    ["* >2.1.0", "0.2.1"],
   ] as const;
 
   for (const [range, version] of versionLtRange) {
