@@ -239,3 +239,23 @@ Deno.test("DelimiterStream handles delimiter AAB correctly when the input has AA
   ].map((s) => new TextEncoder().encode(s));
   await testTransformStream(delimStream, inputs, outputs);
 });
+
+Deno.test("DelimiterStream handles delimiter spanning more than two chunks", async () => {
+  const delim = new TextEncoder().encode("abc");
+  const discardStream = new DelimiterStream(delim, { disposition: "discard" });
+  const inputs = ["xa", "b", "cy"].map((s) => new TextEncoder().encode(s));
+  const discardOutputs = ["x", "y"].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(discardStream, inputs, discardOutputs);
+
+  const crlfStream = new DelimiterStream(new TextEncoder().encode("\r\n"));
+  const crlfInputs = ["\r", "", "\n"].map((s) => new TextEncoder().encode(s));
+  const crlfOutputs = ["", ""].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(crlfStream, crlfInputs, crlfOutputs);
+
+  const prefixStream = new DelimiterStream(delim, { disposition: "prefix" });
+  const prefixInputs = ["xa", "b", "cy"].map((s) =>
+    new TextEncoder().encode(s)
+  );
+  const prefixOutputs = ["x", "abcy"].map((s) => new TextEncoder().encode(s));
+  await testTransformStream(prefixStream, prefixInputs, prefixOutputs);
+});
