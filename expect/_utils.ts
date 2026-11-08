@@ -142,62 +142,59 @@ export function iterableEquality(
       return false;
     } else if (isA<Set<unknown>>("Set", a)) {
       let allFound = true;
+      const unmatchedB = new Set(b);
       for (const aValue of a) {
-        if (!b.has(aValue)) {
-          let has = false;
-          for (const bValue of b) {
-            const isEqual = equal(aValue, bValue, {
-              customTesters: filteredCustomTesters,
-            });
-            if (isEqual === true) {
-              has = true;
-            }
-          }
-
-          if (has === false) {
-            allFound = false;
+        let has = false;
+        for (const bValue of unmatchedB) {
+          const isEqual = equal(aValue, bValue, {
+            customTesters: filteredCustomTesters,
+          });
+          if (isEqual === true) {
+            unmatchedB.delete(bValue);
+            has = true;
             break;
           }
+        }
+
+        if (!has) {
+          allFound = false;
+          break;
         }
       }
       // Remove the first value from the stack of traversed values.
       aStack.pop();
       bStack.pop();
-      return allFound;
+      return allFound && unmatchedB.size === 0;
     } else if (isA<Map<unknown, unknown>>("Map", a)) {
       let allFound = true;
+      const unmatchedB = new Set<[unknown, unknown]>(b.entries());
       for (const aEntry of a) {
-        if (
-          !b.has(aEntry[0]) ||
-          !equal(aEntry[1], b.get(aEntry[0]), {
-            customTesters: filteredCustomTesters,
-          })
-        ) {
-          let has = false;
-          for (const bEntry of b) {
-            const matchedKey = equal(
-              aEntry[0],
-              bEntry[0],
+        let has = false;
+        for (const bEntry of unmatchedB) {
+          const matchedKey = equal(
+            aEntry[0],
+            bEntry[0],
+            { customTesters: filteredCustomTesters },
+          );
+
+          let matchedValue = false;
+          if (matchedKey === true) {
+            matchedValue = equal(
+              aEntry[1],
+              bEntry[1],
               { customTesters: filteredCustomTesters },
             );
-
-            let matchedValue = false;
-            if (matchedKey === true) {
-              matchedValue = equal(
-                aEntry[1],
-                bEntry[1],
-                { customTesters: filteredCustomTesters },
-              );
-            }
-            if (matchedValue === true) {
-              has = true;
-            }
           }
-
-          if (has === false) {
-            allFound = false;
+          if (matchedValue === true) {
+            unmatchedB.delete(bEntry);
+            has = true;
             break;
           }
+        }
+
+        if (!has) {
+          allFound = false;
+          break;
         }
       }
       // Remove the first value from the stack of traversed values.

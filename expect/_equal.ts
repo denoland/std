@@ -10,10 +10,27 @@ function isKeyedCollection(x: unknown): x is KeyedCollection {
   return x instanceof Set || x instanceof Map;
 }
 
-function constructorsEqual(a: object, b: object) {
+function constructorsEqual(a: object, b: object, strictCheck?: boolean) {
+  if (strictCheck) {
+    return a.constructor === b.constructor;
+  }
   return a.constructor === b.constructor ||
     a.constructor === Object && !b.constructor ||
     !a.constructor && b.constructor === Object;
+}
+
+function compareArrayBuffers(a: ArrayBufferLike, b: ArrayBufferLike) {
+  const u8a = new Uint8Array(a);
+  const u8b = new Uint8Array(b);
+  if (u8a.byteLength !== u8b.byteLength) return false;
+  for (let i = 0; i < u8a.byteLength; i++) {
+    if (u8a[i] !== u8b[i]) return false;
+  }
+  return true;
+}
+
+function sameValueZero(a: unknown, b: unknown) {
+  return a === b || Object.is(a, b);
 }
 
 function asymmetricEqual(a: unknown, b: unknown) {
@@ -83,7 +100,33 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       return aTime === bTime;
     }
     if (a instanceof Error && b instanceof Error) {
+      if (strictCheck && !constructorsEqual(a, b, strictCheck)) {
+        return false;
+      }
       return a.message === b.message;
+    }
+    if (
+      (a instanceof Number && b instanceof Number) ||
+      (a instanceof Boolean && b instanceof Boolean) ||
+      (typeof Symbol === "function" && a instanceof Symbol &&
+        b instanceof Symbol) ||
+      (typeof BigInt === "function" && a instanceof BigInt &&
+        b instanceof BigInt)
+    ) {
+      return sameValueZero(a.valueOf(), b.valueOf());
+    }
+    if (
+      (a instanceof ArrayBuffer && b instanceof ArrayBuffer) ||
+      (globalThis.SharedArrayBuffer && a instanceof SharedArrayBuffer &&
+        b instanceof SharedArrayBuffer)
+    ) {
+      return compareArrayBuffers(a, b);
+    }
+    if (a instanceof DataView && b instanceof DataView) {
+      if (a.byteLength !== b.byteLength || a.byteOffset !== b.byteOffset) {
+        return false;
+      }
+      return compareArrayBuffers(a.buffer, b.buffer);
     }
     if (typeof a === "number" && typeof b === "number") {
       return Number.isNaN(a) && Number.isNaN(b) || a === b;
@@ -99,7 +142,7 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
       return true;
     }
     if (a && typeof a === "object" && b && typeof b === "object") {
-      if (strictCheck && a && b && !constructorsEqual(a, b)) {
+      if (strictCheck && a && b && !constructorsEqual(a, b, strictCheck)) {
         return false;
       }
       if (a instanceof WeakMap || b instanceof WeakMap) {
@@ -180,10 +223,12 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
           return true;
         }
 
-        let unmatchedEntries = a.size;
+        const unmatchedB = new Set(b.entries());
 
         for (const [aKey, aValue] of a.entries()) {
-          for (const [bKey, bValue] of b.entries()) {
+          let matched = false;
+          for (const bEntry of unmatchedB) {
+            const [bKey, bValue] = bEntry;
             /* Given that Map keys can be references, we need
              * to ensure that they are also deeply equal */
 
@@ -191,15 +236,17 @@ export function equal(c: unknown, d: unknown, options?: EqualOptions): boolean {
 
             if (
               (aKey === aValue && bKey === bValue) ||
-              (compare(aValue, bValue))
+              compare(aValue, bValue)
             ) {
-              unmatchedEntries--;
+              unmatchedB.delete(bEntry);
+              matched = true;
               break;
             }
           }
+          if (!matched) return false;
         }
 
-        return unmatchedEntries === 0;
+        return unmatchedB.size === 0;
       }
       const merged = { ...a, ...b };
       for (
