@@ -31,7 +31,7 @@
  * assertEquals(dads, ["Jeff", "Kim", "Leroy"]);
  * ```
  */
-export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
+export function unzip<T, U>(pairs: readonly (readonly [T, U])[]): [T[], U[]] {
   const { length } = pairs;
 
   const result: [T[], U[]] = [
@@ -40,7 +40,7 @@ export function unzip<T, U>(pairs: readonly [T, U][]): [T[], U[]] {
   ];
 
   for (let i = 0; i < length; ++i) {
-    const pair = pairs[i] as [T, U];
+    const pair = pairs[i]!;
 
     result[0][i] = pair[0];
     result[1][i] = pair[1];
