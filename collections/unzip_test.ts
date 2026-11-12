@@ -31,6 +31,15 @@ Deno.test({
 });
 
 Deno.test({
+  name: "unzip() accepts readonly tuples",
+  fn() {
+    const pairs = [[1, "foo"], [2, "bar"]] as const;
+
+    assertEquals(unzip(pairs), [[1, 2], ["foo", "bar"]]);
+  },
+});
+
+Deno.test({
   name: "unzip() handles empty input",
   fn() {
     unzipTest(
