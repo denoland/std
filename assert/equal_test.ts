@@ -509,3 +509,24 @@ Deno.test("equal() with ArrayBuffer", async (t) => {
     });
   });
 });
+
+Deno.test("equal() ignores Error stacks but compares error data", () => {
+  const first = new Error("failed", { cause: new TypeError("bad input") });
+  const second = new Error("failed", { cause: new TypeError("bad input") });
+  assert(equal(first, second));
+  Object.defineProperty(second, "stack", {
+    enumerable: true,
+    value: "different",
+  });
+  assert(equal(first, second));
+  assertFalse(equal(first, new TypeError("failed", { cause: second.cause })));
+  assertFalse(equal(first, new Error("other", { cause: second.cause })));
+  assertFalse(equal(first, new Error("failed", { cause: new Error("other") })));
+  assertFalse(
+    equal(
+      Object.assign(first, { code: 1 }),
+      Object.assign(second, { code: 2 }),
+    ),
+  );
+  assertFalse(equal({ stack: "a" }, { stack: "b" }));
+});

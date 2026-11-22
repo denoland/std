@@ -146,7 +146,8 @@ export function equal(a: unknown, b: unknown): boolean {
       if (seen.get(a) === b) {
         return true;
       }
-      if (Object.keys(a).length !== Object.keys(b).length) {
+      const comparingErrors = a instanceof Error && b instanceof Error;
+      if (!comparingErrors && Object.keys(a).length !== Object.keys(b).length) {
         return false;
       }
       seen.set(a, b);
@@ -205,7 +206,12 @@ export function equal(a: unknown, b: unknown): boolean {
         return String(a) === String(b);
       } else {
         // slow path
-        keys = getKeysDeep(a).union(getKeysDeep(b));
+        const deepKeys = getKeysDeep(a).union(getKeysDeep(b));
+        if (comparingErrors) {
+          // A stack describes where an error was created, not its contents.
+          deepKeys.delete("stack");
+        }
+        keys = deepKeys;
       }
 
       for (const key of keys) {
