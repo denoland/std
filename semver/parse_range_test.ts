@@ -686,6 +686,36 @@ Deno.test("parseRange() handles wildcards", () => {
   assertEquals(parseRange("<=1.*.2"), [
     [{ operator: "<", major: 2, minor: 0, patch: 0 }],
   ]);
+  assertEquals(parseRange("<=*"), [
+    [{
+      operator: undefined,
+      major: NaN,
+      minor: NaN,
+      patch: NaN,
+      prerelease: [],
+      build: [],
+    }],
+  ]);
+  assertEquals(parseRange("<=x"), [
+    [{
+      operator: undefined,
+      major: NaN,
+      minor: NaN,
+      patch: NaN,
+      prerelease: [],
+      build: [],
+    }],
+  ]);
+  assertEquals(parseRange("<=X"), [
+    [{
+      operator: undefined,
+      major: NaN,
+      minor: NaN,
+      patch: NaN,
+      prerelease: [],
+      build: [],
+    }],
+  ]);
   assertEquals(parseRange(">=1.*.0"), [
     [{ operator: ">=", major: 1, minor: 0, patch: 0 }],
   ]);
