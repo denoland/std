@@ -774,7 +774,7 @@ export function parseArgs<
 
         const next = args[i + 1];
 
-        if (next) {
+        if (next != null) {
           if (
             !booleanSet.has(key) &&
             !allBools &&
@@ -838,7 +838,7 @@ export function parseArgs<
 
       const nextArg = args[i + 1];
 
-      if (nextArg) {
+      if (nextArg != null) {
         if (
           !HYPHEN_REGEXP.test(nextArg) &&
           !booleanSet.has(key) &&
