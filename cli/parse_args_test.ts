@@ -543,6 +543,62 @@ Deno.test("parseArgs() handles empty value after equals sign", function () {
   assertEquals(parseArgs(["--foo="]), { _: [], foo: "" });
 });
 
+Deno.test("parseArgs() handles empty string value as separate argument", function () {
+  assertEquals(parseArgs(["--foo", ""], { string: ["foo"] }), {
+    _: [],
+    foo: "",
+  });
+  assertEquals(parseArgs(["-f", ""], { string: ["f"] }), { _: [], f: "" });
+  assertEquals(parseArgs(["--foo", ""]), { _: [], foo: "" });
+  assertEquals(parseArgs(["-f", ""]), { _: [], f: "" });
+  assertEquals(parseArgs(["--foo", ""], { boolean: ["foo"] }), {
+    _: [""],
+    foo: true,
+  });
+  assertEquals(parseArgs(["-f", ""], { boolean: ["f"] }), {
+    _: [""],
+    f: true,
+  });
+  assertEquals(parseArgs(["--foo", ""], { collect: ["foo"] }), {
+    _: [],
+    foo: [""],
+  });
+  assertEquals(parseArgs(["-f", ""], { collect: ["f"] }), {
+    _: [],
+    f: [""],
+  });
+  assertEquals(parseArgs(["--foo", "", "--foo", ""], { collect: ["foo"] }), {
+    _: [],
+    foo: ["", ""],
+  });
+  assertEquals(parseArgs(["--foo", ""], { default: { foo: "bar" } }), {
+    _: [],
+    foo: "",
+  });
+  assertEquals(parseArgs(["-f", ""], { default: { f: "bar" } }), {
+    _: [],
+    f: "",
+  });
+  assertEquals(parseArgs(["--foo", "", "--", "pos"]), {
+    _: ["pos"],
+    foo: "",
+  });
+  assertEquals(parseArgs(["-f", "", "--", "pos"]), {
+    _: ["pos"],
+    f: "",
+  });
+  assertEquals(parseArgs(["--foo", "", "--", "pos"], { "--": true }), {
+    _: [],
+    foo: "",
+    "--": ["pos"],
+  });
+  assertEquals(parseArgs(["-f", "", "--", "pos"], { "--": true }), {
+    _: [],
+    f: "",
+    "--": ["pos"],
+  });
+});
+
 Deno.test("parseArgs() handles short flag combo with trailing equals sign", function () {
   assertEquals(parseArgs(["-abc="]), { _: [], a: true, b: true, c: "" });
 });
